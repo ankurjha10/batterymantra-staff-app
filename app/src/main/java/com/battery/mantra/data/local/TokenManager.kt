@@ -1,0 +1,62 @@
+package com.battery.mantra.data.local
+
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+
+class TokenManager(private val context: Context) {
+    companion object {
+        private val JWT_TOKEN_KEY = stringPreferencesKey("jwt_token")
+        private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
+        private val ROLE_KEY = stringPreferencesKey("user_role")
+    }
+
+    private var cachedJwt: String? = null
+    private var cachedRefresh: String? = null
+    private var cachedRole: String? = null
+
+    val jwtToken: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[JWT_TOKEN_KEY].also { cachedJwt = it }
+    }
+
+    val refreshToken: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[REFRESH_TOKEN_KEY].also { cachedRefresh = it }
+    }
+
+    val userRole: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[ROLE_KEY].also { cachedRole = it }
+    }
+
+    fun getCachedJwt(): String? = cachedJwt
+    fun getCachedRefresh(): String? = cachedRefresh
+    fun getCachedRole(): String? = cachedRole
+
+    suspend fun saveTokens(jwt: String, refresh: String, role: String) {
+        cachedJwt = jwt
+        cachedRefresh = refresh
+        cachedRole = role
+        context.dataStore.edit { preferences ->
+            preferences[JWT_TOKEN_KEY] = jwt
+            preferences[REFRESH_TOKEN_KEY] = refresh
+            preferences[ROLE_KEY] = role
+        }
+    }
+
+    suspend fun clearTokens() {
+        cachedJwt = null
+        cachedRefresh = null
+        cachedRole = null
+        context.dataStore.edit { preferences ->
+            preferences.remove(JWT_TOKEN_KEY)
+            preferences.remove(REFRESH_TOKEN_KEY)
+            preferences.remove(ROLE_KEY)
+        }
+    }
+}

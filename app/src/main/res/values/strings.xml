@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Battery Mantra</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="sign_in_to_continue">Sign in to continue to your dashboard</string>
+    <string name="phone_or_email">Phone Number or Email</string>
+    <string name="password">Password</string>
+    <string name="login_to_dashboard">Login to Dashboard</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="app_logo_text">BatteryMantra</string>
+    <string name="portal_subtitle">Internal Partner &amp; Engineer Portal</string>
+</resources>

@@ -34,6 +34,10 @@ fun NotificationsScreen(
 ) {
     val notificationsState by viewModel.notificationsState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.fetchNotifications()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -91,9 +95,13 @@ fun NotificationsScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(notifications, key = { it.id }) { notification ->
+                            var isVisible by remember { mutableStateOf(true) }
+                            
                             val dismissState = rememberSwipeToDismissBoxState(
+                                positionalThreshold = { it * 0.5f }, // Require 50% swipe
                                 confirmValueChange = {
                                     if (it == SwipeToDismissBoxValue.EndToStart || it == SwipeToDismissBoxValue.StartToEnd) {
+                                        isVisible = false
                                         viewModel.deleteNotification(notification.id)
                                         true
                                     } else {
@@ -102,7 +110,22 @@ fun NotificationsScreen(
                                 }
                             )
 
-                            SwipeToDismissBox(
+                            LaunchedEffect(notifications) {
+                                if (dismissState.currentValue != SwipeToDismissBoxValue.Settled && isVisible) {
+                                    dismissState.reset()
+                                }
+                                if (notifications.any { it.id == notification.id } && !isVisible) {
+                                    // If it was reverted by ViewModel (failure), make it visible again and reset
+                                    isVisible = true
+                                    dismissState.reset()
+                                }
+                            }
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = isVisible,
+                                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+                            ) {
+                                SwipeToDismissBox(
                                 state = dismissState,
                                 backgroundContent = {
                                     val color by animateColorAsState(
@@ -153,6 +176,7 @@ fun NotificationsScreen(
                                         }
                                     }
                                 )
+                            }
                             }
                         }
                     }

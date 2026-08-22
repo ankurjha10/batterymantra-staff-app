@@ -42,28 +42,7 @@ fun AdminOverviewTab(
                 
                 val context = androidx.compose.ui.platform.LocalContext.current
                 val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
-                val fcmToken = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
-                
-                androidx.compose.runtime.LaunchedEffect(Unit) {
-                    com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            fcmToken.value = task.result
-                        }
-                    }
-                }
-                
-                if (fcmToken.value.isNotEmpty()) {
-                    Button(
-                        onClick = {
-                            android.util.Log.d("FCM_TEST", "Manual Test Token: ${fcmToken.value}")
-                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(fcmToken.value))
-                            android.widget.Toast.makeText(context, "FCM Token Copied!", android.widget.Toast.LENGTH_SHORT).show()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
-                    ) {
-                        Text("Copy FCM Token", fontSize = 12.sp)
-                    }
-                }
+
             }
         }
 

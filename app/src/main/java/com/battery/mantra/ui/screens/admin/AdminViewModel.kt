@@ -95,23 +95,8 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         viewModelScope.launch {
             val result = repository.getNotifications()
             if (result.isSuccess) {
-                val clearedTime = tokenManager.getNotificationsClearedTime()
                 val allNotifications = result.getOrDefault(emptyList())
-                val filteredNotifications = allNotifications.filter {
-                    try {
-                        // Attempt to parse standard ISO 8601 string
-                        val formatter = DateTimeFormatter.ISO_DATE_TIME
-                        val timeMillis = LocalDateTime.parse(it.createdAt, formatter)
-                            .atZone(ZoneId.systemDefault())
-                            .toInstant()
-                            .toEpochMilli()
-                        timeMillis > clearedTime
-                    } catch (e: Exception) {
-                        // Fallback if parsing fails, just show it
-                        true
-                    }
-                }
-                _notificationsState.value = AdminDataState.Success(filteredNotifications)
+                _notificationsState.value = AdminDataState.Success(allNotifications)
             } else {
                 _notificationsState.value = AdminDataState.Error(result.exceptionOrNull()?.message ?: "Failed to fetch notifications")
             }
@@ -124,9 +109,7 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
             if (result.isSuccess) {
                 _notificationsState.value = AdminDataState.Success(emptyList())
             } else {
-                // If the backend doesn't support it yet, we just fall back to local clear (the user's request)
-                tokenManager.setNotificationsClearedTime(System.currentTimeMillis())
-                _notificationsState.value = AdminDataState.Success(emptyList())
+                _notificationsState.value = AdminDataState.Error(result.exceptionOrNull()?.message ?: "Failed to clear notifications")
             }
         }
     }

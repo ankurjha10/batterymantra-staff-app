@@ -29,7 +29,8 @@ fun OrderCard(
     address: String,
     placedAt: String,
     status: String,
-    partnerName: String?,
+    partnerName: String? = null,
+    engineerName: String? = null,
     modifier: Modifier = Modifier,
     onActionClick: (() -> Unit)? = null,
     onStatusChange: ((String) -> Unit)? = null
@@ -81,8 +82,8 @@ fun OrderCard(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFFF0F0F0))
-            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = Color(0xFFF3F4F6))
+
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -151,7 +152,10 @@ fun OrderCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         StatusBadge(status = status)
-                        if (partnerName != null) {
+                        if (engineerName != null) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Eng: $engineerName", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.SemiBold)
+                        } else if (partnerName != null) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(text = "Partner: $partnerName", fontSize = 11.sp, color = Color(0xFFE65100), fontWeight = FontWeight.SemiBold)
                         } else {

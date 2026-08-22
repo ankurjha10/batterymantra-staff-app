@@ -154,8 +154,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToCallbacks = { navController.navigate("admin_callbacks") },
                 onNavigateToEnquiries = { navController.navigate("admin_enquiries") },
                 onNavigateToNotifications = { navController.navigate("admin_notifications") },
-                onNavigateToAssignEngineer = { orderId -> 
-                    /* We'll handle order assignment later */ 
+                onAssignPartner = { orderId, partnerId, onSuccess, onError -> 
+                    adminViewModel.assignPartner(orderId, partnerId, onSuccess, onError)
+                },
+                onAssignEngineer = { orderId, engineerId, onSuccess, onError ->
+                    adminViewModel.assignEngineer(orderId, engineerId, onSuccess, onError)
                 },
                 onCreatePartner = { request, onSuccess, onError ->
                     adminViewModel.createPartner(request, onSuccess, onError)

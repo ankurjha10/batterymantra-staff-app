@@ -27,6 +27,34 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun assignPartner(orderId: String, partnerId: String): Result<OrderResponse> {
+        return try {
+            val response = api.assignPartner(orderId, partnerId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to assign partner: ${response.code()} $err"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun assignEngineer(orderId: String, engineerId: String): Result<OrderResponse> {
+        return try {
+            val response = api.assignEngineer(orderId, engineerId)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to assign engineer: ${response.code()} $err"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getPartners(): Result<List<PartnerResponse>> {
         return try {
             val response = api.getAdminPartners()

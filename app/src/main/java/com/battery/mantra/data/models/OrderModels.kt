@@ -18,7 +18,8 @@ data class OrderResponse(
     @SerializedName("customerPhone") val customerPhone: String?,
     @SerializedName("deliverySecurityCode") val deliverySecurityCode: String?,
     @SerializedName("orderItems") val orderItems: List<OrderItemResponse>?,
-    @SerializedName("assignedPartner") val assignedPartner: PartnerResponse?
+    @SerializedName("assignedPartner") val assignedPartner: PartnerResponse?,
+    @SerializedName("assignedEngineer") val assignedEngineer: EngineerResponse?
 )
 
 data class OrderItemResponse(

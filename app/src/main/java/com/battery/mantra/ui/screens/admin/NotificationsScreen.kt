@@ -9,8 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.NotificationsActive
-import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -190,6 +189,15 @@ fun NotificationsScreen(
 
 @Composable
 fun NotificationCard(title: String, message: String, time: String, onClick: () -> Unit = {}) {
+    val (icon, tintColor) = when {
+        title.contains("Cancel", ignoreCase = true) -> Pair(Icons.Outlined.Cancel, Color(0xFFEF4444)) // Red
+        title.contains("Low Stock", ignoreCase = true) -> Pair(Icons.Outlined.WarningAmber, Color(0xFFF59E0B)) // Orange
+        title.contains("Callback", ignoreCase = true) || title.contains("Enquiry", ignoreCase = true) -> Pair(Icons.Outlined.PhoneCallback, Color(0xFF3B82F6)) // Blue
+        title.contains("Update", ignoreCase = true) || title.contains("Completed", ignoreCase = true) || title.contains("Assigned", ignoreCase = true) -> Pair(Icons.Outlined.CheckCircle, Color(0xFF10B981)) // Green
+        title.contains("Order", ignoreCase = true) -> Pair(Icons.Outlined.ShoppingBag, Color(0xFFD32F2F)) // Brand Red
+        else -> Pair(Icons.Outlined.NotificationsActive, Color(0xFFD32F2F))
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -203,10 +211,10 @@ fun NotificationCard(title: String, message: String, time: String, onClick: () -
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color(0xFFD32F2F).copy(alpha = 0.1f), CircleShape),
+                    .background(tintColor.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Outlined.NotificationsActive, contentDescription = null, tint = Color(0xFFD32F2F))
+                Icon(icon, contentDescription = null, tint = tintColor)
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {

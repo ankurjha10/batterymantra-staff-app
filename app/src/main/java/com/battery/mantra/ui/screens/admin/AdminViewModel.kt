@@ -72,6 +72,14 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
     init {
         fetchAllData()
         updateFcmTokenFromFirebase()
+        
+        // Listen for real-time updates from Push Notifications
+        viewModelScope.launch {
+            com.battery.mantra.util.AppEventBus.refreshEvents.collect {
+                fetchOrders()
+                fetchNotifications()
+            }
+        }
     }
 
     private fun updateFcmTokenFromFirebase() {
@@ -111,6 +119,34 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
             } else {
                 _notificationsState.value = AdminDataState.Error(result.exceptionOrNull()?.message ?: "Failed to clear notifications")
             }
+        }
+    }
+
+    fun assignPartner(orderId: String, partnerId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.assignPartner(orderId, partnerId).fold(
+                onSuccess = {
+                    fetchOrders() // refresh orders
+                    onSuccess()
+                },
+                onFailure = { err ->
+                    onError(err.message ?: "Failed to assign partner")
+                }
+            )
+        }
+    }
+
+    fun assignEngineer(orderId: String, engineerId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.assignEngineer(orderId, engineerId).fold(
+                onSuccess = {
+                    fetchOrders() // refresh orders
+                    onSuccess()
+                },
+                onFailure = { err ->
+                    onError(err.message ?: "Failed to assign engineer")
+                }
+            )
         }
     }
 

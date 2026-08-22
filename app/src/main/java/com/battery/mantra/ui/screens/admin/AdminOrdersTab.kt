@@ -30,16 +30,18 @@ import java.util.Locale
 @Composable
 fun AdminOrdersTab(
     ordersState: AdminDataState<List<OrderResponse>>,
+    partnersState: AdminDataState<List<com.battery.mantra.data.models.PartnerResponse>>,
+    engineersState: AdminDataState<List<com.battery.mantra.data.models.EngineerResponse>>,
     targetSearchQuery: String? = null,
     targetFilter: String? = null,
     onTargetConsumed: () -> Unit = {},
-    onNavigateToAssignEngineer: (String) -> Unit
+    onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit,
+    onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit
 ) {
     var selectedFilter by remember { mutableStateOf("All Orders") }
     var searchQuery by remember { mutableStateOf("") }
-    
-    // Bottom Sheet State
     var selectedOrderForDetails by remember { mutableStateOf<OrderResponse?>(null) }
+    var selectedOrderIdToAssign by remember { mutableStateOf<String?>(null) }
     
     // Consume deep link arguments
     LaunchedEffect(targetSearchQuery, targetFilter, ordersState) {
@@ -271,6 +273,7 @@ fun AdminOrdersTab(
                     placedAt = order.placedAt ?: "2026-07-10T12:00:00",
                     status = order.orderStatus ?: "UNASSIGNED",
                     partnerName = order.assignedPartner?.businessName ?: order.assignedPartner?.contactPerson,
+                    engineerName = order.assignedEngineer?.let { "${it.firstName ?: ""} ${it.lastName ?: ""}".trim() }?.takeIf { it.isNotEmpty() },
                     onActionClick = { selectedOrderForDetails = order }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -283,7 +286,25 @@ fun AdminOrdersTab(
     if (selectedOrderForDetails != null) {
         AdminOrderDetailsSheet(
             order = selectedOrderForDetails!!,
-            onDismiss = { selectedOrderForDetails = null }
+            onDismiss = { selectedOrderForDetails = null },
+            onAssignEngineer = { orderId -> 
+                selectedOrderForDetails = null
+                selectedOrderIdToAssign = orderId 
+            }
         )
+    }
+
+    if (selectedOrderIdToAssign != null) {
+        val orderToAssign = allOrders.find { it.orderId == selectedOrderIdToAssign }
+        if (orderToAssign != null) {
+            AssignOrderSheet(
+                order = orderToAssign,
+                partnersState = partnersState,
+                engineersState = engineersState,
+                onAssignPartner = onAssignPartner,
+                onAssignEngineer = onAssignEngineer,
+                onDismiss = { selectedOrderIdToAssign = null }
+            )
+        }
     }
 }

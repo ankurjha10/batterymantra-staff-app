@@ -45,6 +45,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 showNotification(title, body, type)
             }
         }
+        
+        // Notify the app that new data might be available
+        com.battery.mantra.util.AppEventBus.emitRefreshEvent()
     }
 
     private fun showNotification(title: String, body: String, type: String? = null) {
@@ -71,6 +74,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val remoteViews = android.widget.RemoteViews(packageName, R.layout.layout_custom_notification)
             remoteViews.setTextViewText(R.id.notification_title, title)
             remoteViews.setTextViewText(R.id.notification_message, body)
+            
+            // Set dynamic icon based on title
+            val iconResId = when {
+                title.contains("Cancel", ignoreCase = true) -> R.drawable.ic_cancel
+                else -> R.drawable.ic_shopping_bag
+            }
+            remoteViews.setImageViewResource(R.id.notification_icon, iconResId)
+            
             notificationBuilder.setStyle(androidx.core.app.NotificationCompat.DecoratedCustomViewStyle())
             notificationBuilder.setCustomContentView(remoteViews)
         } else {

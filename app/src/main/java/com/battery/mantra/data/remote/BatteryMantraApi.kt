@@ -33,6 +33,12 @@ interface BatteryMantraApi {
     @GET("api/admin/orders")
     suspend fun getAdminOrders(): Response<List<OrderResponse>>
 
+    @PATCH("api/admin/orders/{orderId}/assign-partner")
+    suspend fun assignPartner(@Path("orderId") orderId: String, @Query("partnerId") partnerId: String): Response<OrderResponse>
+
+    @PATCH("api/admin/orders/{orderId}/assign-engineer")
+    suspend fun assignEngineer(@Path("orderId") orderId: String, @Query("engineerId") engineerId: String): Response<OrderResponse>
+
     @GET("api/admin/partners")
     suspend fun getAdminPartners(): Response<List<PartnerResponse>>
 

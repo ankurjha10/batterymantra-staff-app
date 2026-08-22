@@ -52,7 +52,8 @@ fun AdminDashboardScreen(
     onNavigateToCallbacks: () -> Unit = {},
     onNavigateToEnquiries: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
-    onNavigateToAssignEngineer: (String) -> Unit = {},
+    onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
+    onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onCreatePartner: (com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onLogout: () -> Unit = {}
@@ -322,10 +323,13 @@ fun AdminDashboardScreen(
                 0 -> AdminOverviewTab(ordersState, partnersState, engineersState, usersState)
                 1 -> AdminOrdersTab(
                         ordersState = ordersState, 
+                        partnersState = partnersState,
+                        engineersState = engineersState,
                         targetSearchQuery = targetSearchQuery,
                         targetFilter = targetFilter,
                         onTargetConsumed = onTargetConsumed,
-                        onNavigateToAssignEngineer = onNavigateToAssignEngineer
+                        onAssignPartner = onAssignPartner,
+                        onAssignEngineer = onAssignEngineer
                      )
                 2 -> AdminPartnersTab(
                     partnersState = partnersState,

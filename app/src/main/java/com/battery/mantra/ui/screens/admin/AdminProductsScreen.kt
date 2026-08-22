@@ -89,23 +89,26 @@ fun AdminProductsScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search by name or brand...") },
+                placeholder = { Text("Search by name or brand...", color = Color.Gray) },
                 leadingIcon = { 
                     Icon(
                         Icons.Default.Search, 
-                        contentDescription = "Search"
+                        contentDescription = "Search",
+                        tint = Color.Gray
                     ) 
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .height(50.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(25.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color(0xFFEEEEEE),
-                    focusedBorderColor = Color(0xFFD32F2F),
-                    unfocusedContainerColor = Color.White,
-                    focusedContainerColor = Color.White
+                    focusedContainerColor = Color(0xFFF1F5F9),
+                    unfocusedContainerColor = Color(0xFFF1F5F9),
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    cursorColor = Color(0xFFD32F2F)
                 ),
                 singleLine = true
             )

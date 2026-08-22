@@ -132,13 +132,16 @@ fun AdminOrdersTab(
                     onValueChange = { searchQuery = it },
                     placeholder = { Text("Search Order ID or City...", color = Color.Gray) },
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = Color.Gray) },
-                    modifier = Modifier.weight(1f).height(50.dp),
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(25.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFFF1F5F9),
                         unfocusedContainerColor = Color(0xFFF1F5F9),
                         focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
+                        cursorColor = Color(0xFFD32F2F)
                     ),
                     singleLine = true
                 )
@@ -154,29 +157,48 @@ fun AdminOrdersTab(
                 items(filters) { filter ->
                     val isSelected = selectedFilter == filter
                     
-                    // Display count in tab for first 3
+                    val pendingNew = allOrders.count { it.orderStatus == "PENDING" || it.orderStatus == "CONFIRMED" || it.orderStatus == "UNASSIGNED" }
+                    val showBadge = filter == "New Orders" && pendingNew > 0
+                    
                     val countStr = when (filter) {
                         "All Orders" -> " (${allOrders.size})"
                         "Main Branch (Admin Direct)" -> " (${allOrders.count { it.assignedPartner == null }})"
                         "Partner Assigned" -> " (${allOrders.count { it.assignedPartner != null }})"
+                        "New Orders" -> if (pendingNew > 0) " ($pendingNew)" else ""
                         else -> ""
                     }
                     
-                    FilterChip(
-                        selected = isSelected,
+                    val bgColor = if (isSelected) Color(0xFFFEE2E2) else Color.White
+                    val contentColor = if (isSelected) Color(0xFFB91C1C) else Color(0xFF4B5563)
+                    val borderColor = if (isSelected) Color(0xFFFCA5A5) else Color(0xFFD1D5DB)
+
+                    Surface(
                         onClick = { selectedFilter = filter },
-                        label = { Text(filter + countStr, fontWeight = FontWeight.SemiBold) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Color(0xFFD32F2F).copy(alpha = 0.1f),
-                            selectedLabelColor = Color(0xFFD32F2F)
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = if (isSelected) Color(0xFFD32F2F).copy(alpha = 0.3f) else Color(0xFFE5E7EB)
-                        ),
-                        shape = RoundedCornerShape(percent = 50)
-                    )
+                        shape = RoundedCornerShape(50),
+                        color = bgColor,
+                        border = BorderStroke(if (isSelected) 1.dp else 1.dp, borderColor),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        ) {
+                            if (showBadge) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(Color(0xFFEF4444), shape = androidx.compose.foundation.shape.CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                            Text(
+                                text = filter + countStr, 
+                                color = contentColor,
+                                fontWeight = if (isSelected || showBadge) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
                 }
             }
         }

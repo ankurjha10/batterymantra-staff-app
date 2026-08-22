@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -34,9 +36,23 @@ class TokenManager(private val context: Context) {
         preferences[ROLE_KEY].also { cachedRole = it }
     }
 
-    fun getCachedJwt(): String? = cachedJwt
-    fun getCachedRefresh(): String? = cachedRefresh
-    fun getCachedRole(): String? = cachedRole
+    fun getCachedJwt(): String? {
+        return cachedJwt ?: runBlocking {
+            context.dataStore.data.first()[JWT_TOKEN_KEY]
+        }
+    }
+
+    fun getCachedRefresh(): String? {
+        return cachedRefresh ?: runBlocking {
+            context.dataStore.data.first()[REFRESH_TOKEN_KEY]
+        }
+    }
+
+    fun getCachedRole(): String? {
+        return cachedRole ?: runBlocking {
+            context.dataStore.data.first()[ROLE_KEY]
+        }
+    }
 
     suspend fun saveTokens(jwt: String, refresh: String, role: String) {
         cachedJwt = jwt

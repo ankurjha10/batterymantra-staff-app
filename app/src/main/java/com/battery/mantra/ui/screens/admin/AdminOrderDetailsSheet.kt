@@ -137,7 +137,9 @@ fun AdminOrderDetailsSheet(
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 val currentIdx = statusFlow.indexOf(order.orderStatus ?: "PENDING")
-                                val allowedStatuses = statusFlow.filterIndexed { index, _ -> index > currentIdx }.toMutableList()
+                                val allowedStatuses = statusFlow.filterIndexed { index, status -> 
+                                    index > currentIdx && status != "DELIVERED" && status != "INSTALLED" 
+                                }.toMutableList()
                                 if (!isTerminalState) allowedStatuses.add("CANCELLED")
                                 
                                 allowedStatuses.forEach { newStatus ->

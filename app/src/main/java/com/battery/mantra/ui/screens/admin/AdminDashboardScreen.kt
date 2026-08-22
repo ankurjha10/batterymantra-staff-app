@@ -54,6 +54,7 @@ fun AdminDashboardScreen(
     onNavigateToNotifications: () -> Unit = {},
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
+    onUpdateStatus: (String, String) -> Unit = { _, _ -> },
     onCreatePartner: (com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onLogout: () -> Unit = {}
@@ -329,7 +330,8 @@ fun AdminDashboardScreen(
                         targetFilter = targetFilter,
                         onTargetConsumed = onTargetConsumed,
                         onAssignPartner = onAssignPartner,
-                        onAssignEngineer = onAssignEngineer
+                        onAssignEngineer = onAssignEngineer,
+                        onUpdateStatus = onUpdateStatus
                      )
                 2 -> AdminPartnersTab(
                     partnersState = partnersState,

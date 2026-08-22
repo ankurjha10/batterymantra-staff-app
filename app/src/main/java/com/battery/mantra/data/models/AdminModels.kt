@@ -13,6 +13,10 @@ data class PartnerResponse(
     @SerializedName("isActive") val isActive: Boolean?
 )
 
+data class OrderStatusUpdateRequest(
+    @SerializedName("orderStatus") val orderStatus: String
+)
+
 data class EngineerResponse(
     @SerializedName("id") val id: String,
     @SerializedName("userId") val userId: String?,

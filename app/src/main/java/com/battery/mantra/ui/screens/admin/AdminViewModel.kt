@@ -30,6 +30,19 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
     val ordersState: StateFlow<AdminDataState<List<OrderResponse>>> = _ordersState.asStateFlow()
 
     private val _partnersState = MutableStateFlow<AdminDataState<List<PartnerResponse>>>(AdminDataState.Idle)
+    fun updateOrderStatus(orderId: String, status: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.updateOrderStatus(orderId, status)
+                .onSuccess {
+                    fetchOrders()
+                    onSuccess()
+                }
+                .onFailure {
+                    onError(it.message ?: "An error occurred")
+                }
+        }
+    }
+
     val partnersState: StateFlow<AdminDataState<List<PartnerResponse>>> = _partnersState.asStateFlow()
 
     private val _engineersState = MutableStateFlow<AdminDataState<List<EngineerResponse>>>(AdminDataState.Idle)

@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,7 +30,8 @@ import com.battery.mantra.data.models.OrderResponse
 fun AdminOrderDetailsSheet(
     order: OrderResponse,
     onDismiss: () -> Unit,
-    onAssignEngineer: (String) -> Unit = {}
+    onAssignEngineer: (String) -> Unit = {},
+    onUpdateStatus: (String, String) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
 
@@ -100,11 +103,23 @@ fun AdminOrderDetailsSheet(
                         "PENDING" -> Color(0xFFF59E0B)
                         else -> Color(0xFF3B82F6)
                     }
+                    var statusExpanded by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                    
+                    val statusFlow = listOf(
+                        "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED",
+                        "OUT_FOR_DELIVERY", "DELIVERED", "INSTALLED"
+                    )
+                    
+                    val isTerminalState = order.orderStatus == "CANCELLED" || 
+                                          order.orderStatus == "DELIVERED" || 
+                                          order.orderStatus == "INSTALLED"
+                                          
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(statusColor.copy(alpha = 0.15f))
+                                .clickable(enabled = !isTerminalState) { statusExpanded = true }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -113,6 +128,49 @@ fun AdminOrderDetailsSheet(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
+                            DropdownMenu(
+                                expanded = statusExpanded,
+                                onDismissRequest = { statusExpanded = false },
+                                modifier = Modifier
+                                    .background(Color.White)
+                                    .padding(4.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                val currentIdx = statusFlow.indexOf(order.orderStatus ?: "PENDING")
+                                val allowedStatuses = statusFlow.filterIndexed { index, _ -> index > currentIdx }.toMutableList()
+                                if (!isTerminalState) allowedStatuses.add("CANCELLED")
+                                
+                                allowedStatuses.forEach { newStatus ->
+                                    val itemColor = when (newStatus) {
+                                        "DELIVERED", "INSTALLED" -> Color(0xFF10B981)
+                                        "CANCELLED" -> Color(0xFFEF4444)
+                                        "PENDING" -> Color(0xFFF59E0B)
+                                        else -> Color(0xFF3B82F6)
+                                    }
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Text(
+                                                text = newStatus.replace("_", " "),
+                                                color = itemColor,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp
+                                            ) 
+                                        },
+                                        onClick = {
+                                            statusExpanded = false
+                                            if (newStatus != order.orderStatus) {
+                                                onUpdateStatus(order.orderId ?: "", newStatus)
+                                                onDismiss()
+                                            }
+                                        },
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                        if (!isTerminalState) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Tap to update", fontSize = 11.sp, color = Color.Gray)
                         }
                     }
                 }
@@ -283,7 +341,7 @@ fun AdminOrderDetailsSheet(
                         Text(assignedName ?: "Unknown", fontWeight = FontWeight.Bold, color = Color(0xFF10B981), fontSize = 16.sp)
                     }
                 }
-            } else if (order.orderStatus == "PENDING" || order.orderStatus == "ASSIGNED") {
+            } else if (order.orderStatus == "PENDING" || order.orderStatus == "CONFIRMED") {
                 Button(
                     onClick = { 
                         onDismiss()

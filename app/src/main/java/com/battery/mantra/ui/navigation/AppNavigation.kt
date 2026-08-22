@@ -135,6 +135,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val targetFilter by adminViewModel.targetOrderFilter.collectAsState()
             val notificationsState by adminViewModel.notificationsState.collectAsState()
             val unreadNotificationsCount = (notificationsState as? com.battery.mantra.ui.screens.admin.AdminDataState.Success)?.data?.size ?: 0
+            val context = androidx.compose.ui.platform.LocalContext.current
 
             AdminDashboardScreen(
                 ordersState = ordersState,
@@ -159,6 +160,14 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 },
                 onAssignEngineer = { orderId, engineerId, onSuccess, onError ->
                     adminViewModel.assignEngineer(orderId, engineerId, onSuccess, onError)
+                },
+                onUpdateStatus = { orderId, status ->
+                    adminViewModel.updateOrderStatus(
+                        orderId = orderId, 
+                        status = status,
+                        onSuccess = { android.widget.Toast.makeText(context, "Status updated", android.widget.Toast.LENGTH_SHORT).show() },
+                        onError = { err -> android.widget.Toast.makeText(context, "Error: $err", android.widget.Toast.LENGTH_SHORT).show() }
+                    )
                 },
                 onCreatePartner = { request, onSuccess, onError ->
                     adminViewModel.createPartner(request, onSuccess, onError)

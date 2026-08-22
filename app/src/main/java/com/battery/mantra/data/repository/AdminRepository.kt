@@ -55,6 +55,20 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun updateOrderStatus(orderId: String, status: String): Result<OrderResponse> {
+        return try {
+            val response = api.updateOrderStatus(orderId, com.battery.mantra.data.models.OrderStatusUpdateRequest(status))
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to update status: ${response.code()} $err"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getPartners(): Result<List<PartnerResponse>> {
         return try {
             val response = api.getAdminPartners()

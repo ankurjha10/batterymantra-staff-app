@@ -36,7 +36,8 @@ fun AdminOrdersTab(
     targetFilter: String? = null,
     onTargetConsumed: () -> Unit = {},
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit,
-    onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit
+    onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit,
+    onUpdateStatus: (String, String) -> Unit = { _, _ -> }
 ) {
     var selectedFilter by remember { mutableStateOf("All Orders") }
     var searchQuery by remember { mutableStateOf("") }
@@ -75,7 +76,10 @@ fun AdminOrdersTab(
     
     val allOrders = remember(ordersState) {
         if (ordersState is AdminDataState.Success) {
-            ordersState.data.sortedByDescending { it.placedAt ?: "" }
+            ordersState.data.sortedWith(
+                compareByDescending<OrderResponse> { it.orderStatus == "PENDING" }
+                    .thenByDescending { it.placedAt ?: "" }
+            )
         } else {
             emptyList()
         }
@@ -290,7 +294,8 @@ fun AdminOrdersTab(
             onAssignEngineer = { orderId -> 
                 selectedOrderForDetails = null
                 selectedOrderIdToAssign = orderId 
-            }
+            },
+            onUpdateStatus = onUpdateStatus
         )
     }
 

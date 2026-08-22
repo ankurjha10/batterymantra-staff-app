@@ -39,6 +39,12 @@ interface BatteryMantraApi {
     @PATCH("api/admin/orders/{orderId}/assign-engineer")
     suspend fun assignEngineer(@Path("orderId") orderId: String, @Query("engineerId") engineerId: String): Response<OrderResponse>
 
+    @PATCH("api/admin/orders/{orderId}/status")
+    suspend fun updateOrderStatus(
+        @Path("orderId") orderId: String,
+        @Body request: com.battery.mantra.data.models.OrderStatusUpdateRequest
+    ): Response<OrderResponse>
+
     @GET("api/admin/partners")
     suspend fun getAdminPartners(): Response<List<PartnerResponse>>
 

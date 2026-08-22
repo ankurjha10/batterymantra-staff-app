@@ -7,6 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import com.battery.mantra.BatteryMantraApp
 import com.battery.mantra.ui.screens.admin.AdminDashboardScreen
 import com.battery.mantra.ui.screens.admin.AdminViewModel
@@ -82,7 +85,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
     NavHost(
         navController = navController,
-        startDestination = startDest
+        startDestination = startDest,
+        enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(300)) },
+        exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(300)) },
+        popEnterTransition = { slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(300)) },
+        popExitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(300)) }
     ) {
         composable(Screen.Login.route) {
             val authViewModel: AuthViewModel = viewModel(

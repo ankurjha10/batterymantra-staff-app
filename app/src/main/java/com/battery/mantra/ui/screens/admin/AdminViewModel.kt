@@ -131,6 +131,23 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun deleteNotification(id: String) {
+        val currentState = _notificationsState.value
+        if (currentState is AdminDataState.Success) {
+            // Optimistically update UI
+            val updatedList = currentState.data.filter { it.id != id }
+            _notificationsState.value = AdminDataState.Success(updatedList)
+            
+            viewModelScope.launch {
+                val result = repository.deleteNotification(id)
+                if (result.isFailure) {
+                    // Revert on failure
+                    _notificationsState.value = currentState
+                }
+            }
+        }
+    }
+
     private fun fetchAllData() {
         fetchOrders()
         fetchPartners()

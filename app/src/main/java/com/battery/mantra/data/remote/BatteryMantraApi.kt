@@ -115,5 +115,8 @@ interface BatteryMantraApi {
 
     @DELETE("api/notifications")
     suspend fun clearNotifications(): Response<Unit>
+
+    @DELETE("api/notifications/{id}")
+    suspend fun deleteNotification(@Path("id") id: String): Response<Unit>
 }
 

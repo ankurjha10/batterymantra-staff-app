@@ -13,7 +13,7 @@ import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.animateColorAsState
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -84,38 +85,74 @@ fun NotificationsScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(notifications) { notification ->
-                            val formattedTime = try {
-                                val inputFormat =
-                                    java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
-                                val outputFormat =
-                                    java.text.SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault())
-                                val date = inputFormat.parse(notification.createdAt)
-                                if (date != null) outputFormat.format(date) else notification.createdAt
-                            } catch (e: Exception) {
-                                notification.createdAt
-                            }
-
-                            val formattedMessage = notification.message.replace(
-                                Regex("Order #([a-f0-9\\-]{8})[a-f0-9\\-]+"),
-                                "Order #$1..."
-                            )
-
-                            val isNewOrder = notification.title.contains("Order", true)
-                            val orderIdMatch = Regex("Order #([a-f0-9\\-]+)").find(notification.message)
-                            val orderId = orderIdMatch?.groups?.get(1)?.value
-
-                            NotificationCard(
-                                title = if (notification.title == "New Order Placed") "New Order Received" else notification.title,
-                                message = formattedMessage,
-                                time = formattedTime,
-                                onClick = {
-                                    if (isNewOrder && orderId != null) {
-                                        viewModel.navigateToOrder(orderId, "New Orders")
-                                        onBackClick()
+                        items(notifications, key = { it.id }) { notification ->
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = {
+                                    if (it == SwipeToDismissBoxValue.EndToStart || it == SwipeToDismissBoxValue.StartToEnd) {
+                                        viewModel.deleteNotification(notification.id)
+                                        true
+                                    } else {
+                                        false
                                     }
                                 }
                             )
+
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                backgroundContent = {
+                                    val color by animateColorAsState(
+                                        targetValue = if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) Color.Red else Color.Transparent,
+                                        label = "color"
+                                    )
+                                    Box(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .background(color, RoundedCornerShape(12.dp))
+                                            .padding(horizontal = 20.dp),
+                                        contentAlignment = if (dismissState.dismissDirection == SwipeToDismissBoxValue.StartToEnd) Alignment.CenterStart else Alignment.CenterEnd
+                                    ) {
+                                        if (dismissState.targetValue != SwipeToDismissBoxValue.Settled) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Delete",
+                                                tint = Color.White
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                val formattedTime = try {
+                                    val inputFormat =
+                                        java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                                    val outputFormat =
+                                        java.text.SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault())
+                                    val date = inputFormat.parse(notification.createdAt)
+                                    if (date != null) outputFormat.format(date) else notification.createdAt
+                                } catch (e: Exception) {
+                                    notification.createdAt
+                                }
+
+                                val formattedMessage = notification.message.replace(
+                                    Regex("Order #([a-f0-9\\-]{8})[a-f0-9\\-]+"),
+                                    "Order #$1..."
+                                )
+
+                                val isNewOrder = notification.title.contains("Order", true)
+                                val orderIdMatch = Regex("Order #([a-f0-9\\-]+)").find(notification.message)
+                                val orderId = orderIdMatch?.groups?.get(1)?.value
+
+                                NotificationCard(
+                                    title = if (notification.title == "New Order Placed") "New Order Received" else notification.title,
+                                    message = formattedMessage,
+                                    time = formattedTime,
+                                    onClick = {
+                                        if (isNewOrder && orderId != null) {
+                                            viewModel.navigateToOrder(orderId, "New Orders")
+                                            onBackClick()
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }

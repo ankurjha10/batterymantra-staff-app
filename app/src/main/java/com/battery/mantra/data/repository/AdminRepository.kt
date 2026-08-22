@@ -324,5 +324,18 @@ class AdminRepository(private val api: BatteryMantraApi) {
             Result.failure(e)
         }
     }
+
+    suspend fun deleteNotification(id: String): Result<Unit> {
+        return try {
+            val response = api.deleteNotification(id)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to delete notification: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 

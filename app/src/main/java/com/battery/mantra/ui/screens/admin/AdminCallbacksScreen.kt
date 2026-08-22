@@ -80,7 +80,7 @@ fun AdminCallbacksScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.callbacks) { callback ->
+                    items(uiState.callbacks, key = { it.callbackId }) { callback ->
                         CallbackCard(
                             callback = callback,
                             onUpdateStatus = { status ->

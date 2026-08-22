@@ -86,7 +86,7 @@ fun AdminCouponsScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.coupons) { coupon ->
+                    items(uiState.coupons, key = { it.couponId }) { coupon ->
                         CouponCard(
                             coupon = coupon,
                             onClick = {

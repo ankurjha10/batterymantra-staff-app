@@ -120,7 +120,7 @@ fun AdminEnquiriesScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.enquiries) { enquiry ->
+                    items(uiState.enquiries, key = { it.id }) { enquiry ->
                         EnquiryCard(
                             enquiry = enquiry,
                             onViewDetails = { selectedEnquiry = enquiry },

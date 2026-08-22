@@ -56,7 +56,7 @@ fun AdminEngineersTab(
                             shape = RoundedCornerShape(percent = 50)
                         )
                     }
-                    items(partners) { partner ->
+                    items(partners, key = { it.id }) { partner ->
                         FilterChip(
                             selected = selectedPartnerId == partner.id,
                             onClick = { selectedPartnerId = partner.id },
@@ -99,7 +99,7 @@ fun AdminEngineersTab(
                             )
                         }
                     } else {
-                        items(filteredEngineers) { engineer ->
+                        items(filteredEngineers, key = { it.id }) { engineer ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),

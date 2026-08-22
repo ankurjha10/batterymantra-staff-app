@@ -78,6 +78,11 @@ fun NotificationsScreen(
                         Text(text = "No new notifications", color = Color.Gray)
                     }
                 } else {
+                    val inputFormat = remember { java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()) }
+                    val outputFormat = remember { java.text.SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault()) }
+                    val orderIdRegexFull = remember { Regex("Order #([a-f0-9\\-]{8})[a-f0-9\\-]+") }
+                    val orderIdRegexSimple = remember { Regex("Order #([a-f0-9\\-]+)") }
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -122,10 +127,6 @@ fun NotificationsScreen(
                                 }
                             ) {
                                 val formattedTime = try {
-                                    val inputFormat =
-                                        java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
-                                    val outputFormat =
-                                        java.text.SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault())
                                     val date = inputFormat.parse(notification.createdAt)
                                     if (date != null) outputFormat.format(date) else notification.createdAt
                                 } catch (e: Exception) {
@@ -133,12 +134,12 @@ fun NotificationsScreen(
                                 }
 
                                 val formattedMessage = notification.message.replace(
-                                    Regex("Order #([a-f0-9\\-]{8})[a-f0-9\\-]+"),
+                                    orderIdRegexFull,
                                     "Order #$1..."
                                 )
 
                                 val isNewOrder = notification.title.contains("Order", true)
-                                val orderIdMatch = Regex("Order #([a-f0-9\\-]+)").find(notification.message)
+                                val orderIdMatch = orderIdRegexSimple.find(notification.message)
                                 val orderId = orderIdMatch?.groups?.get(1)?.value
 
                                 NotificationCard(

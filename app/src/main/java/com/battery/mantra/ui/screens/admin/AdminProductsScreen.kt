@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.request.CachePolicy
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 import com.battery.mantra.R
@@ -156,7 +157,7 @@ fun AdminProductsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    items(filteredProducts) { product ->
+                    items(filteredProducts, key = { it.id ?: it.hashCode() }) { product ->
                         ProductCard(product = product, onEditClick = { onEditProduct(product) })
                     }
                     
@@ -185,12 +186,14 @@ fun ProductCard(product: ProductResponse, onEditClick: () -> Unit) {
                 modifier = Modifier.padding(12.dp)
             ) {
                 if (!product.imageUrl.isNullOrEmpty()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(product.imageUrl)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Product Image",
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(product.imageUrl)
+                                .crossfade(true)
+                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                .diskCachePolicy(CachePolicy.ENABLED)
+                                .build(),
+                            contentDescription = "Product Image",
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp)

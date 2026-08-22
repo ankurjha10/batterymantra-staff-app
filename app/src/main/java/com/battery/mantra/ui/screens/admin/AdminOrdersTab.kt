@@ -71,40 +71,48 @@ fun AdminOrdersTab(
         "New Orders", "Ready For Dispatch", "Dispatched", "Delivered", "Cancelled"
     )
     
-    val allOrders = if (ordersState is AdminDataState.Success) {
-        ordersState.data.sortedByDescending { it.placedAt ?: "" }
-    } else {
-        emptyList()
+    val allOrders = remember(ordersState) {
+        if (ordersState is AdminDataState.Success) {
+            ordersState.data.sortedByDescending { it.placedAt ?: "" }
+        } else {
+            emptyList()
+        }
     }
     
     // Dynamic Stats Calculation
-    val pendingCount = allOrders.count { it.orderStatus == "PENDING" || it.orderStatus == "CONFIRMED" || it.orderStatus == "UNASSIGNED" }
+    val pendingCount = remember(allOrders) { 
+        allOrders.count { it.orderStatus == "PENDING" || it.orderStatus == "CONFIRMED" || it.orderStatus == "UNASSIGNED" }
+    }
     
-    val todayDateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-    val todayOrdersCount = allOrders.count { it.placedAt?.startsWith(todayDateString) == true }
+    val todayOrdersCount = remember(allOrders) {
+        val todayDateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        allOrders.count { it.placedAt?.startsWith(todayDateString) == true }
+    }
     
     val activeEngCount = 45 // Kept hardcoded as no API exists for this specifically
 
-    val filteredOrders = allOrders.filter { order ->
-        val matchesSearch = if (searchQuery.isNotEmpty()) {
-            (order.orderId.contains(searchQuery, true)) || 
-            (order.customerName?.contains(searchQuery, true) == true) ||
-            (order.shippingAddress?.contains(searchQuery, true) == true)
-        } else true
-        
-        val matchesFilter = when (selectedFilter) {
-            "All Orders" -> true
-            "Main Branch (Admin Direct)" -> order.assignedPartner == null
-            "Partner Assigned" -> order.assignedPartner != null
-            "New Orders" -> order.orderStatus == "PENDING" || order.orderStatus == "CONFIRMED" || order.orderStatus == "UNASSIGNED"
-            "Ready For Dispatch" -> order.orderStatus == "PROCESSING" || order.orderStatus == "ASSIGNED"
-            "Dispatched" -> order.orderStatus == "SHIPPED" || order.orderStatus == "OUT_FOR_DELIVERY" || order.orderStatus == "DISPATCHED"
-            "Delivered" -> order.orderStatus == "DELIVERED" || order.orderStatus == "COMPLETED" || order.orderStatus == "INSTALLED"
-            "Cancelled" -> order.orderStatus == "CANCELLED"
-            else -> true
+    val filteredOrders = remember(allOrders, searchQuery, selectedFilter) {
+        allOrders.filter { order ->
+            val matchesSearch = if (searchQuery.isNotEmpty()) {
+                (order.orderId.contains(searchQuery, true)) || 
+                (order.customerName?.contains(searchQuery, true) == true) ||
+                (order.shippingAddress?.contains(searchQuery, true) == true)
+            } else true
+            
+            val matchesFilter = when (selectedFilter) {
+                "All Orders" -> true
+                "Main Branch (Admin Direct)" -> order.assignedPartner == null
+                "Partner Assigned" -> order.assignedPartner != null
+                "New Orders" -> order.orderStatus == "PENDING" || order.orderStatus == "CONFIRMED" || order.orderStatus == "UNASSIGNED"
+                "Ready For Dispatch" -> order.orderStatus == "PROCESSING" || order.orderStatus == "ASSIGNED"
+                "Dispatched" -> order.orderStatus == "SHIPPED" || order.orderStatus == "OUT_FOR_DELIVERY" || order.orderStatus == "DISPATCHED"
+                "Delivered" -> order.orderStatus == "DELIVERED" || order.orderStatus == "COMPLETED" || order.orderStatus == "INSTALLED"
+                "Cancelled" -> order.orderStatus == "CANCELLED"
+                else -> true
+            }
+            
+            matchesSearch && matchesFilter
         }
-        
-        matchesSearch && matchesFilter
     }
     
     LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -249,7 +257,7 @@ fun AdminOrdersTab(
                 )
             }
         } else {
-            items(filteredOrders) { order ->
+            items(filteredOrders, key = { it.orderId }) { order ->
                 OrderCard(
                     orderId = order.orderId.take(8).lowercase(),
                     itemsCount = order.orderItems?.size ?: 1,

@@ -57,7 +57,7 @@ fun AdminPartnersTab(
                         )
                     }
                 } else {
-                    items(partnersState.data) { partner ->
+                    items(partnersState.data, key = { it.id }) { partner ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),

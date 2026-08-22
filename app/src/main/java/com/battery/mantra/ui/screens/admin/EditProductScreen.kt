@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.request.CachePolicy
 import com.battery.mantra.data.models.BrandResponse
 import com.battery.mantra.data.models.CategoryResponse
 
@@ -222,6 +223,8 @@ fun EditProductScreen(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(uiState.product.productImage)
                                 .crossfade(true)
+                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                .diskCachePolicy(CachePolicy.ENABLED)
                                 .build(),
                             contentDescription = "Product Image",
                             modifier = Modifier
@@ -255,6 +258,8 @@ fun EditProductScreen(
                                     model = ImageRequest.Builder(LocalContext.current)
                                         .data(imgUrl)
                                         .crossfade(true)
+                                        .memoryCachePolicy(CachePolicy.ENABLED)
+                                        .diskCachePolicy(CachePolicy.ENABLED)
                                         .build(),
                                     contentDescription = "Additional Image",
                                     modifier = Modifier

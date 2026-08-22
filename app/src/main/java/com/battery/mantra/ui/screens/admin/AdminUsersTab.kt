@@ -39,7 +39,7 @@ fun AdminUsersTab(usersState: AdminDataState<List<UserResponse>>) {
                     )
                 }
             } else {
-                items(usersState.data) { user ->
+                items(usersState.data, key = { it.userId }) { user ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),

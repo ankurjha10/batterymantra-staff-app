@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.material3.Text
@@ -114,7 +115,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         
         composable(Screen.AdminDashboard.route) {
             val adminViewModel: AdminViewModel = viewModel(
-                factory = AdminViewModel.provideFactory(appContainer.adminRepository)
+                factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
             )
             val ordersState by adminViewModel.ordersState.collectAsState()
             val partnersState by adminViewModel.partnersState.collectAsState()
@@ -125,6 +126,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
             val targetSearchQuery by adminViewModel.targetOrderSearchQuery.collectAsState()
             val targetFilter by adminViewModel.targetOrderFilter.collectAsState()
+            val notificationsState by adminViewModel.notificationsState.collectAsState()
+            val unreadNotificationsCount = (notificationsState as? com.battery.mantra.ui.screens.admin.AdminDataState.Success)?.data?.size ?: 0
 
             AdminDashboardScreen(
                 ordersState = ordersState,
@@ -135,6 +138,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 selectedTabIndex = selectedTabIndex,
                 targetSearchQuery = targetSearchQuery,
                 targetFilter = targetFilter,
+                unreadNotificationsCount = unreadNotificationsCount,
                 onTargetConsumed = { adminViewModel.clearTargetOrderState() },
                 onTabSelected = { adminViewModel.onTabSelected(it) },
                 onNavigateToUsers = { /* Optional */ },
@@ -243,9 +247,13 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
         }
         
-        composable("admin_notifications") {
+        composable("admin_notifications") { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.AdminDashboard.route)
+            }
             val viewModel: AdminViewModel = viewModel(
-                factory = AdminViewModel.provideFactory(appContainer.adminRepository)
+                parentEntry,
+                factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
             )
             com.battery.mantra.ui.screens.admin.NotificationsScreen(
                 viewModel = viewModel,

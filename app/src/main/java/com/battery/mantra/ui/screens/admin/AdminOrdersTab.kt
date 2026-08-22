@@ -42,14 +42,26 @@ fun AdminOrdersTab(
     var selectedOrderForDetails by remember { mutableStateOf<OrderResponse?>(null) }
     
     // Consume deep link arguments
-    LaunchedEffect(targetSearchQuery, targetFilter) {
-        if (targetSearchQuery != null) {
-            searchQuery = targetSearchQuery
-        }
+    LaunchedEffect(targetSearchQuery, targetFilter, ordersState) {
+        var consumed = false
+        
         if (targetFilter != null) {
             selectedFilter = targetFilter
+            if (targetSearchQuery == null) consumed = true
         }
-        if (targetSearchQuery != null || targetFilter != null) {
+        
+        if (targetSearchQuery != null) {
+            searchQuery = targetSearchQuery
+            if (ordersState is AdminDataState.Success) {
+                val foundOrder = ordersState.data.find { it.orderId.contains(targetSearchQuery, ignoreCase = true) }
+                if (foundOrder != null) {
+                    selectedOrderForDetails = foundOrder
+                }
+                consumed = true
+            }
+        }
+        
+        if (consumed) {
             onTargetConsumed()
         }
     }

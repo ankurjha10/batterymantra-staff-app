@@ -18,6 +18,7 @@ class TokenManager(private val context: Context) {
         private val JWT_TOKEN_KEY = stringPreferencesKey("jwt_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
         private val ROLE_KEY = stringPreferencesKey("user_role")
+        private val CLEARED_NOTIFS_KEY = androidx.datastore.preferences.core.longPreferencesKey("cleared_notifs_time")
     }
 
     private var cachedJwt: String? = null
@@ -73,6 +74,18 @@ class TokenManager(private val context: Context) {
             preferences.remove(JWT_TOKEN_KEY)
             preferences.remove(REFRESH_TOKEN_KEY)
             preferences.remove(ROLE_KEY)
+        }
+    }
+
+    suspend fun setNotificationsClearedTime(timeMillis: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[CLEARED_NOTIFS_KEY] = timeMillis
+        }
+    }
+
+    fun getNotificationsClearedTime(): Long {
+        return runBlocking {
+            context.dataStore.data.first()[CLEARED_NOTIFS_KEY] ?: 0L
         }
     }
 }

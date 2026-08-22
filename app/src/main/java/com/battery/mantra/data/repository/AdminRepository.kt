@@ -311,5 +311,18 @@ class AdminRepository(private val api: BatteryMantraApi) {
             Result.failure(e)
         }
     }
+
+    suspend fun clearNotifications(): Result<Unit> {
+        return try {
+            val response = api.clearNotifications()
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to clear notifications: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 

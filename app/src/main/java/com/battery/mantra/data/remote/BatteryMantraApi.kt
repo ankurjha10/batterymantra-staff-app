@@ -14,6 +14,7 @@ import com.battery.mantra.data.models.UpdateProductRequest
 import com.battery.mantra.data.models.CategoryResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -111,5 +112,8 @@ interface BatteryMantraApi {
 
     @GET("api/notifications")
     suspend fun getNotifications(): Response<List<com.battery.mantra.data.models.NotificationResponse>>
+
+    @DELETE("api/notifications")
+    suspend fun clearNotifications(): Response<Unit>
 }
 

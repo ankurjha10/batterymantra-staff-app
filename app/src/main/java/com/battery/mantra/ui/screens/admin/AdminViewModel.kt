@@ -8,10 +8,14 @@ import com.battery.mantra.data.models.OrderResponse
 import com.battery.mantra.data.models.PartnerResponse
 import com.battery.mantra.data.models.UserResponse
 import com.battery.mantra.data.repository.AdminRepository
+import com.battery.mantra.data.local.TokenManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.ZoneId
 
 sealed class AdminDataState<out T> {
     object Idle : AdminDataState<Nothing>()
@@ -20,7 +24,7 @@ sealed class AdminDataState<out T> {
     data class Error(val message: String) : AdminDataState<Nothing>()
 }
 
-class AdminViewModel(private val repository: AdminRepository) : ViewModel() {
+class AdminViewModel(private val repository: AdminRepository, private val tokenManager: TokenManager) : ViewModel() {
 
     private val _ordersState = MutableStateFlow<AdminDataState<List<OrderResponse>>>(AdminDataState.Idle)
     val ordersState: StateFlow<AdminDataState<List<OrderResponse>>> = _ordersState.asStateFlow()
@@ -91,9 +95,38 @@ class AdminViewModel(private val repository: AdminRepository) : ViewModel() {
         viewModelScope.launch {
             val result = repository.getNotifications()
             if (result.isSuccess) {
-                _notificationsState.value = AdminDataState.Success(result.getOrDefault(emptyList()))
+                val clearedTime = tokenManager.getNotificationsClearedTime()
+                val allNotifications = result.getOrDefault(emptyList())
+                val filteredNotifications = allNotifications.filter {
+                    try {
+                        // Attempt to parse standard ISO 8601 string
+                        val formatter = DateTimeFormatter.ISO_DATE_TIME
+                        val timeMillis = LocalDateTime.parse(it.createdAt, formatter)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli()
+                        timeMillis > clearedTime
+                    } catch (e: Exception) {
+                        // Fallback if parsing fails, just show it
+                        true
+                    }
+                }
+                _notificationsState.value = AdminDataState.Success(filteredNotifications)
             } else {
                 _notificationsState.value = AdminDataState.Error(result.exceptionOrNull()?.message ?: "Failed to fetch notifications")
+            }
+        }
+    }
+
+    fun clearAllNotifications() {
+        viewModelScope.launch {
+            val result = repository.clearNotifications()
+            if (result.isSuccess) {
+                _notificationsState.value = AdminDataState.Success(emptyList())
+            } else {
+                // If the backend doesn't support it yet, we just fall back to local clear (the user's request)
+                tokenManager.setNotificationsClearedTime(System.currentTimeMillis())
+                _notificationsState.value = AdminDataState.Success(emptyList())
             }
         }
     }
@@ -192,12 +225,14 @@ class AdminViewModel(private val repository: AdminRepository) : ViewModel() {
     }
 
     companion object {
-        fun provideFactory(repository: AdminRepository): ViewModelProvider.Factory =
-            object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return AdminViewModel(repository) as T
-                }
+        fun provideFactory(
+            repository: AdminRepository,
+            tokenManager: TokenManager
+        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return AdminViewModel(repository, tokenManager) as T
             }
+        }
     }
 }

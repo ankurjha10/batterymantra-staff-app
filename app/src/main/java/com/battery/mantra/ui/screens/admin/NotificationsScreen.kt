@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,10 +36,19 @@ fun NotificationsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications", fontWeight = FontWeight.Bold, color = Color.Black) },
+                title = { Text("Notifications", fontWeight = FontWeight.SemiBold, color = Color.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                    }
+                },
+                actions = {
+                    if (notificationsState is com.battery.mantra.ui.screens.admin.AdminDataState.Success &&
+                        (notificationsState as com.battery.mantra.ui.screens.admin.AdminDataState.Success).data.isNotEmpty()
+                    ) {
+                        IconButton(onClick = { viewModel.clearAllNotifications() }) {
+                            Icon(Icons.Outlined.Delete, contentDescription = "Clear All", tint = Color.Red)
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
@@ -51,12 +62,14 @@ fun NotificationsScreen(
                     CircularProgressIndicator(color = Color(0xFFD32F2F))
                 }
             }
+
             is AdminDataState.Error -> {
                 val error = (notificationsState as AdminDataState.Error).message
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                     Text(text = error, color = Color.Red)
                 }
             }
+
             is AdminDataState.Success -> {
                 val notifications = (notificationsState as AdminDataState.Success).data
                 if (notifications.isEmpty()) {
@@ -73,15 +86,20 @@ fun NotificationsScreen(
                     ) {
                         items(notifications) { notification ->
                             val formattedTime = try {
-                                val inputFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
-                                val outputFormat = java.text.SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault())
+                                val inputFormat =
+                                    java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                                val outputFormat =
+                                    java.text.SimpleDateFormat("dd MMM, hh:mm a", java.util.Locale.getDefault())
                                 val date = inputFormat.parse(notification.createdAt)
                                 if (date != null) outputFormat.format(date) else notification.createdAt
                             } catch (e: Exception) {
                                 notification.createdAt
                             }
-                            
-                            val formattedMessage = notification.message.replace(Regex("Order #([a-f0-9\\-]{8})[a-f0-9\\-]+"), "Order #$1...")
+
+                            val formattedMessage = notification.message.replace(
+                                Regex("Order #([a-f0-9\\-]{8})[a-f0-9\\-]+"),
+                                "Order #$1..."
+                            )
 
                             val isNewOrder = notification.title.contains("Order", true)
                             val orderIdMatch = Regex("Order #([a-f0-9\\-]+)").find(notification.message)
@@ -102,6 +120,7 @@ fun NotificationsScreen(
                     }
                 }
             }
+
             else -> {}
         }
     }
@@ -132,8 +151,8 @@ fun NotificationCard(title: String, message: String, time: String, onClick: () -
                 Text(text = title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = message, 
-                    fontSize = 13.sp, 
+                    text = message,
+                    fontSize = 13.sp,
                     color = Color.DarkGray,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis

@@ -43,6 +43,7 @@ fun AdminDashboardScreen(
     selectedTabIndex: Int,
     targetSearchQuery: String? = null,
     targetFilter: String? = null,
+    unreadNotificationsCount: Int = 0,
     onTargetConsumed: () -> Unit = {},
     onTabSelected: (Int) -> Unit,
     onNavigateToUsers: () -> Unit = {},
@@ -206,12 +207,20 @@ fun AdminDashboardScreen(
                 actions = {
                     IconButton(onClick = onNavigateToNotifications) {
                         BadgedBox(
-                            badge = {
-                                Badge(containerColor = Color.Red)
+                            badge = { 
+                                if (unreadNotificationsCount > 0) {
+                                    Badge(containerColor = Color.Red) {
+                                        Text(unreadNotificationsCount.toString())
+                                    }
+                                } 
                             }
                         ) {
-                            Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = Color.Black)
-                        }
+                            Icon(
+                                imageVector = Icons.Outlined.Notifications,
+                                contentDescription = "Notifications",
+                                tint = Color.Black
+                            )
+                        }            
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

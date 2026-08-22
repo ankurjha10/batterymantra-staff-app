@@ -94,8 +94,6 @@ fun AdminOrdersTab(
         val todayDateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         allOrders.count { it.placedAt?.startsWith(todayDateString) == true }
     }
-    
-    val activeEngCount = 45 // Kept hardcoded as no API exists for this specifically
 
     val filteredOrders = remember(allOrders, searchQuery, selectedFilter) {
         allOrders.filter { order ->
@@ -132,13 +130,15 @@ fun AdminOrdersTab(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search Order ID or City...") },
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                    placeholder = { Text("Search Order ID or City...", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = Color.Gray) },
                     modifier = Modifier.weight(1f).height(50.dp),
                     shape = RoundedCornerShape(25.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFEEEEEE),
-                        focusedBorderColor = Color(0xFFD32F2F)
+                        focusedContainerColor = Color(0xFFF1F5F9),
+                        unfocusedContainerColor = Color(0xFFF1F5F9),
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent
                     ),
                     singleLine = true
                 )
@@ -170,6 +170,11 @@ fun AdminOrdersTab(
                             selectedContainerColor = Color(0xFFD32F2F).copy(alpha = 0.1f),
                             selectedLabelColor = Color(0xFFD32F2F)
                         ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = isSelected,
+                            borderColor = if (isSelected) Color(0xFFD32F2F).copy(alpha = 0.3f) else Color(0xFFE5E7EB)
+                        ),
                         shape = RoundedCornerShape(percent = 50)
                     )
                 }
@@ -186,35 +191,17 @@ fun AdminOrdersTab(
                 Card(
                     modifier = Modifier.weight(1f).height(80.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFD32F2F).copy(alpha = 0.08f)),
-                    border = BorderStroke(1.dp, Color(0xFFD32F2F).copy(alpha = 0.2f))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
+                    border = BorderStroke(1.dp, Color(0xFFFECACA))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Warning, contentDescription = null, tint = Color(0xFFD32F2F), modifier = Modifier.size(16.dp))
+                            Icon(Icons.Outlined.Warning, contentDescription = null, tint = Color(0xFFDC2626), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Pending", color = Color(0xFFD32F2F), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Pending", color = Color(0xFFDC2626), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(pendingCount.toString(), color = Color(0xFFD32F2F), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-                
-                // Active Eng
-                Card(
-                    modifier = Modifier.weight(1f).height(80.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Person, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Active Eng", color = Color.DarkGray, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(activeEngCount.toString(), color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(pendingCount.toString(), color = Color(0xFF991B1B), fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                     }
                 }
                 
@@ -222,17 +209,17 @@ fun AdminOrdersTab(
                 Card(
                     modifier = Modifier.weight(1f).height(80.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
+                    border = BorderStroke(1.dp, Color(0xFFBFDBFE))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.LocalShipping, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Outlined.LocalShipping, contentDescription = null, tint = Color(0xFF2563EB), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Today", color = Color.DarkGray, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Today", color = Color(0xFF2563EB), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(todayOrdersCount.toString(), color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(todayOrdersCount.toString(), color = Color(0xFF1E3A8A), fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
                     }
                 }
             }

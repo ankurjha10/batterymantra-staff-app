@@ -2,6 +2,7 @@ package com.battery.mantra.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,139 +36,136 @@ fun OrderCard(
     onActionClick: (() -> Unit)? = null,
     onStatusChange: ((String) -> Unit)? = null
 ) {
+    val cardModifier = if (onActionClick != null) {
+        modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable { onActionClick() }
+    } else {
+        modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+    }
+
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(12.dp),
+        modifier = cardModifier,
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, Color(0xFFEEEEEE))
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, Color(0xFFF3F4F6))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Row containing the main details
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                // Column 1: Order Details
-                Column(modifier = Modifier.weight(1.5f)) {
-                    Text(text = "Order Details", fontSize = 12.sp, color = TextGray)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "#$orderId", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
-                    Text(text = "$itemsCount item • $price", fontSize = 13.sp, color = Color.DarkGray)
-                }
-
-                // Column 2: Customer
-                Column(modifier = Modifier.weight(2f)) {
-                    Text(text = "Customer", fontSize = 12.sp, color = TextGray)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Person, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.DarkGray)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = customerName, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Phone, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.Gray)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = customerPhone, fontSize = 12.sp, color = Color.DarkGray)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Email, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.Gray)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = customerEmail, fontSize = 12.sp, color = Color.DarkGray)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFFF3F4F6))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                // Column 3: Payment
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Payment", fontSize = 12.sp, color = TextGray)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    val isCod = paymentMethod.contains("COD", ignoreCase = true)
-                    val pillColor = if (isCod) Color(0xFFE65100) else Color(0xFF1976D2)
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, pillColor.copy(alpha = 0.5f)),
-                        color = Color.Transparent
-                    ) {
-                        Text(
-                            text = paymentMethod.uppercase(),
-                            color = pillColor,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-
-                // Column 4: Fulfillment
-                Column(modifier = Modifier.weight(1.5f)) {
-                    Text(text = "Fulfillment", fontSize = 12.sp, color = TextGray)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        val icon = if (deliveryMethod.contains("pickup", true)) Icons.Outlined.Store else Icons.Outlined.LocalShipping
-                        Icon(icon, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.DarkGray)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = deliveryMethod, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color.Black)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.Gray)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = address, fontSize = 12.sp, color = Color.DarkGray, maxLines = 1)
-                    }
-                }
-
-                // Column 5: Date & Time
-                Column(modifier = Modifier.weight(1.2f)) {
-                    Text(text = "Date & Time", fontSize = 12.sp, color = TextGray)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = placedAt.substringBefore("T"), fontSize = 13.sp, color = Color.Black)
-                    Text(text = placedAt.substringAfter("T").substringBefore("."), fontSize = 12.sp, color = Color.Gray)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFFF0F0F0))
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // Header: Order ID & Status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Column 6: Status Update
+                Text(
+                    text = "#$orderId",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp,
+                    color = Color(0xFF111827)
+                )
+                StatusBadge(status = status)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Customer Details (Stacked)
+            Text(
+                text = customerName,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1F2937)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Outlined.Phone, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color(0xFF6B7280))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = customerPhone, fontSize = 13.sp, color = Color(0xFF4B5563))
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Icon(Icons.Outlined.Email, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color(0xFF6B7280))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = customerEmail, 
+                    fontSize = 13.sp, 
+                    color = Color(0xFF4B5563),
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = Color(0xFFF3F4F6))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Order Specs & Date
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val formattedPrice = price.replace("₹", "")
+                Text(
+                    text = "$itemsCount item${if (itemsCount > 1) "s" else ""} • ₹$formattedPrice",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color(0xFF111827)
+                )
+                val formattedDate = placedAt.replace("T", " ").substringBeforeLast(":")
+                Text(
+                    text = formattedDate,
+                    fontSize = 12.sp,
+                    color = Color(0xFF6B7280)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Footer: Payment, Fulfillment, Assignment
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
                 Column {
-                    Text(text = "Status Update", fontSize = 12.sp, color = TextGray)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    val isCod = paymentMethod.contains("COD", ignoreCase = true)
+                    val pillColor = if (isCod) Color(0xFFEA580C) else Color(0xFF2563EB)
+                    val pillBg = if (isCod) Color(0xFFFFF7ED) else Color(0xFFEFF6FF)
+                    
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        StatusBadge(status = status)
-                        if (engineerName != null) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Eng: $engineerName", fontSize = 11.sp, color = Color(0xFF10B981), fontWeight = FontWeight.SemiBold)
-                        } else if (partnerName != null) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Partner: $partnerName", fontSize = 11.sp, color = Color(0xFFE65100), fontWeight = FontWeight.SemiBold)
-                        } else {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Main Branch", fontSize = 11.sp, color = Color.DarkGray, fontWeight = FontWeight.SemiBold)
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = pillBg,
+                            border = BorderStroke(1.dp, pillColor.copy(alpha = 0.2f))
+                        ) {
+                            Text(
+                                text = paymentMethod.uppercase(),
+                                color = pillColor,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
                         }
+                        
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
+                        val deliveryIcon = if (deliveryMethod.contains("pickup", true)) Icons.Outlined.Store else Icons.Outlined.LocalShipping
+                        Icon(deliveryIcon, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color(0xFF6B7280))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = deliveryMethod.replace("_", " "), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF4B5563))
                     }
                 }
-
-                if (onActionClick != null) {
-                    IconButton(onClick = onActionClick, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Outlined.Visibility, contentDescription = "View Details", tint = Color.DarkGray)
+                
+                // Assigned Info
+                Column(horizontalAlignment = Alignment.End) {
+                    if (engineerName != null) {
+                        Text(text = "Assigned Engineer", fontSize = 10.sp, color = Color(0xFF6B7280))
+                        Text(text = engineerName, fontSize = 12.sp, color = Color(0xFF059669), fontWeight = FontWeight.Bold)
+                    } else if (partnerName != null) {
+                        Text(text = "Assigned Partner", fontSize = 10.sp, color = Color(0xFF6B7280))
+                        Text(text = partnerName, fontSize = 12.sp, color = Color(0xFFEA580C), fontWeight = FontWeight.Bold)
+                    } else {
+                        Text(text = "Unassigned", fontSize = 10.sp, color = Color(0xFF6B7280))
+                        Text(text = "Main Branch", fontSize = 12.sp, color = Color(0xFF4B5563), fontWeight = FontWeight.Bold)
                     }
                 }
             }

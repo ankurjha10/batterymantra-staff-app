@@ -12,7 +12,8 @@ import com.battery.mantra.ui.components.EngineerTaskCard
 @Composable
 fun EngineerActiveJobsTab(
     activeJobs: List<EngineerTask>,
-    onNavigateToJobExecution: (String) -> Unit
+    onNavigateToJobExecution: (String) -> Unit,
+    onCallClick: (String, String) -> Unit
 ) {
 
     LazyColumn(
@@ -28,7 +29,8 @@ fun EngineerActiveJobsTab(
                 price = job.price,
                 status = job.status,
                 actionText = "Start Dispatch",
-                onActionClick = { onNavigateToJobExecution(job.id) }
+                onActionClick = { onNavigateToJobExecution(job.id) },
+                onCallClick = { onCallClick(job.id, job.customerPhone) }
             )
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,11 +22,16 @@ import com.battery.mantra.data.repository.EngineerTask
 @Composable
 fun EngineerDashboardScreen(
     uiState: EngineerDashboardState,
+    attendance: List<com.battery.mantra.data.models.AttendanceResponse>,
+    leaves: List<com.battery.mantra.data.models.LeaveRequestResponse>,
     selectedTabIndex: Int,
     isOnDuty: Boolean,
     onTabSelected: (Int) -> Unit,
     onDutyChange: (Boolean) -> Unit,
-    onNavigateToJobExecution: (String) -> Unit = {}
+    onNavigateToJobExecution: (String) -> Unit = {},
+    onCallClick: (String, String) -> Unit = { _, _ -> },
+    onCheckIn: () -> Unit = {},
+    onCheckOut: () -> Unit = {}
 ) {
     
     Scaffold(
@@ -115,6 +121,19 @@ fun EngineerDashboardScreen(
                         unselectedTextColor = Color(0xFF5F6368)
                     )
                 )
+                NavigationBarItem(
+                    selected = selectedTabIndex == 3,
+                    onClick = { onTabSelected(3) },
+                    icon = { Icon(Icons.Default.Event, contentDescription = "Leaves", modifier = Modifier.size(24.dp)) },
+                    label = { Text("Leaves") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.White,
+                        selectedTextColor = Color(0xFFD32F2F),
+                        indicatorColor = Color(0xFFD32F2F),
+                        unselectedIconColor = Color(0xFF5F6368),
+                        unselectedTextColor = Color(0xFF5F6368)
+                    )
+                )
             }
         },
         containerColor = Color(0xFFF8F9FA) // Light gray background
@@ -138,13 +157,22 @@ fun EngineerDashboardScreen(
                 is EngineerDashboardState.Success -> {
                     val state = uiState as EngineerDashboardState.Success
                     when (selectedTabIndex) {
-                        0 -> { /* Home Tab Content */ }
+                        0 -> EngineerHomeTab(
+                            attendance = attendance,
+                            onCheckIn = onCheckIn,
+                            onCheckOut = onCheckOut
+                        )
                         1 -> EngineerActiveJobsTab(
                             activeJobs = state.activeJobs,
-                            onNavigateToJobExecution = onNavigateToJobExecution
+                            onNavigateToJobExecution = onNavigateToJobExecution,
+                            onCallClick = onCallClick
                         )
                         2 -> EngineerHistoryTab(
                             historyJobs = state.historyJobs
+                        )
+                        3 -> LeaveManagementTab(
+                            leaves = leaves,
+                            onApplyLeaveClick = { /* TODO: Open Apply Leave Dialog */ }
                         )
                     }
                 }

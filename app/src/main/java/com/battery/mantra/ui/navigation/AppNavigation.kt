@@ -155,11 +155,18 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToCallbacks = { navController.navigate("admin_callbacks") },
                 onNavigateToEnquiries = { navController.navigate("admin_enquiries") },
                 onNavigateToNotifications = { navController.navigate("admin_notifications") },
+                onNavigateToLeaves = { navController.navigate(Screen.AdminLeaveRequests.route) },
                 onAssignPartner = { orderId, partnerId, onSuccess, onError -> 
                     adminViewModel.assignPartner(orderId, partnerId, onSuccess, onError)
                 },
                 onAssignEngineer = { orderId, engineerId, onSuccess, onError ->
                     adminViewModel.assignEngineer(orderId, engineerId, onSuccess, onError)
+                },
+                onLoadInventory = { engineerId, productId, qty, onSuccess, onError ->
+                    adminViewModel.loadInventory(engineerId, productId, qty, onSuccess, onError)
+                },
+                onUnloadInventory = { engineerId, productId, qty, onSuccess, onError ->
+                    adminViewModel.unloadInventory(engineerId, productId, qty, onSuccess, onError)
                 },
                 onUpdateStatus = { orderId, status ->
                     adminViewModel.updateOrderStatus(
@@ -279,6 +286,23 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onBackClick = { navController.navigateUp() }
             )
         }
+        composable(Screen.AdminLeaveRequests.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.AdminDashboard.route)
+            }
+            val viewModel: AdminViewModel = viewModel(
+                parentEntry,
+                factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
+            )
+            val leavesState by viewModel.leavesState.collectAsState()
+            
+            com.battery.mantra.ui.screens.admin.AdminLeaveRequestsScreen(
+                leavesState = leavesState,
+                onApproveLeave = { id -> viewModel.updateLeaveStatus(id, "APPROVED") },
+                onRejectLeave = { id -> viewModel.updateLeaveStatus(id, "REJECTED") },
+                onBackClick = { navController.navigateUp() }
+            )
+        }
         
         composable(Screen.PartnerDashboard.route) {
             val viewModel: PartnerViewModel = viewModel()
@@ -295,18 +319,31 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 factory = EngineerViewModel.provideFactory(appContainer.engineerRepository)
             )
             val uiState by engineerViewModel.uiState.collectAsState()
+            val attendance by engineerViewModel.attendance.collectAsState()
+            val leaves by engineerViewModel.leaves.collectAsState()
             val selectedTabIndex by engineerViewModel.selectedTabIndex.collectAsState()
             val isOnDuty by engineerViewModel.isOnDuty.collectAsState()
 
             EngineerDashboardScreen(
                 uiState = uiState,
+                attendance = attendance,
+                leaves = leaves,
                 selectedTabIndex = selectedTabIndex,
                 isOnDuty = isOnDuty,
                 onTabSelected = { engineerViewModel.onTabSelected(it) },
                 onDutyChange = { engineerViewModel.setDutyStatus(it) },
                 onNavigateToJobExecution = { jobId ->
                     navController.navigate("${Screen.JobExecution.route}/$jobId")
-                }
+                },
+                onCallClick = { orderId, phone ->
+                    engineerViewModel.logCall(orderId)
+                    val intent = android.content.Intent(android.content.Intent.ACTION_DIAL).apply {
+                        data = android.net.Uri.parse("tel:$phone")
+                    }
+                    context.startActivity(intent)
+                },
+                onCheckIn = { engineerViewModel.checkIn() },
+                onCheckOut = { engineerViewModel.checkOut() }
             )
         }
         

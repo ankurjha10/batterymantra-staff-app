@@ -130,5 +130,41 @@ interface BatteryMantraApi {
 
     @DELETE("api/notifications/{id}")
     suspend fun deleteNotification(@Path("id") id: String): Response<Unit>
+
+    // --- Engineer Features ---
+    @POST("api/engineer/orders/{orderId}/log-call")
+    suspend fun logCall(@Path("orderId") orderId: String): Response<Unit>
+
+    // --- Engineer Attendance & Leaves ---
+    @POST("api/engineer/attendance/check-in")
+    suspend fun checkIn(): Response<com.battery.mantra.data.models.AttendanceResponse>
+
+    @POST("api/engineer/attendance/check-out")
+    suspend fun checkOut(): Response<com.battery.mantra.data.models.AttendanceResponse>
+
+    @GET("api/engineer/attendance")
+    suspend fun getAttendance(): Response<List<com.battery.mantra.data.models.AttendanceResponse>>
+
+    @GET("api/engineer/leave-requests")
+    suspend fun getMyLeaves(): Response<List<com.battery.mantra.data.models.LeaveRequestResponse>>
+
+    @POST("api/engineer/leave-requests")
+    suspend fun applyLeave(@Body request: com.battery.mantra.data.models.ApplyLeaveRequest): Response<com.battery.mantra.data.models.LeaveRequestResponse>
+
+    // --- Admin Leave & Inventory ---
+    @GET("api/admin/engineers/{engineerId}/attendance")
+    suspend fun getEngineerAttendance(@Path("engineerId") engineerId: String): Response<List<com.battery.mantra.data.models.AttendanceResponse>>
+
+    @PATCH("api/admin/leave-requests/{id}/status")
+    suspend fun updateLeaveStatus(@Path("id") id: String, @Query("status") status: String): Response<com.battery.mantra.data.models.LeaveRequestResponse>
+
+    @GET("api/admin/leave-requests")
+    suspend fun getAllLeaveRequests(): Response<List<com.battery.mantra.data.models.LeaveRequestResponse>>
+
+    @POST("api/admin/engineer-inventory/load")
+    suspend fun loadInventory(@Body request: com.battery.mantra.data.models.LoadInventoryRequest): Response<Unit>
+
+    @POST("api/admin/engineer-inventory/unload")
+    suspend fun unloadInventory(@Body request: com.battery.mantra.data.models.LoadInventoryRequest): Response<Unit>
 }
 

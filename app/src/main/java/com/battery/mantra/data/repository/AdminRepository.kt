@@ -354,6 +354,18 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun getAllLeaveRequests(): Result<List<com.battery.mantra.data.models.LeaveRequestResponse>> = try {
+        val response = api.getAllLeaveRequests()
+        if (response.isSuccessful) Result.success(response.body() ?: emptyList())
+        else Result.failure(Exception("Failed to fetch leave requests"))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun updateLeaveStatus(id: String, status: String): Result<com.battery.mantra.data.models.LeaveRequestResponse> = try {
+        val response = api.updateLeaveStatus(id, status)
+        if (response.isSuccessful) Result.success(response.body()!!)
+        else Result.failure(Exception("Failed to update leave status"))
+    } catch (e: Exception) { Result.failure(e) }
+
     suspend fun clearNotifications(): Result<Unit> {
         return try {
             val response = api.clearNotifications()
@@ -366,6 +378,18 @@ class AdminRepository(private val api: BatteryMantraApi) {
             Result.failure(e)
         }
     }
+
+    suspend fun loadInventory(engineerId: String, productId: String, quantity: Int): Result<Unit> = try {
+        val response = api.loadInventory(com.battery.mantra.data.models.LoadInventoryRequest(engineerId, productId, quantity))
+        if (response.isSuccessful) Result.success(Unit)
+        else Result.failure(Exception("Failed to load inventory"))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun unloadInventory(engineerId: String, productId: String, quantity: Int): Result<Unit> = try {
+        val response = api.unloadInventory(com.battery.mantra.data.models.LoadInventoryRequest(engineerId, productId, quantity))
+        if (response.isSuccessful) Result.success(Unit)
+        else Result.failure(Exception("Failed to unload inventory"))
+    } catch (e: Exception) { Result.failure(e) }
 
     suspend fun deleteNotification(id: String): Result<Unit> {
         return try {

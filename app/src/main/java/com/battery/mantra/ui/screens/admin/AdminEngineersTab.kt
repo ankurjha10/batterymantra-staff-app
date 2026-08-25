@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Inventory
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,10 +31,13 @@ import com.battery.mantra.data.models.PartnerResponse
 fun AdminEngineersTab(
     engineersState: AdminDataState<List<EngineerResponse>>,
     partnersState: AdminDataState<List<PartnerResponse>>,
-    onCreateEngineer: (CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit
+    onCreateEngineer: (CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit,
+    onLoadInventory: (String, String, Int, () -> Unit, (String) -> Unit) -> Unit,
+    onUnloadInventory: (String, String, Int, () -> Unit, (String) -> Unit) -> Unit
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedPartnerId by remember { mutableStateOf<String?>(null) } // null means "All Engineers"
+    var selectedEngineerForInventory by remember { mutableStateOf<EngineerResponse?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -127,6 +131,19 @@ fun AdminEngineersTab(
                                         color = if (isActive) Color(0xFF10B981) else Color.Red
                                     )
                                 }
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                OutlinedButton(
+                                    onClick = { selectedEngineerForInventory = engineer },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Icon(Icons.Outlined.Inventory, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Manage Inventory")
+                                }
                             }
                         }
                         }
@@ -151,6 +168,20 @@ fun AdminEngineersTab(
                 onDismiss = { showAddDialog = false },
                 onSave = { request, onSuccess, onError ->
                     onCreateEngineer(request, onSuccess, onError)
+                }
+            )
+        }
+
+        selectedEngineerForInventory?.let { engineer ->
+            ManageInventoryBottomSheet(
+                engineerId = engineer.id,
+                engineerName = "${engineer.firstName ?: ""} ${engineer.lastName ?: ""}".trim(),
+                onDismiss = { selectedEngineerForInventory = null },
+                onLoad = { productId, qty, onSuccess, onError ->
+                    onLoadInventory(engineer.id, productId, qty, onSuccess, onError)
+                },
+                onUnload = { productId, qty, onSuccess, onError ->
+                    onUnloadInventory(engineer.id, productId, qty, onSuccess, onError)
                 }
             )
         }

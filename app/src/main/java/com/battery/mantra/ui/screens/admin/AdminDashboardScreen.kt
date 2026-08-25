@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
@@ -52,11 +53,14 @@ fun AdminDashboardScreen(
     onNavigateToCallbacks: () -> Unit = {},
     onNavigateToEnquiries: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToLeaves: () -> Unit = {},
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onUpdateStatus: (String, String) -> Unit = { _, _ -> },
     onCreatePartner: (com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
+    onLoadInventory: (String, String, Int, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
+    onUnloadInventory: (String, String, Int, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
     onLogout: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -138,6 +142,21 @@ fun AdminDashboardScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Event, contentDescription = null) },
+                    label = { Text("Leave Requests") },
+                    selected = false,
+                    onClick = { 
+                        scope.launch { drawerState.close() }
+                        onNavigateToLeaves()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                    colors = NavigationDrawerItemDefaults.colors(
+                        unselectedIconColor = Color(0xFF424242),
+                        unselectedTextColor = Color(0xFF212121)
+                    )
                 )
                 
                 NavigationDrawerItem(
@@ -341,7 +360,9 @@ fun AdminDashboardScreen(
                 3 -> AdminEngineersTab(
                     engineersState = engineersState,
                     partnersState = partnersState,
-                    onCreateEngineer = onCreateEngineer
+                    onCreateEngineer = onCreateEngineer,
+                    onLoadInventory = onLoadInventory,
+                    onUnloadInventory = onUnloadInventory
                 )
                 4 -> AdminUsersTab(usersState = usersState)
             }
@@ -349,4 +370,3 @@ fun AdminDashboardScreen(
     }
 }
 }
-

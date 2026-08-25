@@ -13,9 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.ZoneId
 
 sealed class AdminDataState<out T> {
     object Idle : AdminDataState<Nothing>()
@@ -56,6 +53,9 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
 
     private val _notificationsState = MutableStateFlow<AdminDataState<List<com.battery.mantra.data.models.NotificationResponse>>>(AdminDataState.Idle)
     val notificationsState: StateFlow<AdminDataState<List<com.battery.mantra.data.models.NotificationResponse>>> = _notificationsState.asStateFlow()
+
+    private val _leavesState = MutableStateFlow<AdminDataState<List<com.battery.mantra.data.models.LeaveRequestResponse>>>(AdminDataState.Loading)
+    val leavesState: StateFlow<AdminDataState<List<com.battery.mantra.data.models.LeaveRequestResponse>>> = _leavesState.asStateFlow()
 
     private val _selectedTabIndex = MutableStateFlow(0)
     val selectedTabIndex: StateFlow<Int> = _selectedTabIndex.asStateFlow()
@@ -181,12 +181,61 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
     }
 
     private fun fetchAllData() {
+        _ordersState.value = AdminDataState.Loading
         fetchOrders()
+        
+        _partnersState.value = AdminDataState.Loading
         fetchPartners()
+        
+        _engineersState.value = AdminDataState.Loading
         fetchEngineers()
+        
+        _usersState.value = AdminDataState.Loading
         fetchUsers()
+        
+        _citiesState.value = AdminDataState.Loading
         fetchCities()
+
+        _notificationsState.value = AdminDataState.Loading
         fetchNotifications()
+
+        _leavesState.value = AdminDataState.Loading
+        fetchLeaveRequests()
+    }
+
+    private fun fetchLeaveRequests() {
+        viewModelScope.launch {
+            repository.getAllLeaveRequests()
+                .onSuccess {
+                    _leavesState.value = AdminDataState.Success(it)
+                }
+                .onFailure {
+                    _leavesState.value = AdminDataState.Error(it.message ?: "Failed to load leave requests")
+                }
+        }
+    }
+
+    fun updateLeaveStatus(id: String, status: String) {
+        viewModelScope.launch {
+            repository.updateLeaveStatus(id, status)
+                .onSuccess { fetchLeaveRequests() }
+        }
+    }
+
+    fun loadInventory(engineerId: String, productId: String, quantity: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.loadInventory(engineerId, productId, quantity)
+                .onSuccess { onSuccess() }
+                .onFailure { onError(it.message ?: "Failed to load inventory") }
+        }
+    }
+
+    fun unloadInventory(engineerId: String, productId: String, quantity: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.unloadInventory(engineerId, productId, quantity)
+                .onSuccess { onSuccess() }
+                .onFailure { onError(it.message ?: "Failed to unload inventory") }
+        }
     }
 
     fun fetchCities() {

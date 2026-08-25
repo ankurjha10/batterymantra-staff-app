@@ -7,6 +7,7 @@ sealed class Screen(val route: String) {
     object AdminOrders : Screen("admin_orders")
     object AdminPartners : Screen("admin_partners")
     object AdminApprovals : Screen("admin_approvals")
+    object AdminLeaveRequests : Screen("admin_leave_requests")
     
     object PartnerDashboard : Screen("partner_dashboard")
     object PartnerOrders : Screen("partner_orders")

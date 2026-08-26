@@ -142,8 +142,15 @@ class AdminRepository(private val api: BatteryMantraApi) {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                val err = response.errorBody()?.string() ?: ""
-                Result.failure(Exception("Failed to create sub-admin: ${response.code()} $err"))
+                val errStr = response.errorBody()?.string() ?: ""
+                var errMsg = "Failed to create sub-admin: ${response.code()}"
+                try {
+                    val json = org.json.JSONObject(errStr)
+                    if (json.has("message")) {
+                        errMsg = json.getString("message")
+                    }
+                } catch (e: Exception) {}
+                Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)

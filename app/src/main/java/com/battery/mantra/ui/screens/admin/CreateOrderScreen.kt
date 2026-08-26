@@ -43,11 +43,12 @@ data class CartItem(
     var quantity: Int = 1,
     var withExchange: Boolean = false
 ) {
-    val unitPrice: Double get() = if (withExchange) {
-        product.price - (product.exchangeDiscount ?: 0.0)
-    } else {
-        product.price
-    }
+    val unitPrice: Double
+        get() = if (withExchange) {
+            product.price - (product.exchangeDiscount ?: 0.0)
+        } else {
+            product.price
+        }
     val lineTotal: Double get() = unitPrice * quantity
 }
 
@@ -98,8 +99,8 @@ fun CreateOrderScreen(
         if (usersState is AdminDataState.Success && customerSearchQuery.isNotBlank()) {
             usersState.data.filter { user ->
                 (user.name?.contains(customerSearchQuery, true) == true) ||
-                (user.email?.contains(customerSearchQuery, true) == true) ||
-                (user.userId.contains(customerSearchQuery, true))
+                        (user.email?.contains(customerSearchQuery, true) == true) ||
+                        (user.userId.contains(customerSearchQuery, true))
             }.take(8)
         } else emptyList()
     }
@@ -115,7 +116,7 @@ fun CreateOrderScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -146,7 +147,12 @@ fun CreateOrderScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Discount", color = Color(0xFF10B981), fontSize = 14.sp)
-                            Text("- ${currencyFormat.format(discountAmount)}", color = Color(0xFF10B981), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text(
+                                "- ${currencyFormat.format(discountAmount)}",
+                                color = Color(0xFF10B981),
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -158,7 +164,12 @@ fun CreateOrderScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Total Amount", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                        Text(currencyFormat.format(totalAmount), fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = BrandRed)
+                        Text(
+                            currencyFormat.format(totalAmount),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            color = BrandRed
+                        )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
@@ -204,11 +215,24 @@ fun CreateOrderScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         if (isSubmitting) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
                         } else {
-                            Icon(Icons.Outlined.ShoppingCart, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Outlined.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Confirm & Create Order", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(
+                                "Confirm & Create Order",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = Color.White
+                            )
                         }
                     }
                 }
@@ -241,7 +265,14 @@ fun CreateOrderScreen(
                                     if (it.isBlank()) selectedCustomer = null
                                 },
                                 placeholder = { Text("Search by name or phone...", fontSize = 13.sp) },
-                                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp)) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Search,
+                                        contentDescription = null,
+                                        tint = TextSecondary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 shape = RoundedCornerShape(10.dp),
@@ -265,8 +296,16 @@ fun CreateOrderScreen(
                                     DropdownMenuItem(
                                         text = {
                                             Column {
-                                                Text(user.name ?: "Unknown", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                                                Text(user.email ?: user.userId.take(8), fontSize = 12.sp, color = TextSecondary)
+                                                Text(
+                                                    user.name ?: "Unknown",
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    fontSize = 14.sp
+                                                )
+                                                Text(
+                                                    user.email ?: user.userId.take(8),
+                                                    fontSize = 12.sp,
+                                                    color = TextSecondary
+                                                )
                                             }
                                         },
                                         onClick = {
@@ -304,14 +343,36 @@ fun CreateOrderScreen(
                                 modifier = Modifier.fillMaxWidth().padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp))
+                                Icon(
+                                    Icons.Outlined.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF10B981),
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(selectedCustomer!!.name ?: "Customer", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF065F46))
-                                    Text(selectedCustomer!!.email ?: "ID: ${selectedCustomer!!.userId.take(8)}", fontSize = 12.sp, color = Color(0xFF047857))
+                                    Text(
+                                        selectedCustomer!!.name ?: "Customer",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF065F46)
+                                    )
+                                    Text(
+                                        selectedCustomer!!.email ?: "ID: ${selectedCustomer!!.userId.take(8)}",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF047857)
+                                    )
                                 }
-                                IconButton(onClick = { selectedCustomer = null; customerSearchQuery = "" }, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Outlined.Close, contentDescription = "Remove", tint = Color(0xFF6B7280), modifier = Modifier.size(16.dp))
+                                IconButton(
+                                    onClick = { selectedCustomer = null; customerSearchQuery = "" },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Close,
+                                        contentDescription = "Remove",
+                                        tint = Color(0xFF6B7280),
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                         }
@@ -326,7 +387,14 @@ fun CreateOrderScreen(
                         value = productSearchQuery,
                         onValueChange = { productSearchQuery = it },
                         placeholder = { Text("Search product name...", fontSize = 13.sp) },
-                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp)) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Search,
+                                contentDescription = null,
+                                tint = TextSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = RoundedCornerShape(10.dp),
@@ -373,7 +441,7 @@ fun CreateOrderScreen(
                         }
                     )
                 }
-                
+
                 item {
                     Spacer(modifier = Modifier.height(16.dp))
                     HorizontalDivider(color = BorderColor.copy(alpha = 0.5f))
@@ -396,6 +464,7 @@ fun CreateOrderScreen(
                         }
                     }
                 }
+
                 is AdminDataState.Loading -> {
                     item {
                         Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -403,6 +472,7 @@ fun CreateOrderScreen(
                         }
                     }
                 }
+
                 is AdminDataState.Error -> {
                     item {
                         Text(
@@ -414,6 +484,7 @@ fun CreateOrderScreen(
                         )
                     }
                 }
+
                 is AdminDataState.Success -> {
                     val products = searchState.data
                     val displayProducts = products.filter { p -> cartItems.none { it.product.id == p.id } }
@@ -484,9 +555,15 @@ fun CreateOrderScreen(
                     Text("Delivery Method", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextSecondary)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SettingChip("Home Install", deliveryMethod == "HOME_INSTALLATION") { deliveryMethod = "HOME_INSTALLATION" }
-                        SettingChip("Store Pickup", deliveryMethod == "STORE_PICKUP") { deliveryMethod = "STORE_PICKUP" }
-                        SettingChip("Delivery", deliveryMethod == "STANDARD_DELIVERY") { deliveryMethod = "STANDARD_DELIVERY" }
+                        SettingChip("Home Install", deliveryMethod == "HOME_INSTALLATION") {
+                            deliveryMethod = "HOME_INSTALLATION"
+                        }
+                        SettingChip("Store Pickup", deliveryMethod == "STORE_PICKUP") {
+                            deliveryMethod = "STORE_PICKUP"
+                        }
+                        SettingChip("Delivery", deliveryMethod == "STANDARD_DELIVERY") {
+                            deliveryMethod = "STANDARD_DELIVERY"
+                        }
                     }
 
                     if (deliveryMethod == "HOME_INSTALLATION") {
@@ -501,7 +578,12 @@ fun CreateOrderScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Extra Discount
-                    Text("Extra Discount (₹)", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextSecondary)
+                    Text(
+                        "Extra Discount (₹)",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = TextSecondary
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     OrderFormField(
                         value = extraDiscount,
@@ -605,14 +687,26 @@ private fun ProductSelectionCard(
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        Icon(Icons.Outlined.BatteryChargingFull, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                        Icon(
+                            Icons.Outlined.BatteryChargingFull,
+                            contentDescription = null,
+                            tint = TextSecondary,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(product.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        product.name,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        color = TextPrimary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                     Text("${product.brand} • ${product.category ?: ""}", fontSize = 12.sp, color = TextSecondary)
                 }
 
@@ -628,7 +722,12 @@ private fun ProductSelectionCard(
                     }
                 } else {
                     IconButton(onClick = onRemoveFromCart, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Outlined.Close, contentDescription = "Remove", tint = BrandRed, modifier = Modifier.size(18.dp))
+                        Icon(
+                            Icons.Outlined.Close,
+                            contentDescription = "Remove",
+                            tint = BrandRed,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }
@@ -685,7 +784,12 @@ private fun ProductSelectionCard(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(currencyFormat.format(withOldPrice), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (cartItem.withExchange) BrandRed else TextSecondary)
+                            Text(
+                                currencyFormat.format(withOldPrice),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (cartItem.withExchange) BrandRed else TextSecondary
+                            )
                             Text(" (Old)", fontSize = 10.sp, color = TextSecondary)
                         }
                         Spacer(modifier = Modifier.height(4.dp))
@@ -697,7 +801,12 @@ private fun ProductSelectionCard(
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(currencyFormat.format(product.price), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = if (!cartItem.withExchange) BrandRed else TextSecondary)
+                            Text(
+                                currencyFormat.format(product.price),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (!cartItem.withExchange) BrandRed else TextSecondary
+                            )
                             Text(" (New)", fontSize = 10.sp, color = TextSecondary)
                         }
                     }

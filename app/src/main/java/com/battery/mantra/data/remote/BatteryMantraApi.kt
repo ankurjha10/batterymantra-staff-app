@@ -173,5 +173,8 @@ interface BatteryMantraApi {
 
     @POST("api/admin/orders")
     suspend fun createAdminOrder(@Body request: com.battery.mantra.data.models.AdminCreateOrderRequest): Response<OrderResponse>
+
+    @POST("api/admin/sub-admins")
+    suspend fun createSubAdmin(@Body request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Response<com.battery.mantra.data.models.UserResponse>
 }
 

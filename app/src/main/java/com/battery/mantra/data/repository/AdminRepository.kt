@@ -136,6 +136,20 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun createSubAdmin(request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Result<UserResponse> {
+        return try {
+            val response = api.createSubAdmin(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to create sub-admin: ${response.code()} $err"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getCities(): Result<List<com.battery.mantra.data.models.CityResponse>> {
         return try {
             val response = api.getAdminCities()

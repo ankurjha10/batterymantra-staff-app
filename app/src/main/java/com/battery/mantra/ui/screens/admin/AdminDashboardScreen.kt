@@ -54,6 +54,7 @@ fun AdminDashboardScreen(
     onNavigateToEnquiries: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToLeaves: () -> Unit = {},
+    onNavigateToSubAdmins: () -> Unit = {},
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onUpdateStatus: (String, String) -> Unit = { _, _ -> },
@@ -141,6 +142,21 @@ fun AdminDashboardScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
+                )
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    label = { Text("Sub-Admins") },
+                    selected = false,
+                    onClick = { 
+                        scope.launch { drawerState.close() }
+                        onNavigateToSubAdmins()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                    colors = NavigationDrawerItemDefaults.colors(
+                        unselectedIconColor = Color(0xFF424242),
+                        unselectedTextColor = Color(0xFF212121)
+                    )
                 )
 
                 NavigationDrawerItem(

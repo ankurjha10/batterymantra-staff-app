@@ -78,3 +78,12 @@ data class AdminOrderItemRequest(
     val quantity: Int = 1,
     val exchangeOldBattery: Boolean = false
 )
+
+data class AdminCreateSubAdminRequest(
+    val name: String,
+    val phone: String,
+    val email: String,
+    val password: String,
+    val role: String = "SUB_ADMIN",
+    val permissions: List<String> = emptyList()
+)

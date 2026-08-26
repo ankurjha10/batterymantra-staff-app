@@ -372,6 +372,21 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun createSubAdmin(
+        request: com.battery.mantra.data.models.AdminCreateSubAdminRequest,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            repository.createSubAdmin(request)
+                .onSuccess {
+                    fetchUsers() // Refresh users list which includes sub-admins
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to create sub-admin") }
+        }
+    }
+
     companion object {
         fun provideFactory(
             repository: AdminRepository,

@@ -156,6 +156,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToEnquiries = { navController.navigate("admin_enquiries") },
                 onNavigateToNotifications = { navController.navigate("admin_notifications") },
                 onNavigateToLeaves = { navController.navigate(Screen.AdminLeaveRequests.route) },
+                onNavigateToSubAdmins = { navController.navigate(Screen.AdminSubAdmins.route) },
                 onAssignPartner = { orderId, partnerId, onSuccess, onError -> 
                     adminViewModel.assignPartner(orderId, partnerId, onSuccess, onError)
                 },
@@ -208,6 +209,21 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 },
                 onCreateOrder = { request, onSuccess, onError ->
                     adminViewModel.createAdminOrder(request, onSuccess, onError)
+                },
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        
+        composable(Screen.AdminSubAdmins.route) {
+            val adminViewModel: AdminViewModel = viewModel(
+                factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
+            )
+            val usersState by adminViewModel.usersState.collectAsState()
+            
+            com.battery.mantra.ui.screens.admin.AdminSubAdminsScreen(
+                usersState = usersState,
+                onCreateSubAdmin = { request, onSuccess, onError ->
+                    adminViewModel.createSubAdmin(request, onSuccess, onError)
                 },
                 onNavigateBack = { navController.navigateUp() }
             )

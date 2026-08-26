@@ -17,12 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.battery.mantra.data.models.*
+import kotlinx.coroutines.delay
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -51,7 +55,8 @@ data class CartItem(
 @Composable
 fun CreateOrderScreen(
     usersState: AdminDataState<List<UserResponse>>,
-    productsState: List<ProductResponse>,
+    productSearchResults: AdminDataState<List<ProductResponse>>,
+    onSearchProducts: (String) -> Unit,
     onCreateCustomer: (AdminCreateCustomerRequest, (UserResponse) -> Unit, (String) -> Unit) -> Unit,
     onCreateOrder: (AdminCreateOrderRequest, () -> Unit, (String) -> Unit) -> Unit,
     onNavigateBack: () -> Unit
@@ -78,6 +83,16 @@ fun CreateOrderScreen(
     val discountAmount = extraDiscount.toDoubleOrNull() ?: 0.0
     val totalAmount = (subtotal - discountAmount).coerceAtLeast(0.0)
 
+    // Debounced search for products
+    LaunchedEffect(productSearchQuery) {
+        if (productSearchQuery.length >= 2) {
+            delay(500) // Debounce for half a second
+            onSearchProducts(productSearchQuery)
+        } else {
+            onSearchProducts("")
+        }
+    }
+
     // Filter customers
     val filteredCustomers = remember(usersState, customerSearchQuery) {
         if (usersState is AdminDataState.Success && customerSearchQuery.isNotBlank()) {
@@ -87,16 +102,6 @@ fun CreateOrderScreen(
                 (user.userId.contains(customerSearchQuery, true))
             }.take(8)
         } else emptyList()
-    }
-
-    // Filter products
-    val filteredProducts = remember(productsState, productSearchQuery) {
-        if (productSearchQuery.isNotBlank()) {
-            productsState.filter {
-                it.name.contains(productSearchQuery, true) ||
-                it.brand.contains(productSearchQuery, true)
-            }
-        } else productsState
     }
 
     Scaffold(
@@ -338,30 +343,76 @@ fun CreateOrderScreen(
                 }
             }
 
-            // Product list
-            items(filteredProducts.take(20)) { product ->
-                val cartItem = cartItems.find { it.product.id == product.id }
-                val isInCart = cartItem != null
-
-                ProductSelectionCard(
-                    product = product,
-                    cartItem = cartItem,
-                    currencyFormat = currencyFormat,
-                    onAddToCart = {
-                        cartItems.add(CartItem(product = product))
-                    },
-                    onRemoveFromCart = {
-                        cartItems.removeAll { it.product.id == product.id }
-                    },
-                    onQuantityChange = { qty ->
-                        val idx = cartItems.indexOfFirst { it.product.id == product.id }
-                        if (idx >= 0) cartItems[idx] = cartItems[idx].copy(quantity = qty)
-                    },
-                    onExchangeToggle = { withExchange ->
-                        val idx = cartItems.indexOfFirst { it.product.id == product.id }
-                        if (idx >= 0) cartItems[idx] = cartItems[idx].copy(withExchange = withExchange)
+            // Product Search Results
+            when (val searchState = productSearchResults) {
+                is AdminDataState.Idle -> {
+                    item {
+                        Text(
+                            text = if (productSearchQuery.length < 2) "Type at least 2 characters to search products..." else "Waiting for results...",
+                            color = TextSecondary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
-                )
+                }
+                is AdminDataState.Loading -> {
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = BrandRed, modifier = Modifier.size(24.dp))
+                        }
+                    }
+                }
+                is AdminDataState.Error -> {
+                    item {
+                        Text(
+                            text = "Error: ${searchState.message}",
+                            color = BrandRed,
+                            fontSize = 13.sp,
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+                is AdminDataState.Success -> {
+                    val products = searchState.data
+                    if (products.isEmpty()) {
+                        item {
+                            Text(
+                                text = "No products found.",
+                                color = TextSecondary,
+                                fontSize = 13.sp,
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    } else {
+                        items(products) { product ->
+                            val cartItem = cartItems.find { it.product.id == product.id }
+                            val isInCart = cartItem != null
+
+                            ProductSelectionCard(
+                                product = product,
+                                cartItem = cartItem,
+                                currencyFormat = currencyFormat,
+                                onAddToCart = {
+                                    cartItems.add(CartItem(product = product))
+                                },
+                                onRemoveFromCart = {
+                                    cartItems.removeAll { it.product.id == product.id }
+                                },
+                                onQuantityChange = { qty ->
+                                    val idx = cartItems.indexOfFirst { it.product.id == product.id }
+                                    if (idx >= 0) cartItems[idx] = cartItems[idx].copy(quantity = qty)
+                                },
+                                onExchangeToggle = { withExchange ->
+                                    val idx = cartItems.indexOfFirst { it.product.id == product.id }
+                                    if (idx >= 0) cartItems[idx] = cartItems[idx].copy(withExchange = withExchange)
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             // ─── Section 3: Order Settings ───
@@ -481,7 +532,7 @@ private fun ProductSelectionCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Product thumbnail placeholder
+                // Product thumbnail
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -489,7 +540,21 @@ private fun ProductSelectionCard(
                         .background(Color(0xFFF1F5F9)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Outlined.BatteryChargingFull, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                    val context = LocalContext.current
+                    if (!product.imageUrl.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(product.imageUrl)
+                                .crossfade(true)
+                                .size(coil.size.Size.ORIGINAL) // Optionally limit size here
+                                .build(),
+                            contentDescription = product.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(Icons.Outlined.BatteryChargingFull, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -531,6 +596,7 @@ private fun ProductSelectionCard(
                         Text("Qty: ", fontSize = 13.sp, color = TextSecondary)
                         Surface(
                             shape = RoundedCornerShape(8.dp),
+                            color = Color.White,
                             border = BorderStroke(1.dp, BorderColor)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {

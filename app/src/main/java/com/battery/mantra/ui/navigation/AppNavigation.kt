@@ -197,16 +197,12 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
             )
             val usersState by adminViewModel.usersState.collectAsState()
-            
-            val adminProductsViewModel: AdminProductsViewModel = viewModel(
-                factory = AdminProductsViewModel.provideFactory(appContainer.adminRepository)
-            )
-            val productsUiState by adminProductsViewModel.uiState.collectAsState()
-            val productsList = productsUiState.products
+            val productSearchResults by adminViewModel.productSearchResults.collectAsState()
             
             com.battery.mantra.ui.screens.admin.CreateOrderScreen(
                 usersState = usersState,
-                productsState = productsList,
+                productSearchResults = productSearchResults,
+                onSearchProducts = { query -> adminViewModel.searchProducts(query) },
                 onCreateCustomer = { request, onSuccess, onError ->
                     adminViewModel.createCustomer(request, onSuccess, onError)
                 },

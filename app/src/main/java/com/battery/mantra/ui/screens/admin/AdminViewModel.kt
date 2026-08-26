@@ -60,6 +60,26 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
     private val _selectedTabIndex = MutableStateFlow(0)
     val selectedTabIndex: StateFlow<Int> = _selectedTabIndex.asStateFlow()
 
+    private val _productSearchResults = MutableStateFlow<AdminDataState<List<com.battery.mantra.data.models.ProductResponse>>>(AdminDataState.Idle)
+    val productSearchResults: StateFlow<AdminDataState<List<com.battery.mantra.data.models.ProductResponse>>> = _productSearchResults.asStateFlow()
+
+    fun searchProducts(keyword: String) {
+        if (keyword.isBlank()) {
+            _productSearchResults.value = AdminDataState.Idle
+            return
+        }
+        viewModelScope.launch {
+            _productSearchResults.value = AdminDataState.Loading
+            repository.getProducts(page = 0, size = 50, brandId = null, keyword = keyword)
+                .onSuccess {
+                    _productSearchResults.value = AdminDataState.Success(it.content)
+                }
+                .onFailure {
+                    _productSearchResults.value = AdminDataState.Error(it.message ?: "Failed to search products")
+                }
+        }
+    }
+
     // Deep Link State for Orders
     private val _targetOrderSearchQuery = MutableStateFlow<String?>(null)
     val targetOrderSearchQuery: StateFlow<String?> = _targetOrderSearchQuery.asStateFlow()

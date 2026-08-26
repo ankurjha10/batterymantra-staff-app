@@ -166,5 +166,12 @@ interface BatteryMantraApi {
 
     @POST("api/admin/engineer-inventory/unload")
     suspend fun unloadInventory(@Body request: com.battery.mantra.data.models.LoadInventoryRequest): Response<Unit>
+
+    // --- Admin Manual Order Creation ---
+    @POST("api/admin/customers")
+    suspend fun createCustomer(@Body request: com.battery.mantra.data.models.AdminCreateCustomerRequest): Response<com.battery.mantra.data.models.UserResponse>
+
+    @POST("api/admin/orders")
+    suspend fun createAdminOrder(@Body request: com.battery.mantra.data.models.AdminCreateOrderRequest): Response<OrderResponse>
 }
 

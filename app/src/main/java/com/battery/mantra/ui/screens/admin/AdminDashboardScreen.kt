@@ -59,8 +59,7 @@ fun AdminDashboardScreen(
     onUpdateStatus: (String, String) -> Unit = { _, _ -> },
     onCreatePartner: (com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
-    onLoadInventory: (String, String, Int, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
-    onUnloadInventory: (String, String, Int, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
+    onCreateOrderClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -340,7 +339,14 @@ fun AdminDashboardScreen(
                 .padding(innerPadding)
         ) {
             when (selectedTabIndex) {
-                0 -> AdminOverviewTab(ordersState, partnersState, engineersState, usersState)
+                0 -> AdminOverviewTab(
+                    ordersState = ordersState,
+                    partnersState = partnersState,
+                    engineersState = engineersState,
+                    usersState = usersState,
+                    onCreateOrderClick = onCreateOrderClick,
+                    onNavigateToTab = onTabSelected
+                )
                 1 -> AdminOrdersTab(
                         ordersState = ordersState, 
                         partnersState = partnersState,
@@ -360,9 +366,7 @@ fun AdminDashboardScreen(
                 3 -> AdminEngineersTab(
                     engineersState = engineersState,
                     partnersState = partnersState,
-                    onCreateEngineer = onCreateEngineer,
-                    onLoadInventory = onLoadInventory,
-                    onUnloadInventory = onUnloadInventory
+                    onCreateEngineer = onCreateEngineer
                 )
                 4 -> AdminUsersTab(usersState = usersState)
             }

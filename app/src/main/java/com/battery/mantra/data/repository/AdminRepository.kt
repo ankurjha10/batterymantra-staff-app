@@ -403,5 +403,31 @@ class AdminRepository(private val api: BatteryMantraApi) {
             Result.failure(e)
         }
     }
+
+    suspend fun createCustomer(request: com.battery.mantra.data.models.AdminCreateCustomerRequest): Result<com.battery.mantra.data.models.UserResponse> {
+        return try {
+            val response = api.createCustomer(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to create customer: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createAdminOrder(request: com.battery.mantra.data.models.AdminCreateOrderRequest): Result<com.battery.mantra.data.models.OrderResponse> {
+        return try {
+            val response = api.createAdminOrder(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to create order: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 

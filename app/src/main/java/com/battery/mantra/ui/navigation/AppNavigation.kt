@@ -162,12 +162,6 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onAssignEngineer = { orderId, engineerId, onSuccess, onError ->
                     adminViewModel.assignEngineer(orderId, engineerId, onSuccess, onError)
                 },
-                onLoadInventory = { engineerId, productId, qty, onSuccess, onError ->
-                    adminViewModel.loadInventory(engineerId, productId, qty, onSuccess, onError)
-                },
-                onUnloadInventory = { engineerId, productId, qty, onSuccess, onError ->
-                    adminViewModel.unloadInventory(engineerId, productId, qty, onSuccess, onError)
-                },
                 onUpdateStatus = { orderId, status ->
                     adminViewModel.updateOrderStatus(
                         orderId = orderId, 
@@ -182,6 +176,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onCreateEngineer = { request, onSuccess, onError ->
                     adminViewModel.createEngineer(request, onSuccess, onError)
                 },
+                onCreateOrderClick = { navController.navigate(Screen.AdminCreateOrder.route) },
                 onLogout = {
                     scope.launch {
                         appContainer.tokenManager.clearTokens()
@@ -195,6 +190,31 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         
         composable("admin_users") {
             PlaceholderScreen("Users Management")
+        }
+        
+        composable(Screen.AdminCreateOrder.route) {
+            val adminViewModel: AdminViewModel = viewModel(
+                factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
+            )
+            val usersState by adminViewModel.usersState.collectAsState()
+            
+            val adminProductsViewModel: AdminProductsViewModel = viewModel(
+                factory = AdminProductsViewModel.provideFactory(appContainer.adminRepository)
+            )
+            val productsUiState by adminProductsViewModel.uiState.collectAsState()
+            val productsList = productsUiState.products
+            
+            com.battery.mantra.ui.screens.admin.CreateOrderScreen(
+                usersState = usersState,
+                productsState = productsList,
+                onCreateCustomer = { request, onSuccess, onError ->
+                    adminViewModel.createCustomer(request, onSuccess, onError)
+                },
+                onCreateOrder = { request, onSuccess, onError ->
+                    adminViewModel.createAdminOrder(request, onSuccess, onError)
+                },
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
         
         composable("admin_products") {

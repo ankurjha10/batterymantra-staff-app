@@ -52,3 +52,29 @@ data class NotificationResponse(
     @SerializedName("message") val message: String,
     @SerializedName("createdAt") val createdAt: String
 )
+
+data class AdminCreateCustomerRequest(
+    val name: String,
+    val phone: String,
+    val email: String? = null,
+    val addressLine1: String,
+    val addressLine2: String? = null,
+    val city: String,
+    val state: String,
+    val pincode: String
+)
+
+data class AdminCreateOrderRequest(
+    val customerId: String,
+    val items: List<AdminOrderItemRequest>,
+    val paymentMethod: String,
+    val deliveryMethod: String,
+    val discount: Double = 0.0,
+    val installationDate: String? = null
+)
+
+data class AdminOrderItemRequest(
+    val productId: String,
+    val quantity: Int = 1,
+    val exchangeOldBattery: Boolean = false
+)

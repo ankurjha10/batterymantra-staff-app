@@ -322,6 +322,36 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun createCustomer(
+        request: com.battery.mantra.data.models.AdminCreateCustomerRequest,
+        onSuccess: (com.battery.mantra.data.models.UserResponse) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            repository.createCustomer(request)
+                .onSuccess { user ->
+                    fetchUsers()
+                    onSuccess(user)
+                }
+                .onFailure { onError(it.message ?: "Failed to create customer") }
+        }
+    }
+
+    fun createAdminOrder(
+        request: com.battery.mantra.data.models.AdminCreateOrderRequest,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            repository.createAdminOrder(request)
+                .onSuccess {
+                    fetchOrders()
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to create order") }
+        }
+    }
+
     companion object {
         fun provideFactory(
             repository: AdminRepository,

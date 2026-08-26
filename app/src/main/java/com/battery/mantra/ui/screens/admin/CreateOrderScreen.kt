@@ -343,17 +343,57 @@ fun CreateOrderScreen(
                 }
             }
 
+            // Cart Items
+            if (cartItems.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Cart Items (${cartItems.size})",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = TextPrimary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+                items(cartItems) { cartItem ->
+                    ProductSelectionCard(
+                        product = cartItem.product,
+                        cartItem = cartItem,
+                        currencyFormat = currencyFormat,
+                        onAddToCart = { },
+                        onRemoveFromCart = {
+                            cartItems.removeAll { it.product.id == cartItem.product.id }
+                        },
+                        onQuantityChange = { qty ->
+                            val idx = cartItems.indexOfFirst { it.product.id == cartItem.product.id }
+                            if (idx >= 0) cartItems[idx] = cartItems[idx].copy(quantity = qty)
+                        },
+                        onExchangeToggle = { withExchange ->
+                            val idx = cartItems.indexOfFirst { it.product.id == cartItem.product.id }
+                            if (idx >= 0) cartItems[idx] = cartItems[idx].copy(withExchange = withExchange)
+                        }
+                    )
+                }
+                
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = BorderColor.copy(alpha = 0.5f))
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
             // Product Search Results
             when (val searchState = productSearchResults) {
                 is AdminDataState.Idle -> {
-                    item {
-                        Text(
-                            text = if (productSearchQuery.length < 2) "Type at least 2 characters to search products..." else "Waiting for results...",
-                            color = TextSecondary,
-                            fontSize = 13.sp,
-                            modifier = Modifier.fillMaxWidth().padding(32.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                    if (productSearchQuery.isNotBlank() || cartItems.isEmpty()) {
+                        item {
+                            Text(
+                                text = if (productSearchQuery.length < 2) "Type at least 2 characters to search products..." else "Waiting for results...",
+                                color = TextSecondary,
+                                fontSize = 13.sp,
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
                     }
                 }
                 is AdminDataState.Loading -> {
@@ -376,6 +416,8 @@ fun CreateOrderScreen(
                 }
                 is AdminDataState.Success -> {
                     val products = searchState.data
+                    val displayProducts = products.filter { p -> cartItems.none { it.product.id == p.id } }
+
                     if (products.isEmpty()) {
                         item {
                             Text(
@@ -386,29 +428,39 @@ fun CreateOrderScreen(
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
+                    } else if (displayProducts.isEmpty() && products.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "All matching products are already in your cart.",
+                                color = TextSecondary,
+                                fontSize = 13.sp,
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
                     } else {
-                        items(products) { product ->
-                            val cartItem = cartItems.find { it.product.id == product.id }
-                            val isInCart = cartItem != null
-
+                        if (productSearchQuery.isNotBlank()) {
+                            item {
+                                Text(
+                                    text = "Search Results",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = TextPrimary,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            }
+                        }
+                        items(displayProducts) { product ->
                             ProductSelectionCard(
                                 product = product,
-                                cartItem = cartItem,
+                                cartItem = null,
                                 currencyFormat = currencyFormat,
                                 onAddToCart = {
                                     cartItems.add(CartItem(product = product))
                                 },
-                                onRemoveFromCart = {
-                                    cartItems.removeAll { it.product.id == product.id }
-                                },
-                                onQuantityChange = { qty ->
-                                    val idx = cartItems.indexOfFirst { it.product.id == product.id }
-                                    if (idx >= 0) cartItems[idx] = cartItems[idx].copy(quantity = qty)
-                                },
-                                onExchangeToggle = { withExchange ->
-                                    val idx = cartItems.indexOfFirst { it.product.id == product.id }
-                                    if (idx >= 0) cartItems[idx] = cartItems[idx].copy(withExchange = withExchange)
-                                }
+                                onRemoveFromCart = {},
+                                onQuantityChange = {},
+                                onExchangeToggle = {}
                             )
                         }
                     }

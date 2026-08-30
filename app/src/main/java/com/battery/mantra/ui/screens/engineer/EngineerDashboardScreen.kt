@@ -120,28 +120,6 @@ fun EngineerDashboardScreen(
                             Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFFD32F2F))
                         }
                     },
-                    actions = {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 16.dp)) {
-                        Text(
-                            text = if (isOnDuty) "DUTY ON" else "DUTY OFF", 
-                            color = Color(0xFFD32F2F), 
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-                        Switch(
-                            checked = isOnDuty,
-                            onCheckedChange = onDutyChange,
-                            modifier = Modifier.height(24.dp), // Adjust size if needed
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF10B981), // Green
-                                uncheckedThumbColor = Color.LightGray,
-                                uncheckedTrackColor = Color.DarkGray
-                            )
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
                 )

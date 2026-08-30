@@ -75,15 +75,15 @@ fun EngineerHomeTab(
                             color = Color(0xFF0F172A)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     val isPresent = todayAttendance?.status == "PRESENT"
                     Surface(
                         color = if (isPresent) Color(0xFFDCFCE7) else Color(0xFFF1F5F9),
                         shape = RoundedCornerShape(16.dp),
                         border = androidx.compose.foundation.BorderStroke(
-                            1.dp, 
+                            1.dp,
                             if (isPresent) Color(0xFF86EFAC) else Color(0xFFCBD5E1)
                         ),
                         modifier = Modifier.padding(vertical = 8.dp)
@@ -96,7 +96,7 @@ fun EngineerHomeTab(
                                 modifier = Modifier
                                     .size(8.dp)
                                     .background(
-                                        if (isPresent) Color(0xFF10B981) else Color(0xFF64748B), 
+                                        if (isPresent) Color(0xFF10B981) else Color(0xFF64748B),
                                         shape = androidx.compose.foundation.shape.CircleShape
                                     )
                             )
@@ -110,54 +110,54 @@ fun EngineerHomeTab(
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(32.dp))
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    if (todayAttendance == null || todayAttendance.checkInTime == null) {
-                        Button(
-                            onClick = onCheckIn,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF2E7D32),
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color.White)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Check In", color = Color.White)
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        if (todayAttendance == null || todayAttendance.checkInTime == null) {
+                            Button(
+                                onClick = onCheckIn,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF2E7D32),
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color.White)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Check In", color = Color.White)
+                            }
                         }
-                    } 
-                    
-                    if (todayAttendance != null && todayAttendance.checkInTime != null && todayAttendance.checkOutTime == null) {
-                        Button(
-                            onClick = onCheckOut,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFC62828),
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Outlined.Logout, contentDescription = null, tint = Color.White)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Check Out", color = Color.White)
+
+                        if (todayAttendance != null && todayAttendance.checkInTime != null && todayAttendance.checkOutTime == null) {
+                            Button(
+                                onClick = onCheckOut,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFC62828),
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Outlined.Logout, contentDescription = null, tint = Color.White)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Check Out", color = Color.White)
+                            }
                         }
-                    } 
-                    
-                    if (todayAttendance != null && todayAttendance.checkOutTime != null) {
-                        Text(
-                            text = "Done for the day!",
-                            color = Color(0xFF34D399),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+
+                        if (todayAttendance != null && todayAttendance.checkOutTime != null) {
+                            Text(
+                                text = "Done for the day!",
+                                color = Color(0xFF34D399),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }

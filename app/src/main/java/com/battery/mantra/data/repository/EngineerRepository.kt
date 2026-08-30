@@ -46,6 +46,32 @@ class EngineerRepository(
         }
     }
 
+    suspend fun sendCompletionOtp(orderId: String): Result<String> {
+        return try {
+            val response = api.sendCompletionOtp(orderId)
+            if (response.isSuccessful) {
+                Result.success(response.body() ?: "OTP Sent")
+            } else {
+                Result.failure(Exception("Failed to send OTP"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun completeJob(orderId: String, request: com.battery.mantra.data.models.EngineerCompleteJobRequest): Result<OrderResponse> {
+        return try {
+            val response = api.completeJob(orderId, request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Failed to complete job"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getProfile(): Result<UserResponse> = try {
         val response = api.getProfile()
         if (response.isSuccessful) Result.success(response.body()!!)

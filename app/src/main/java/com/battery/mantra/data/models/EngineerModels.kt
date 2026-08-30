@@ -27,3 +27,10 @@ data class LoadInventoryRequest(
     val productId: String,
     val quantity: Int
 )
+
+data class EngineerCompleteJobRequest(
+    val otp: String,
+    val serialNumber: String,
+    val oldBatteryCollected: Boolean,
+    val paymentMode: String
+)

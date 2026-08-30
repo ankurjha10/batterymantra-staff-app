@@ -28,6 +28,7 @@ import com.battery.mantra.ui.screens.auth.AuthViewModel
 import com.battery.mantra.ui.screens.engineer.EngineerDashboardScreen
 import com.battery.mantra.ui.screens.engineer.EngineerViewModel
 import com.battery.mantra.ui.screens.engineer.JobExecutionScreen
+import com.battery.mantra.ui.screens.engineer.JobExecutionViewModel
 import com.battery.mantra.ui.screens.partner.PartnerDashboardScreen
 import com.battery.mantra.ui.screens.partner.PartnerViewModel
 
@@ -395,8 +396,12 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         
         composable(Screen.JobExecution.route) { backStackEntry ->
             val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
+            val viewModel: JobExecutionViewModel = viewModel(
+                factory = JobExecutionViewModel.provideFactory(appContainer.engineerRepository, jobId)
+            )
             JobExecutionScreen(
                 jobId = jobId,
+                viewModel = viewModel,
                 onBackClick = { navController.navigateUp() }
             )
         }

@@ -62,22 +62,28 @@ fun EngineerHomeTab(
                 ) {
                     Button(
                         onClick = onCheckIn,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2E7D32),
+                            contentColor = Color.White
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Outlined.CheckCircle, contentDescription = null)
+                        Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Check In")
+                        Text("Check In", color = Color.White)
                     }
                     
                     Button(
                         onClick = onCheckOut,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFC62828),
+                            contentColor = Color.White
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Outlined.Logout, contentDescription = null)
+                        Icon(Icons.Outlined.Logout, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Check Out")
+                        Text("Check Out", color = Color.White)
                     }
                 }
             }

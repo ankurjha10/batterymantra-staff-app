@@ -25,7 +25,7 @@ fun LeaveManagementTab(
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        ApplyLeaveDialog(
+        ApplyLeaveSheet(
             onDismiss = { showDialog = false },
             onSubmit = { startDate, endDate, reason ->
                 showDialog = false
@@ -132,8 +132,9 @@ fun LeaveCard(leave: LeaveRequestResponse) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApplyLeaveDialog(
+fun ApplyLeaveSheet(
     onDismiss: () -> Unit,
     onSubmit: (String, String, String) -> Unit
 ) {
@@ -141,47 +142,184 @@ fun ApplyLeaveDialog(
     var endDate by remember { mutableStateOf("") }
     var reason by remember { mutableStateOf("") }
 
-    AlertDialog(
+    var showStartDatePicker by remember { mutableStateOf(false) }
+    var showEndDatePicker by remember { mutableStateOf(false) }
+    val startDatePickerState = rememberDatePickerState()
+    val endDatePickerState = rememberDatePickerState()
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    if (showStartDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showStartDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    startDatePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.of("UTC")).toLocalDate()
+                        startDate = date.toString()
+                    }
+                    showStartDatePicker = false
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFD32F2F))
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartDatePicker = false },
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)) { Text("Cancel") }
+            },
+            colors = DatePickerDefaults.colors(containerColor = Color.White)
+        ) {
+            DatePicker(
+                state = startDatePickerState,
+                colors = DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    titleContentColor = Color(0xFFD32F2F),
+                    headlineContentColor = Color(0xFFD32F2F),
+                    weekdayContentColor = Color.Black,
+                    dayContentColor = Color.Black,
+                    todayContentColor = Color(0xFFD32F2F),
+                    todayDateBorderColor = Color(0xFFD32F2F),
+                    selectedDayContainerColor = Color(0xFFD32F2F),
+                    selectedDayContentColor = Color.White,
+                    navigationContentColor = Color.Black,
+                    yearContentColor = Color.Black,
+                    currentYearContentColor = Color(0xFFD32F2F)
+                )
+            )
+        }
+    }
+
+    if (showEndDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showEndDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    endDatePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.of("UTC")).toLocalDate()
+                        endDate = date.toString()
+                    }
+                    showEndDatePicker = false
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFD32F2F))
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEndDatePicker = false },
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)) { Text("Cancel") }
+            },
+            colors = DatePickerDefaults.colors(containerColor = Color.White)
+        ) {
+            DatePicker(
+                state = endDatePickerState,
+                colors = DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    titleContentColor = Color(0xFFD32F2F),
+                    headlineContentColor = Color(0xFFD32F2F),
+                    weekdayContentColor = Color.Black,
+                    dayContentColor = Color.Black,
+                    todayContentColor = Color(0xFFD32F2F),
+                    todayDateBorderColor = Color(0xFFD32F2F),
+                    selectedDayContainerColor = Color(0xFFD32F2F),
+                    selectedDayContentColor = Color.White,
+                    navigationContentColor = Color.Black,
+                    yearContentColor = Color.Black,
+                    currentYearContentColor = Color(0xFFD32F2F)
+                )
+            )
+        }
+    }
+
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Apply for Leave", fontWeight = FontWeight.Bold) },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = startDate,
-                    onValueChange = { startDate = it },
-                    label = { Text("Start Date (YYYY-MM-DD)") },
-                    modifier = Modifier.fillMaxWidth()
+        sheetState = sheetState,
+        containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .padding(bottom = 32.dp)
+        ) {
+            Text(
+                text = "Apply for Leave",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF0F172A),
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            OutlinedTextField(
+                value = startDate,
+                onValueChange = { },
+                readOnly = true,
+                label = { Text("Start Date") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showStartDatePicker = true }) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Add, contentDescription = "Select Date")
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    unfocusedTextColor = Color.Black,
+                    focusedTextColor = Color.Black
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = endDate,
-                    onValueChange = { endDate = it },
-                    label = { Text("End Date (YYYY-MM-DD)") },
-                    modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = endDate,
+                onValueChange = { },
+                readOnly = true,
+                label = { Text("End Date") },
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showEndDatePicker = true }) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Add, contentDescription = "Select Date")
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    unfocusedTextColor = Color.Black,
+                    focusedTextColor = Color.Black
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = reason,
-                    onValueChange = { reason = it },
-                    label = { Text("Reason") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = reason,
+                onValueChange = { reason = it },
+                label = { Text("Reason") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    unfocusedTextColor = Color.Black,
+                    focusedTextColor = Color.Black
                 )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onSubmit(startDate, endDate, reason) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text("Apply", color = Color.White)
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel", color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Button(
+                    onClick = { onSubmit(startDate, endDate, reason) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text("Apply Leave", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
-            }
-        },
-        containerColor = Color.White
-    )
+        }
+    }
 }

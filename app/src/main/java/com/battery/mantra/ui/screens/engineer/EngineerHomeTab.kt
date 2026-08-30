@@ -60,30 +60,39 @@ fun EngineerHomeTab(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(
-                        onClick = onCheckIn,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2E7D32),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color.White)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Check In", color = Color.White)
-                    }
-                    
-                    Button(
-                        onClick = onCheckOut,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFC62828),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Icon(Icons.Outlined.Logout, contentDescription = null, tint = Color.White)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Check Out", color = Color.White)
+                    if (todayAttendance == null || todayAttendance.checkInTime == null) {
+                        Button(
+                            onClick = onCheckIn,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF2E7D32),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color.White)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Check In", color = Color.White)
+                        }
+                    } else if (todayAttendance.checkOutTime == null) {
+                        Button(
+                            onClick = onCheckOut,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFC62828),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Outlined.Logout, contentDescription = null, tint = Color.White)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Check Out", color = Color.White)
+                        }
+                    } else {
+                        Text(
+                            text = "Done for the day!",
+                            color = Color(0xFF2E7D32),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }

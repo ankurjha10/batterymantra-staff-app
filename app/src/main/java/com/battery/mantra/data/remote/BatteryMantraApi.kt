@@ -176,5 +176,14 @@ interface BatteryMantraApi {
 
     @POST("api/admin/sub-admins")
     suspend fun createSubAdmin(@Body request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Response<com.battery.mantra.data.models.UserResponse>
+
+    @PUT("api/admin/sub-admins/{userId}")
+    suspend fun updateSubAdmin(@Path("userId") userId: String, @Body request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Response<com.battery.mantra.data.models.UserResponse>
+
+    @DELETE("api/admin/users/{userId}")
+    suspend fun deleteUser(@Path("userId") userId: String): Response<Unit>
+
+    @PATCH("api/admin/users/{userId}/status")
+    suspend fun toggleUserStatus(@Path("userId") userId: String, @Query("isActive") isActive: Boolean): Response<Unit>
 }
 

@@ -136,8 +136,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val notificationsState by adminViewModel.notificationsState.collectAsState()
             val unreadNotificationsCount = (notificationsState as? com.battery.mantra.ui.screens.admin.AdminDataState.Success)?.data?.size ?: 0
             val context = androidx.compose.ui.platform.LocalContext.current
+            val userPermissions by appContainer.tokenManager.userPermissions.collectAsState(initial = emptySet())
 
             AdminDashboardScreen(
+                role = role ?: "ADMIN",
+                permissions = userPermissions,
                 ordersState = ordersState,
                 partnersState = partnersState,
                 engineersState = engineersState,
@@ -224,6 +227,15 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 usersState = usersState,
                 onCreateSubAdmin = { request, onSuccess, onError ->
                     adminViewModel.createSubAdmin(request, onSuccess, onError)
+                },
+                onUpdateSubAdmin = { userId, request, onSuccess, onError ->
+                    adminViewModel.updateSubAdmin(userId, request, onSuccess, onError)
+                },
+                onDeleteSubAdmin = { userId, onSuccess, onError ->
+                    adminViewModel.deleteUser(userId, onSuccess, onError)
+                },
+                onToggleStatus = { userId, isActive, onSuccess, onError ->
+                    adminViewModel.toggleUserStatus(userId, isActive, onSuccess, onError)
                 },
                 onNavigateBack = { navController.navigateUp() }
             )

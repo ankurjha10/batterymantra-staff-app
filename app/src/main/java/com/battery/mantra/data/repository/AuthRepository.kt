@@ -14,7 +14,7 @@ class AuthRepository(
             val response = api.login(request)
             if (response.isSuccessful && response.body() != null) {
                 val loginResponse = response.body()!!
-                tokenManager.saveTokens(loginResponse.token, loginResponse.refreshToken, loginResponse.role)
+                tokenManager.saveTokens(loginResponse.token, loginResponse.refreshToken, loginResponse.role, loginResponse.permissions)
                 Result.success(loginResponse)
             } else {
                 Result.failure(Exception("Login failed: ${response.code()} ${response.message()}"))

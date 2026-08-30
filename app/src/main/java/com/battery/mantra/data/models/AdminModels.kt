@@ -33,7 +33,10 @@ data class UserResponse(
     @SerializedName("userId") val userId: String,
     @SerializedName("name") val name: String?,
     @SerializedName("email") val email: String?,
+    @SerializedName("phone") val phone: String?,
     @SerializedName("role") val role: String?,
+    @SerializedName("permissions") val permissions: List<String>?,
+    @SerializedName("isActive") val isActive: Boolean?,
     @SerializedName("createdAt") val createdAt: String?
 )
 
@@ -85,5 +88,11 @@ data class AdminCreateSubAdminRequest(
     val email: String,
     val password: String,
     val role: String = "SUB_ADMIN",
+    val permissions: List<String> = emptyList()
+)
+
+data class AdminUpdateSubAdminRequest(
+    val name: String,
+    val phone: String,
     val permissions: List<String> = emptyList()
 )

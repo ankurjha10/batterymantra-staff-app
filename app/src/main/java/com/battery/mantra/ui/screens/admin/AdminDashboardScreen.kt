@@ -41,6 +41,8 @@ fun AdminDashboardScreen(
     engineersState: AdminDataState<List<com.battery.mantra.data.models.EngineerResponse>>,
     usersState: AdminDataState<List<com.battery.mantra.data.models.UserResponse>>,
     citiesState: AdminDataState<List<com.battery.mantra.data.models.CityResponse>>,
+    role: String,
+    permissions: Set<String>,
     selectedTabIndex: Int,
     targetSearchQuery: String? = null,
     targetFilter: String? = null,
@@ -95,114 +97,138 @@ fun AdminDashboardScreen(
                     }
                 }
                 Spacer(Modifier.height(8.dp))
-                
-                Text(
-                    text = "OPERATIONS",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
-                )
+                val hasCallbacksPerm = role == "ADMIN" || permissions.contains("MANAGE_CALLBACKS")
+                val hasEnquiriesPerm = role == "ADMIN" || permissions.contains("MANAGE_ENQUIRIES")
+                val hasSubAdminsPerm = role == "ADMIN" || permissions.contains("MANAGE_SUB_ADMINS")
+                val hasLeavesPerm = role == "ADMIN" || permissions.contains("MANAGE_LEAVES")
+                val hasCouponsPerm = role == "ADMIN" || permissions.contains("MANAGE_COUPONS")
+                val hasProductsPerm = role == "ADMIN" || permissions.contains("MANAGE_PRODUCTS")
 
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Outlined.PhoneCallback, contentDescription = null) },
-                    label = { Text("Callbacks") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        onNavigateToCallbacks()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        unselectedIconColor = Color(0xFF424242),
-                        unselectedTextColor = Color(0xFF212121)
+                if (hasCallbacksPerm || hasEnquiriesPerm) {
+                    Text(
+                        text = "OPERATIONS",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
                     )
-                )
-                
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Outlined.QuestionAnswer, contentDescription = null) },
-                    label = { Text("Enquiries") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        onNavigateToEnquiries()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        unselectedIconColor = Color(0xFF424242),
-                        unselectedTextColor = Color(0xFF212121)
-                    )
-                )
-                
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                
-                Text(
-                    text = "MANAGEMENT",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
-                )
+                }
 
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text("Sub-Admins") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        onNavigateToSubAdmins()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        unselectedIconColor = Color(0xFF424242),
-                        unselectedTextColor = Color(0xFF212121)
+                if (hasCallbacksPerm) {
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Outlined.PhoneCallback, contentDescription = null) },
+                        label = { Text("Callbacks") },
+                        selected = false,
+                        onClick = { 
+                            scope.launch { drawerState.close() }
+                            onNavigateToCallbacks()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = Color(0xFF424242),
+                            unselectedTextColor = Color(0xFF212121)
+                        )
                     )
-                )
+                }
+                
+                if (hasEnquiriesPerm) {
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Outlined.QuestionAnswer, contentDescription = null) },
+                        label = { Text("Enquiries") },
+                        selected = false,
+                        onClick = { 
+                            scope.launch { drawerState.close() }
+                            onNavigateToEnquiries()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = Color(0xFF424242),
+                            unselectedTextColor = Color(0xFF212121)
+                        )
+                    )
+                }
+                
+                if (hasCallbacksPerm || hasEnquiriesPerm) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                }
+                
+                if (hasSubAdminsPerm || hasLeavesPerm || hasCouponsPerm || hasProductsPerm) {
+                    Text(
+                        text = "MANAGEMENT",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
+                    )
+                }
 
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Event, contentDescription = null) },
-                    label = { Text("Leave Requests") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        onNavigateToLeaves()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        unselectedIconColor = Color(0xFF424242),
-                        unselectedTextColor = Color(0xFF212121)
+                if (hasSubAdminsPerm) {
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        label = { Text("Sub-Admins") },
+                        selected = false,
+                        onClick = { 
+                            scope.launch { drawerState.close() }
+                            onNavigateToSubAdmins()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = Color(0xFF424242),
+                            unselectedTextColor = Color(0xFF212121)
+                        )
                     )
-                )
+                }
+
+                if (hasLeavesPerm) {
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Default.Event, contentDescription = null) },
+                        label = { Text("Leave Requests") },
+                        selected = false,
+                        onClick = { 
+                            scope.launch { drawerState.close() }
+                            onNavigateToLeaves()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = Color(0xFF424242),
+                            unselectedTextColor = Color(0xFF212121)
+                        )
+                    )
+                }
                 
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Outlined.LocalOffer, contentDescription = null) },
-                    label = { Text("Coupons") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        onNavigateToCoupons()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        unselectedIconColor = Color(0xFF424242),
-                        unselectedTextColor = Color(0xFF212121)
+                if (hasCouponsPerm) {
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Outlined.LocalOffer, contentDescription = null) },
+                        label = { Text("Coupons") },
+                        selected = false,
+                        onClick = { 
+                            scope.launch { drawerState.close() }
+                            onNavigateToCoupons()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = Color(0xFF424242),
+                            unselectedTextColor = Color(0xFF212121)
+                        )
                     )
-                )
+                }
                 
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Outlined.Inventory, contentDescription = null) },
-                    label = { Text("Products Catalog") },
-                    selected = false,
-                    onClick = { 
-                        scope.launch { drawerState.close() }
-                        onNavigateToProducts()
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-                    colors = NavigationDrawerItemDefaults.colors(
-                        unselectedIconColor = Color(0xFF424242),
-                        unselectedTextColor = Color(0xFF212121)
+                if (hasProductsPerm) {
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Outlined.Inventory, contentDescription = null) },
+                        label = { Text("Products Catalog") },
+                        selected = false,
+                        onClick = { 
+                            scope.launch { drawerState.close() }
+                            onNavigateToProducts()
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            unselectedIconColor = Color(0xFF424242),
+                            unselectedTextColor = Color(0xFF212121)
+                        )
                     )
-                )
+                }
                 
                 Spacer(modifier = Modifier.weight(1f))
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
@@ -269,6 +295,11 @@ fun AdminDashboardScreen(
                 containerColor = Color.White,
                 tonalElevation = 8.dp
             ) {
+                val hasOrdersPerm = role == "ADMIN" || permissions.contains("MANAGE_ORDERS")
+                val hasPartnersPerm = role == "ADMIN" || permissions.contains("MANAGE_PARTNERS")
+                val hasEngineersPerm = role == "ADMIN" || permissions.contains("MANAGE_ENGINEERS")
+                val hasUsersPerm = role == "ADMIN" || permissions.contains("MANAGE_USERS")
+
                 NavigationBarItem(
                     selected = selectedTabIndex == 0,
                     onClick = { onTabSelected(0) },
@@ -282,69 +313,81 @@ fun AdminDashboardScreen(
                         unselectedTextColor = Color(0xFF5F6368)
                     )
                 )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 1,
-                    onClick = { onTabSelected(1) },
-                    icon = { 
-                        val pendingOrders = if (ordersState is AdminDataState.Success) {
-                            ordersState.data.count { it.orderStatus == "PENDING" || it.orderStatus == "CONFIRMED" || it.orderStatus == "UNASSIGNED" }
-                        } else 0
-                        if (pendingOrders > 0) {
-                            BadgedBox(badge = { Badge { Text(pendingOrders.toString()) } }) {
+
+                if (hasOrdersPerm) {
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 1,
+                        onClick = { onTabSelected(1) },
+                        icon = { 
+                            val pendingOrders = if (ordersState is AdminDataState.Success) {
+                                ordersState.data.count { it.orderStatus == "PENDING" || it.orderStatus == "CONFIRMED" || it.orderStatus == "UNASSIGNED" }
+                            } else 0
+                            if (pendingOrders > 0) {
+                                BadgedBox(badge = { Badge { Text(pendingOrders.toString()) } }) {
+                                    Icon(Icons.Default.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
+                                }
+                            } else {
                                 Icon(Icons.Default.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
                             }
-                        } else {
-                            Icon(Icons.Default.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
-                        }
-                    },
-                    label = { Text("Orders", fontWeight = if (selectedTabIndex == 1) FontWeight.Bold else FontWeight.Normal) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
+                        },
+                        label = { Text("Orders", fontWeight = if (selectedTabIndex == 1) FontWeight.Bold else FontWeight.Normal) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
                     )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 2,
-                    onClick = { onTabSelected(2) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Partners", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Partners", fontWeight = if (selectedTabIndex == 2) FontWeight.Bold else FontWeight.Normal) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
+                }
+
+                if (hasPartnersPerm) {
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 2,
+                        onClick = { onTabSelected(2) },
+                        icon = { Icon(Icons.Default.Person, contentDescription = "Partners", modifier = Modifier.size(24.dp)) },
+                        label = { Text("Partners", fontWeight = if (selectedTabIndex == 2) FontWeight.Bold else FontWeight.Normal) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
                     )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 3,
-                    onClick = { onTabSelected(3) },
-                    icon = { Icon(Icons.Default.Engineering, contentDescription = "Engineers", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Engineers", fontWeight = if (selectedTabIndex == 3) FontWeight.Bold else FontWeight.Normal) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
+                }
+
+                if (hasEngineersPerm) {
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 3,
+                        onClick = { onTabSelected(3) },
+                        icon = { Icon(Icons.Default.Engineering, contentDescription = "Engineers", modifier = Modifier.size(24.dp)) },
+                        label = { Text("Engineers", fontWeight = if (selectedTabIndex == 3) FontWeight.Bold else FontWeight.Normal) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
                     )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 4,
-                    onClick = { onTabSelected(4) },
-                    icon = { Icon(Icons.Default.People, contentDescription = "Users", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Users", fontWeight = if (selectedTabIndex == 4) FontWeight.Bold else FontWeight.Normal) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
+                }
+
+                if (hasUsersPerm) {
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 4,
+                        onClick = { onTabSelected(4) },
+                        icon = { Icon(Icons.Default.People, contentDescription = "Users", modifier = Modifier.size(24.dp)) },
+                        label = { Text("Users", fontWeight = if (selectedTabIndex == 4) FontWeight.Bold else FontWeight.Normal) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
                     )
-                )
+                }
             }
         },
         containerColor = BackgroundSurface

@@ -58,7 +58,7 @@ object ApiClient {
                                     val newRefreshToken = map["refreshToken"]
                                     if (newAccessToken != null && newRefreshToken != null) {
                                         kotlinx.coroutines.runBlocking {
-                                            tokenManager.saveTokens(newAccessToken, newRefreshToken, tokenManager.getCachedRole() ?: "")
+                                            tokenManager.saveTokens(newAccessToken, newRefreshToken, tokenManager.getCachedRole() ?: "", tokenManager.getCachedPermissions().toList())
                                         }
                                         response.close()
                                         android.util.Log.d("AuthInterceptor", "Token refreshed successfully, retrying request...")

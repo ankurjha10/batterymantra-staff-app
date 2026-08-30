@@ -157,6 +157,63 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun updateSubAdmin(userId: String, request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Result<com.battery.mantra.data.models.UserResponse> {
+        return try {
+            val response = api.updateSubAdmin(userId, request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errStr = response.errorBody()?.string() ?: ""
+                var errMsg = "Failed to update sub-admin: ${response.code()}"
+                try {
+                    val json = org.json.JSONObject(errStr)
+                    if (json.has("message")) errMsg = json.getString("message")
+                } catch (e: Exception) {}
+                Result.failure(Exception(errMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteUser(userId: String): Result<Unit> {
+        return try {
+            val response = api.deleteUser(userId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errStr = response.errorBody()?.string() ?: ""
+                var errMsg = "Failed to delete user: ${response.code()}"
+                try {
+                    val json = org.json.JSONObject(errStr)
+                    if (json.has("message")) errMsg = json.getString("message")
+                } catch (e: Exception) {}
+                Result.failure(Exception(errMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleUserStatus(userId: String, isActive: Boolean): Result<Unit> {
+        return try {
+            val response = api.toggleUserStatus(userId, isActive)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val errStr = response.errorBody()?.string() ?: ""
+                var errMsg = "Failed to update status: ${response.code()}"
+                try {
+                    val json = org.json.JSONObject(errStr)
+                    if (json.has("message")) errMsg = json.getString("message")
+                } catch (e: Exception) {}
+                Result.failure(Exception(errMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun getCities(): Result<List<com.battery.mantra.data.models.CityResponse>> {
         return try {
             val response = api.getAdminCities()

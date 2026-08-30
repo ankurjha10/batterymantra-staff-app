@@ -10,6 +10,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +26,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.data.models.AdminCreateSubAdminRequest
+import com.battery.mantra.data.models.AdminUpdateSubAdminRequest
 import com.battery.mantra.ui.screens.admin.AdminDataState
 import com.battery.mantra.data.models.UserResponse
 
@@ -37,10 +42,15 @@ private val BorderColor = Color(0xFFE5E7EB)
 fun AdminSubAdminsScreen(
     usersState: AdminDataState<List<UserResponse>>,
     onCreateSubAdmin: (AdminCreateSubAdminRequest, () -> Unit, (String) -> Unit) -> Unit,
+    onUpdateSubAdmin: (String, AdminUpdateSubAdminRequest, () -> Unit, (String) -> Unit) -> Unit,
+    onDeleteSubAdmin: (String, () -> Unit, (String) -> Unit) -> Unit,
+    onToggleStatus: (String, Boolean, () -> Unit, (String) -> Unit) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var showCreateSheet by remember { mutableStateOf(false) }
+    var showFormSheet by remember { mutableStateOf(false) }
+    var userToEdit by remember { mutableStateOf<UserResponse?>(null) }
+    var userToDelete by remember { mutableStateOf<UserResponse?>(null) }
 
     val subAdmins = remember(usersState) {
         if (usersState is AdminDataState.Success) {
@@ -69,7 +79,10 @@ fun AdminSubAdminsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showCreateSheet = true },
+                onClick = { 
+                    userToEdit = null
+                    showFormSheet = true 
+                },
                 containerColor = BrandRed,
                 contentColor = Color.White
             ) {
@@ -103,7 +116,21 @@ fun AdminSubAdminsScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(subAdmins) { subAdmin ->
-                                SubAdminCard(subAdmin)
+                                SubAdminCard(
+                                    subAdmin = subAdmin,
+                                    onEdit = {
+                                        userToEdit = subAdmin
+                                        showFormSheet = true
+                                    },
+                                    onDelete = { userToDelete = subAdmin },
+                                    onToggle = { isActive ->
+                                        onToggleStatus(subAdmin.userId, isActive, {
+                                            Toast.makeText(context, "Status updated!", Toast.LENGTH_SHORT).show()
+                                        }, { err ->
+                                            Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                        })
+                                    }
+                                )
                             }
                         }
                     }
@@ -112,30 +139,73 @@ fun AdminSubAdminsScreen(
             }
         }
 
-        if (showCreateSheet) {
+        if (showFormSheet) {
             ModalBottomSheet(
-                onDismissRequest = { showCreateSheet = false },
+                onDismissRequest = { showFormSheet = false },
                 containerColor = CardBg,
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
             ) {
-                CreateSubAdminForm(
-                    onSubmit = { request ->
+                SubAdminForm(
+                    initialUser = userToEdit,
+                    onSubmitCreate = { request ->
                         onCreateSubAdmin(request, {
-                            showCreateSheet = false
+                            showFormSheet = false
                             Toast.makeText(context, "Sub-Admin created successfully!", Toast.LENGTH_SHORT).show()
                         }, { err ->
                             Toast.makeText(context, err, Toast.LENGTH_LONG).show()
                         })
                     },
-                    onCancel = { showCreateSheet = false }
+                    onSubmitUpdate = { userId, request ->
+                        onUpdateSubAdmin(userId, request, {
+                            showFormSheet = false
+                            Toast.makeText(context, "Sub-Admin updated successfully!", Toast.LENGTH_SHORT).show()
+                        }, { err ->
+                            Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                        })
+                    },
+                    onCancel = { showFormSheet = false }
                 )
             }
+        }
+
+        userToDelete?.let { user ->
+            AlertDialog(
+                onDismissRequest = { userToDelete = null },
+                title = { Text("Delete Sub-Admin") },
+                text = { Text("Are you sure you want to delete ${user.name}? This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onDeleteSubAdmin(user.userId, {
+                                Toast.makeText(context, "Sub-Admin deleted", Toast.LENGTH_SHORT).show()
+                                userToDelete = null
+                            }, { err ->
+                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                userToDelete = null
+                            })
+                        }
+                    ) {
+                        Text("Delete", color = BrandRed)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { userToDelete = null }) {
+                        Text("Cancel", color = TextPrimary)
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-private fun SubAdminCard(subAdmin: UserResponse) {
+private fun SubAdminCard(
+    subAdmin: UserResponse,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onToggle: (Boolean) -> Unit
+) {
+    val isActive = subAdmin.isActive ?: true
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -146,32 +216,58 @@ private fun SubAdminCard(subAdmin: UserResponse) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Person, contentDescription = null, tint = BrandRed, modifier = Modifier.size(40.dp))
+            Icon(Icons.Default.Person, contentDescription = null, tint = if(isActive) BrandRed else Color.Gray, modifier = Modifier.size(40.dp))
             Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(subAdmin.name ?: "Unknown", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                Text(subAdmin.email ?: subAdmin.userId, fontSize = 14.sp, color = TextSecondary)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(subAdmin.name ?: "Unknown", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = if(isActive) TextPrimary else Color.Gray)
+                Text(subAdmin.email ?: subAdmin.phone ?: subAdmin.userId, fontSize = 14.sp, color = TextSecondary)
+                if (!isActive) {
+                    Text("Blocked", fontSize = 12.sp, color = BrandRed, fontWeight = FontWeight.Bold)
+                }
+            }
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = TextSecondary)
+            }
+            IconButton(onClick = { onToggle(!isActive) }) {
+                if (isActive) {
+                    Icon(Icons.Default.Block, contentDescription = "Block", tint = Color(0xFFE65100))
+                } else {
+                    Icon(Icons.Default.CheckCircle, contentDescription = "Unblock", tint = Color(0xFF2E7D32))
+                }
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = BrandRed)
             }
         }
     }
 }
 
 @Composable
-private fun CreateSubAdminForm(
-    onSubmit: (AdminCreateSubAdminRequest) -> Unit,
+private fun SubAdminForm(
+    initialUser: UserResponse?,
+    onSubmitCreate: (AdminCreateSubAdminRequest) -> Unit,
+    onSubmitUpdate: (String, AdminUpdateSubAdminRequest) -> Unit,
     onCancel: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    val isEdit = initialUser != null
+    var name by remember { mutableStateOf(initialUser?.name ?: "") }
+    var phone by remember { mutableStateOf(initialUser?.phone ?: "") }
+    var email by remember { mutableStateOf(initialUser?.email ?: "") }
     var password by remember { mutableStateOf("") }
 
+    val initialPerms = initialUser?.permissions ?: emptyList()
+
     // Permissions state
-    var canManageOrders by remember { mutableStateOf(false) }
-    var canManageProducts by remember { mutableStateOf(false) }
-    var canManageEngineers by remember { mutableStateOf(false) }
-    var canManagePartners by remember { mutableStateOf(false) }
-    var canManageEnquiries by remember { mutableStateOf(false) }
+    var canManageOrders by remember { mutableStateOf(initialPerms.contains("MANAGE_ORDERS")) }
+    var canManageProducts by remember { mutableStateOf(initialPerms.contains("MANAGE_PRODUCTS")) }
+    var canManageEngineers by remember { mutableStateOf(initialPerms.contains("MANAGE_ENGINEERS")) }
+    var canManagePartners by remember { mutableStateOf(initialPerms.contains("MANAGE_PARTNERS")) }
+    var canManageEnquiries by remember { mutableStateOf(initialPerms.contains("MANAGE_ENQUIRIES")) }
+    var canManageUsers by remember { mutableStateOf(initialPerms.contains("MANAGE_USERS")) }
+    var canManageSubAdmins by remember { mutableStateOf(initialPerms.contains("MANAGE_SUB_ADMINS")) }
+    var canManageCoupons by remember { mutableStateOf(initialPerms.contains("MANAGE_COUPONS")) }
+    var canManageLeaves by remember { mutableStateOf(initialPerms.contains("MANAGE_LEAVES")) }
+    var canManageCallbacks by remember { mutableStateOf(initialPerms.contains("MANAGE_CALLBACKS")) }
 
     var isSubmitting by remember { mutableStateOf(false) }
 
@@ -185,106 +281,125 @@ private fun CreateSubAdminForm(
         unfocusedTextColor = TextPrimary
     )
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text("Add New Sub-Admin", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
-        Spacer(modifier = Modifier.height(16.dp))
+        item {
+            Text(if (isEdit) "Edit Sub-Admin" else "Add New Sub-Admin", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            colors = textFieldColors
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(
-            value = phone,
-            onValueChange = { phone = it },
-            label = { Text("Phone") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            singleLine = true,
-            colors = textFieldColors
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true,
-            colors = textFieldColors
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true,
-            colors = textFieldColors
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Permissions", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextPrimary)
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        // Permissions Checklist
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            PermissionCheckbox("Manage Orders", canManageOrders) { canManageOrders = it }
-            PermissionCheckbox("Manage Products", canManageProducts) { canManageProducts = it }
-            PermissionCheckbox("Manage Engineers", canManageEngineers) { canManageEngineers = it }
-            PermissionCheckbox("Manage Partners", canManagePartners) { canManagePartners = it }
-            PermissionCheckbox("Manage Enquiries", canManageEnquiries) { canManageEnquiries = it }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            TextButton(onClick = onCancel) {
-                Text("Cancel", color = TextPrimary)
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                colors = textFieldColors
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                label = { Text("Phone") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                singleLine = true,
+                colors = textFieldColors
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            if (!isEdit) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    singleLine = true,
+                    colors = textFieldColors
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = PasswordVisualTransformation(),
+                    singleLine = true,
+                    colors = textFieldColors
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            } else {
+                Text("Email and Password cannot be changed from here.", fontSize = 12.sp, color = TextSecondary)
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    isSubmitting = true
-                    val permissions = mutableListOf<String>()
-                    if (canManageOrders) permissions.add("MANAGE_ORDERS")
-                    if (canManageProducts) permissions.add("MANAGE_PRODUCTS")
-                    if (canManageEngineers) permissions.add("MANAGE_ENGINEERS")
-                    if (canManagePartners) permissions.add("MANAGE_PARTNERS")
-                    if (canManageEnquiries) permissions.add("MANAGE_ENQUIRIES")
 
-                    val request = AdminCreateSubAdminRequest(
-                        name = name,
-                        phone = phone,
-                        email = email,
-                        password = password,
-                        permissions = permissions
-                    )
-                    onSubmit(request)
-                },
-                enabled = !isSubmitting && name.isNotBlank() && phone.isNotBlank() && email.isNotBlank() && password.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
-            ) {
-                if (isSubmitting) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text("Create")
+            Text("Permissions", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextPrimary)
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Permissions Checklist
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                PermissionCheckbox("Manage Orders", canManageOrders) { canManageOrders = it }
+                PermissionCheckbox("Manage Products", canManageProducts) { canManageProducts = it }
+                PermissionCheckbox("Manage Engineers", canManageEngineers) { canManageEngineers = it }
+                PermissionCheckbox("Manage Partners", canManagePartners) { canManagePartners = it }
+                PermissionCheckbox("Manage Enquiries", canManageEnquiries) { canManageEnquiries = it }
+                PermissionCheckbox("Manage Users", canManageUsers) { canManageUsers = it }
+                PermissionCheckbox("Manage Sub-Admins", canManageSubAdmins) { canManageSubAdmins = it }
+                PermissionCheckbox("Manage Coupons", canManageCoupons) { canManageCoupons = it }
+                PermissionCheckbox("Manage Leave Requests", canManageLeaves) { canManageLeaves = it }
+                PermissionCheckbox("Manage Callbacks", canManageCallbacks) { canManageCallbacks = it }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onCancel) {
+                    Text("Cancel", color = TextPrimary)
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        isSubmitting = true
+                        val permissions = mutableListOf<String>()
+                        if (canManageOrders) permissions.add("MANAGE_ORDERS")
+                        if (canManageProducts) permissions.add("MANAGE_PRODUCTS")
+                        if (canManageEngineers) permissions.add("MANAGE_ENGINEERS")
+                        if (canManagePartners) permissions.add("MANAGE_PARTNERS")
+                        if (canManageEnquiries) permissions.add("MANAGE_ENQUIRIES")
+                        if (canManageUsers) permissions.add("MANAGE_USERS")
+                        if (canManageSubAdmins) permissions.add("MANAGE_SUB_ADMINS")
+                        if (canManageCoupons) permissions.add("MANAGE_COUPONS")
+                        if (canManageLeaves) permissions.add("MANAGE_LEAVES")
+                        if (canManageCallbacks) permissions.add("MANAGE_CALLBACKS")
+
+                        if (isEdit) {
+                            onSubmitUpdate(
+                                initialUser!!.userId,
+                                AdminUpdateSubAdminRequest(name, phone, permissions)
+                            )
+                        } else {
+                            onSubmitCreate(
+                                AdminCreateSubAdminRequest(name, phone, email, password, "SUB_ADMIN", permissions)
+                            )
+                        }
+                    },
+                    enabled = !isSubmitting && name.isNotBlank() && phone.isNotBlank() && (isEdit || (email.isNotBlank() && password.isNotBlank())),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
+                ) {
+                    if (isSubmitting) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text(if (isEdit) "Update" else "Create")
+                    }
                 }
             }
+            Spacer(modifier = Modifier.height(32.dp))
         }
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

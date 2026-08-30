@@ -387,6 +387,39 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun updateSubAdmin(userId: String, request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.updateSubAdmin(userId, request)
+                .onSuccess {
+                    fetchUsers()
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to update sub-admin") }
+        }
+    }
+
+    fun deleteUser(userId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.deleteUser(userId)
+                .onSuccess {
+                    fetchUsers()
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to delete user") }
+        }
+    }
+
+    fun toggleUserStatus(userId: String, isActive: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.toggleUserStatus(userId, isActive)
+                .onSuccess {
+                    fetchUsers()
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to update status") }
+        }
+    }
+
     companion object {
         fun provideFactory(
             repository: AdminRepository,

@@ -363,6 +363,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 factory = EngineerViewModel.provideFactory(appContainer.engineerRepository)
             )
             val uiState by engineerViewModel.uiState.collectAsState()
+            val profileState by engineerViewModel.profileState.collectAsState()
             val attendance by engineerViewModel.attendance.collectAsState()
             val leaves by engineerViewModel.leaves.collectAsState()
             val selectedTabIndex by engineerViewModel.selectedTabIndex.collectAsState()
@@ -370,6 +371,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
             EngineerDashboardScreen(
                 uiState = uiState,
+                profile = profileState,
                 attendance = attendance,
                 leaves = leaves,
                 selectedTabIndex = selectedTabIndex,

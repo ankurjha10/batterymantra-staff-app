@@ -17,11 +17,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.ui.theme.BackgroundSurface
 import com.battery.mantra.data.repository.EngineerTask
+import com.battery.mantra.data.models.UserResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EngineerDashboardScreen(
     uiState: EngineerDashboardState,
+    profile: UserResponse?,
     attendance: List<com.battery.mantra.data.models.AttendanceResponse>,
     leaves: List<com.battery.mantra.data.models.LeaveRequestResponse>,
     selectedTabIndex: Int,

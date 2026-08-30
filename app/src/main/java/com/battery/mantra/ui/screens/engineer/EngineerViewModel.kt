@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.battery.mantra.data.repository.EngineerRepository
 import com.battery.mantra.data.repository.EngineerTask
+import com.battery.mantra.data.models.UserResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,16 +30,36 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
     private val _isOnDuty = MutableStateFlow(true)
     val isOnDuty: StateFlow<Boolean> = _isOnDuty.asStateFlow()
 
+    private val _profileState = MutableStateFlow<UserResponse?>(null)
+    val profileState: StateFlow<UserResponse?> = _profileState.asStateFlow()
+
     fun onTabSelected(index: Int) {
         _selectedTabIndex.value = index
     }
 
     fun setDutyStatus(isOnDuty: Boolean) {
-        _isOnDuty.value = isOnDuty
+        viewModelScope.launch {
+            val result = repository.updateDutyStatus(isOnDuty)
+            if (result.isSuccess) {
+                _isOnDuty.value = result.getOrNull()?.isActive ?: isOnDuty
+            }
+        }
     }
 
     init {
+        fetchProfile()
         fetchJobs()
+    }
+
+    private fun fetchProfile() {
+        viewModelScope.launch {
+            val result = repository.getProfile()
+            if (result.isSuccess) {
+                val profile = result.getOrNull()
+                _profileState.value = profile
+                _isOnDuty.value = profile?.isActive ?: false
+            }
+        }
     }
 
     fun fetchJobs() {

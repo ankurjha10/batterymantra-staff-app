@@ -131,7 +131,14 @@ interface BatteryMantraApi {
     @DELETE("api/notifications/{id}")
     suspend fun deleteNotification(@Path("id") id: String): Response<Unit>
 
+    // --- Profile & Shared ---
+    @GET("api/users/me")
+    suspend fun getProfile(): Response<UserResponse>
+
     // --- Engineer Features ---
+    @PATCH("api/engineer/duty-status")
+    suspend fun updateDutyStatus(@Query("isOnDuty") isOnDuty: Boolean): Response<UserResponse>
+
     @POST("api/engineer/orders/{orderId}/log-call")
     suspend fun logCall(@Path("orderId") orderId: String): Response<Unit>
 
@@ -169,16 +176,16 @@ interface BatteryMantraApi {
 
     // --- Admin Manual Order Creation ---
     @POST("api/admin/customers")
-    suspend fun createCustomer(@Body request: com.battery.mantra.data.models.AdminCreateCustomerRequest): Response<com.battery.mantra.data.models.UserResponse>
+    suspend fun createCustomer(@Body request: com.battery.mantra.data.models.AdminCreateCustomerRequest): Response<UserResponse>
 
     @POST("api/admin/orders")
     suspend fun createAdminOrder(@Body request: com.battery.mantra.data.models.AdminCreateOrderRequest): Response<OrderResponse>
 
     @POST("api/admin/sub-admins")
-    suspend fun createSubAdmin(@Body request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Response<com.battery.mantra.data.models.UserResponse>
+    suspend fun createSubAdmin(@Body request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Response<UserResponse>
 
     @PUT("api/admin/sub-admins/{userId}")
-    suspend fun updateSubAdmin(@Path("userId") userId: String, @Body request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Response<com.battery.mantra.data.models.UserResponse>
+    suspend fun updateSubAdmin(@Path("userId") userId: String, @Body request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Response<UserResponse>
 
     @DELETE("api/admin/users/{userId}")
     suspend fun deleteUser(@Path("userId") userId: String): Response<Unit>

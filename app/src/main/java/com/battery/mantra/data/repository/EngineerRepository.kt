@@ -133,4 +133,21 @@ class EngineerRepository(
         else Result.failure(Exception("Failed to fetch leaves"))
     } catch (e: Exception) { Result.failure(e) }
 
+    suspend fun getNotifications(): Result<List<com.battery.mantra.data.models.NotificationResponse>> = try {
+        val response = api.getNotifications()
+        if (response.isSuccessful) Result.success(response.body() ?: emptyList())
+        else Result.failure(Exception("Failed to fetch notifications"))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun clearNotifications(): Result<Unit> = try {
+        val response = api.clearNotifications()
+        if (response.isSuccessful) Result.success(Unit)
+        else Result.failure(Exception("Failed to clear notifications"))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun deleteNotification(id: String): Result<Unit> = try {
+        val response = api.deleteNotification(id)
+        if (response.isSuccessful) Result.success(Unit)
+        else Result.failure(Exception("Failed to delete notification"))
+    } catch (e: Exception) { Result.failure(e) }
 }

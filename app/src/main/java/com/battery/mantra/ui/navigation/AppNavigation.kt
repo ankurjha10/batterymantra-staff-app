@@ -414,6 +414,26 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                             popUpTo(0) { inclusive = true }
                         }
                     }
+                },
+                onNavigateToNotifications = {
+                    navController.navigate(Screen.EngineerNotifications.route)
+                }
+            )
+        }
+        
+        composable(Screen.EngineerNotifications.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.EngineerDashboard.route)
+            }
+            val viewModel: EngineerViewModel = viewModel(
+                parentEntry,
+                factory = EngineerViewModel.provideFactory(appContainer.engineerRepository)
+            )
+            com.battery.mantra.ui.screens.engineer.EngineerNotificationsScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.navigateUp() },
+                onNavigateToJobExecution = { jobId ->
+                    navController.navigate("${Screen.JobExecution.route}/$jobId")
                 }
             )
         }

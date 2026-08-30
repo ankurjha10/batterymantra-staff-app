@@ -141,6 +141,42 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
         }
     }
 
+    sealed class NotificationsState {
+        object Loading : NotificationsState()
+        data class Success(val data: List<com.battery.mantra.data.models.NotificationResponse>) : NotificationsState()
+        data class Error(val message: String) : NotificationsState()
+    }
+
+    private val _notificationsState = MutableStateFlow<NotificationsState>(NotificationsState.Loading)
+    val notificationsState: StateFlow<NotificationsState> = _notificationsState.asStateFlow()
+
+    fun fetchNotifications() {
+        viewModelScope.launch {
+            val result = repository.getNotifications()
+            if (result.isSuccess) {
+                _notificationsState.value = NotificationsState.Success(result.getOrDefault(emptyList()))
+            } else {
+                _notificationsState.value = NotificationsState.Error(result.exceptionOrNull()?.message ?: "Failed to load notifications")
+            }
+        }
+    }
+
+    fun clearAllNotifications() {
+        viewModelScope.launch {
+            val result = repository.clearNotifications()
+            if (result.isSuccess) {
+                _notificationsState.value = NotificationsState.Success(emptyList())
+            }
+        }
+    }
+
+    fun deleteNotification(id: String) {
+        viewModelScope.launch {
+            repository.deleteNotification(id)
+            fetchNotifications()
+        }
+    }
+
     companion object {
         fun provideFactory(repository: EngineerRepository): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {

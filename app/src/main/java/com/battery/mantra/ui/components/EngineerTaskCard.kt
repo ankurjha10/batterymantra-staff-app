@@ -31,7 +31,8 @@ fun EngineerTaskCard(
     actionText: String = "",
     isActive: Boolean = true,
     onActionClick: () -> Unit = {},
-    onCallClick: () -> Unit = {}
+    onCallClick: () -> Unit = {},
+    onNavigateClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -155,7 +156,7 @@ fun EngineerTaskCard(
                         }
 
                         OutlinedButton(
-                            onClick = { /* Navigate */ },
+                            onClick = onNavigateClick,
                             modifier = Modifier
                                 .weight(1f)
                                 .height(48.dp),

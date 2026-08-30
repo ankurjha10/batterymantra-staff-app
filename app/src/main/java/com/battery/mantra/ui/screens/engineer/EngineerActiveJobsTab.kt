@@ -21,6 +21,7 @@ fun EngineerActiveJobsTab(
             androidx.compose.material3.Text("No active tasks found", color = androidx.compose.ui.graphics.Color.Gray)
         }
     } else {
+        val context = androidx.compose.ui.platform.LocalContext.current
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -35,7 +36,23 @@ fun EngineerActiveJobsTab(
                     status = job.orderStatus ?: "UNKNOWN",
                     actionText = "Execute Job",
                     onActionClick = { onNavigateToJobExecution(job.orderId) },
-                    onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") }
+                    onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") },
+                    onNavigateClick = {
+                        val uri = if (job.latitude != null && job.longitude != null) {
+                            android.net.Uri.parse("google.navigation:q=${job.latitude},${job.longitude}")
+                        } else {
+                            val addressEncoded = android.net.Uri.encode(job.shippingAddress ?: "")
+                            android.net.Uri.parse("google.navigation:q=$addressEncoded")
+                        }
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+                        intent.setPackage("com.google.android.apps.maps")
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        } else {
+                            // Fallback if Google Maps is not installed
+                            context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri))
+                        }
+                    }
                 )
             }
         }

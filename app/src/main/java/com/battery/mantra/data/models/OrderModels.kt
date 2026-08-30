@@ -19,7 +19,9 @@ data class OrderResponse(
     @SerializedName("deliverySecurityCode") val deliverySecurityCode: String?,
     @SerializedName("orderItems") val orderItems: List<OrderItemResponse>?,
     @SerializedName("assignedPartner") val assignedPartner: PartnerResponse?,
-    @SerializedName("assignedEngineer") val assignedEngineer: EngineerResponse?
+    @SerializedName("assignedEngineer") val assignedEngineer: EngineerResponse?,
+    @SerializedName("latitude") val latitude: Double?,
+    @SerializedName("longitude") val longitude: Double?
 )
 
 data class OrderItemResponse(

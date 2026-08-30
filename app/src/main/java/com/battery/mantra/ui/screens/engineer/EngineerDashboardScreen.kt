@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
@@ -35,7 +36,8 @@ fun EngineerDashboardScreen(
     onCheckIn: () -> Unit = {},
     onCheckOut: () -> Unit = {},
     onApplyLeave: (String, String, String) -> Unit = { _, _, _ -> },
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onNavigateToNotifications: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -51,7 +53,12 @@ fun EngineerDashboardScreen(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFD32F2F), modifier = Modifier.size(32.dp))
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(32.dp)
+                    )
                     Spacer(Modifier.width(16.dp))
                     Text(
                         "Engineer Menu",
@@ -62,7 +69,7 @@ fun EngineerDashboardScreen(
                 }
                 HorizontalDivider(color = Color(0xFFEEEEEE))
                 Spacer(Modifier.height(16.dp))
-                
+
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = null, tint = Color(0xFFD32F2F)) },
                     label = { Text("Home", color = Color.Black, fontSize = 16.sp) },
@@ -84,10 +91,10 @@ fun EngineerDashboardScreen(
                         onTabSelected(4)
                     }
                 )
-                
+
                 Spacer(Modifier.weight(1f))
                 HorizontalDivider(color = Color(0xFFEEEEEE))
-                
+
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFD32F2F)) },
                     label = { Text("Logout", color = Color.Black, fontSize = 16.sp) },
@@ -105,141 +112,186 @@ fun EngineerDashboardScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { 
+                    title = {
                         Text(
-                            text = "My Active Task", 
-                            color = Color(0xFFD32F2F), 
+                            text = "My Active Task",
+                            color = Color(0xFFD32F2F),
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
-                        ) 
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFFD32F2F))
                         }
                     },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    actions = {
+                        IconButton(onClick = onNavigateToNotifications) {
+                            Icon(
+                                Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = Color(0xFFD32F2F)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White
+                    )
                 )
-            )
-        },
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 8.dp
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color.White,
+                    tonalElevation = 8.dp
+                ) {
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 0,
+                        onClick = { onTabSelected(0) },
+                        icon = {
+                            Icon(
+                                Icons.Default.Home,
+                                contentDescription = "Home",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text("Home") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 1,
+                        onClick = { onTabSelected(1) },
+                        icon = {
+                            Icon(
+                                Icons.Default.Assignment,
+                                contentDescription = "My Tasks",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text("My Tasks") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 2,
+                        onClick = { onTabSelected(2) },
+                        icon = {
+                            Icon(
+                                Icons.Default.History,
+                                contentDescription = "History",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text("History") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 3,
+                        onClick = { onTabSelected(3) },
+                        icon = {
+                            Icon(
+                                Icons.Default.Event,
+                                contentDescription = "Leaves",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text("Leaves") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = selectedTabIndex == 4,
+                        onClick = { onTabSelected(4) },
+                        icon = {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Profile",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label = { Text("Profile") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color(0xFFD32F2F),
+                            indicatorColor = Color(0xFFD32F2F),
+                            unselectedIconColor = Color(0xFF5F6368),
+                            unselectedTextColor = Color(0xFF5F6368)
+                        )
+                    )
+                }
+            },
+            containerColor = Color(0xFFF8F9FA) // Light gray background
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                NavigationBarItem(
-                    selected = selectedTabIndex == 0,
-                    onClick = { onTabSelected(0) },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Home") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
-                    )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 1,
-                    onClick = { onTabSelected(1) },
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = "My Tasks", modifier = Modifier.size(24.dp)) },
-                    label = { Text("My Tasks") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
-                    )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 2,
-                    onClick = { onTabSelected(2) },
-                    icon = { Icon(Icons.Default.History, contentDescription = "History", modifier = Modifier.size(24.dp)) },
-                    label = { Text("History") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
-                    )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 3,
-                    onClick = { onTabSelected(3) },
-                    icon = { Icon(Icons.Default.Event, contentDescription = "Leaves", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Leaves") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
-                    )
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 4,
-                    onClick = { onTabSelected(4) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Profile") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color(0xFFD32F2F),
-                        indicatorColor = Color(0xFFD32F2F),
-                        unselectedIconColor = Color(0xFF5F6368),
-                        unselectedTextColor = Color(0xFF5F6368)
-                    )
-                )
-            }
-        },
-        containerColor = Color(0xFFF8F9FA) // Light gray background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when (uiState) {
-                is EngineerDashboardState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFFD32F2F))
+                when (uiState) {
+                    is EngineerDashboardState.Loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Color(0xFFD32F2F))
+                        }
                     }
-                }
-                is EngineerDashboardState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = (uiState as EngineerDashboardState.Error).message, color = Color.Red)
+
+                    is EngineerDashboardState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = (uiState as EngineerDashboardState.Error).message, color = Color.Red)
+                        }
                     }
-                }
-                is EngineerDashboardState.Success -> {
-                    val state = uiState as EngineerDashboardState.Success
-                    when (selectedTabIndex) {
-                        0 -> EngineerHomeTab(
-                            attendance = attendance,
-                            onCheckIn = onCheckIn,
-                            onCheckOut = onCheckOut
-                        )
-                        1 -> EngineerActiveJobsTab(
-                            activeJobs = state.activeJobs,
-                            onNavigateToJobExecution = onNavigateToJobExecution,
-                            onCallClick = onCallClick
-                        )
-                        2 -> EngineerHistoryTab(
-                            historyJobs = state.historyJobs
-                        )
-                        3 -> LeaveManagementTab(
-                            leaves = leaves,
-                            onApplyLeaveClick = onApplyLeave
-                        )
-                        4 -> EngineerProfileTab(
-                            profile = profile
-                        )
+
+                    is EngineerDashboardState.Success -> {
+                        val state = uiState as EngineerDashboardState.Success
+                        when (selectedTabIndex) {
+                            0 -> EngineerHomeTab(
+                                attendance = attendance,
+                                onCheckIn = onCheckIn,
+                                onCheckOut = onCheckOut
+                            )
+
+                            1 -> EngineerActiveJobsTab(
+                                activeJobs = state.activeJobs,
+                                onNavigateToJobExecution = onNavigateToJobExecution,
+                                onCallClick = onCallClick
+                            )
+
+                            2 -> EngineerHistoryTab(
+                                historyJobs = state.historyJobs
+                            )
+
+                            3 -> LeaveManagementTab(
+                                leaves = leaves,
+                                onApplyLeaveClick = onApplyLeave
+                            )
+
+                            4 -> EngineerProfileTab(
+                                profile = profile
+                            )
+                        }
                     }
                 }
             }
-        }
         }
     }
 }

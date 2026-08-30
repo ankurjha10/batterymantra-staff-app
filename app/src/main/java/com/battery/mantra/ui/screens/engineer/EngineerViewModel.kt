@@ -26,8 +26,7 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
     private val _selectedTabIndex = MutableStateFlow(0)
     val selectedTabIndex: StateFlow<Int> = _selectedTabIndex.asStateFlow()
 
-    private val _isOnDuty = MutableStateFlow(true)
-    val isOnDuty: StateFlow<Boolean> = _isOnDuty.asStateFlow()
+
 
     private val _profileState = MutableStateFlow<UserResponse?>(null)
     val profileState: StateFlow<UserResponse?> = _profileState.asStateFlow()
@@ -36,14 +35,7 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
         _selectedTabIndex.value = index
     }
 
-    fun setDutyStatus(isOnDuty: Boolean) {
-        viewModelScope.launch {
-            val result = repository.updateDutyStatus(isOnDuty)
-            if (result.isSuccess) {
-                _isOnDuty.value = result.getOrNull()?.isActive ?: isOnDuty
-            }
-        }
-    }
+
 
     init {
         fetchProfile()
@@ -56,7 +48,6 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
             if (result.isSuccess) {
                 val profile = result.getOrNull()
                 _profileState.value = profile
-                _isOnDuty.value = profile?.isActive ?: false
             }
         }
     }

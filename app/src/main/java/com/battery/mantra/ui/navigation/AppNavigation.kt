@@ -368,7 +368,6 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val attendance by engineerViewModel.attendance.collectAsState()
             val leaves by engineerViewModel.leaves.collectAsState()
             val selectedTabIndex by engineerViewModel.selectedTabIndex.collectAsState()
-            val isOnDuty by engineerViewModel.isOnDuty.collectAsState()
 
             EngineerDashboardScreen(
                 uiState = uiState,
@@ -376,9 +375,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 attendance = attendance,
                 leaves = leaves,
                 selectedTabIndex = selectedTabIndex,
-                isOnDuty = isOnDuty,
                 onTabSelected = { engineerViewModel.onTabSelected(it) },
-                onDutyChange = { engineerViewModel.setDutyStatus(it) },
                 onNavigateToJobExecution = { jobId ->
                     navController.navigate("${Screen.JobExecution.route}/$jobId")
                 },

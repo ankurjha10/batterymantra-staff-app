@@ -78,11 +78,6 @@ class EngineerRepository(
         else Result.failure(Exception("Failed to fetch profile"))
     } catch (e: Exception) { Result.failure(e) }
 
-    suspend fun updateDutyStatus(isOnDuty: Boolean): Result<UserResponse> = try {
-        val response = api.updateDutyStatus(isOnDuty)
-        if (response.isSuccessful) Result.success(response.body()!!)
-        else Result.failure(Exception("Failed to update duty status"))
-    } catch (e: Exception) { Result.failure(e) }
 
     suspend fun checkIn(): Result<com.battery.mantra.data.models.AttendanceResponse> = try {
         val response = api.checkIn()

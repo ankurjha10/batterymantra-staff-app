@@ -73,7 +73,9 @@ fun EngineerHomeTab(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Check In", color = Color.White)
                         }
-                    } else if (todayAttendance.checkOutTime == null) {
+                    } 
+                    
+                    if (todayAttendance != null && todayAttendance.checkInTime != null && todayAttendance.checkOutTime == null) {
                         Button(
                             onClick = onCheckOut,
                             colors = ButtonDefaults.buttonColors(
@@ -86,7 +88,9 @@ fun EngineerHomeTab(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Check Out", color = Color.White)
                         }
-                    } else {
+                    } 
+                    
+                    if (todayAttendance != null && todayAttendance.checkOutTime != null) {
                         Text(
                             text = "Done for the day!",
                             color = Color(0xFF2E7D32),

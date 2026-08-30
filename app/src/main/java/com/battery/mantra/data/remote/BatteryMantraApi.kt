@@ -136,9 +136,6 @@ interface BatteryMantraApi {
     suspend fun getProfile(): Response<UserResponse>
 
     // --- Engineer Features ---
-    @PATCH("api/engineer/duty-status")
-    suspend fun updateDutyStatus(@Query("isOnDuty") isOnDuty: Boolean): Response<UserResponse>
-
     @POST("api/engineer/orders/{orderId}/log-call")
     suspend fun logCall(@Path("orderId") orderId: String): Response<Unit>
 

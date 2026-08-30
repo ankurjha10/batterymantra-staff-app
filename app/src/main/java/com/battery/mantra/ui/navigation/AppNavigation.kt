@@ -389,8 +389,35 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                     }
                     context.startActivity(intent)
                 },
-                onCheckIn = { engineerViewModel.checkIn() },
-                onCheckOut = { engineerViewModel.checkOut() }
+                onCheckIn = { 
+                    engineerViewModel.checkIn(
+                        onSuccess = { msg -> android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show() },
+                        onError = { err -> android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_SHORT).show() }
+                    ) 
+                },
+                onCheckOut = { 
+                    engineerViewModel.checkOut(
+                        onSuccess = { msg -> android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show() },
+                        onError = { err -> android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_SHORT).show() }
+                    ) 
+                },
+                onApplyLeave = { startDate, endDate, reason ->
+                    engineerViewModel.applyLeave(
+                        startDate = startDate,
+                        endDate = endDate,
+                        reason = reason,
+                        onSuccess = { android.widget.Toast.makeText(context, "Leave Applied Successfully", android.widget.Toast.LENGTH_SHORT).show() },
+                        onError = { err -> android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_SHORT).show() }
+                    )
+                },
+                onLogout = {
+                    scope.launch {
+                        appContainer.tokenManager.clearTokens()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
             )
         }
         

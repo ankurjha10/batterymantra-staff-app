@@ -8,7 +8,9 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,26 +35,92 @@ fun EngineerDashboardScreen(
     onNavigateToJobExecution: (String) -> Unit = {},
     onCallClick: (String, String) -> Unit = { _, _ -> },
     onCheckIn: () -> Unit = {},
-    onCheckOut: () -> Unit = {}
+    onCheckOut: () -> Unit = {},
+    onApplyLeave: (String, String, String) -> Unit = { _, _, _ -> },
+    onLogout: () -> Unit = {}
 ) {
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = Color.White
+            ) {
+                Spacer(Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFD32F2F), modifier = Modifier.size(32.dp))
+                    Spacer(Modifier.width(16.dp))
                     Text(
-                        text = "My Active Task", 
-                        color = Color(0xFFD32F2F), 
+                        "Engineer Menu",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* Handle menu */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFFD32F2F))
+                        fontSize = 22.sp,
+                        color = Color.Black
+                    )
+                }
+                HorizontalDivider(color = Color(0xFFEEEEEE))
+                Spacer(Modifier.height(16.dp))
+                
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = null, tint = Color(0xFFD32F2F)) },
+                    label = { Text("Home", color = Color.Black, fontSize = 16.sp) },
+                    selected = false,
+                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    onClick = {
+                        scope.launch { drawerState.close() }
                     }
-                },
-                actions = {
+                )
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFD32F2F)) },
+                    label = { Text("Profile", color = Color.Black, fontSize = 16.sp) },
+                    selected = false,
+                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onTabSelected(4)
+                    }
+                )
+                
+                Spacer(Modifier.weight(1f))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
+                
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFD32F2F)) },
+                    label = { Text("Logout", color = Color.Black, fontSize = 16.sp) },
+                    selected = false,
+                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onLogout()
+                    }
+                )
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { 
+                        Text(
+                            text = "My Active Task", 
+                            color = Color(0xFFD32F2F), 
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        ) 
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFFD32F2F))
+                        }
+                    },
+                    actions = {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 16.dp)) {
                         Text(
                             text = if (isOnDuty) "DUTY ON" else "DUTY OFF", 
@@ -187,7 +255,7 @@ fun EngineerDashboardScreen(
                         )
                         3 -> LeaveManagementTab(
                             leaves = leaves,
-                            onApplyLeaveClick = { /* TODO: Open Apply Leave Dialog */ }
+                            onApplyLeaveClick = onApplyLeave
                         )
                         4 -> EngineerProfileTab(
                             profile = profile
@@ -195,6 +263,7 @@ fun EngineerDashboardScreen(
                     }
                 }
             }
+        }
         }
     }
 }

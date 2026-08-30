@@ -14,20 +14,26 @@ fun EngineerHistoryTab(
     historyJobs: List<OrderResponse>
 ) {
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(historyJobs) { job ->
-            EngineerTaskCard(
-                orderId = job.orderId.take(8).uppercase(),
-                customerName = job.customerName ?: "Unknown",
-                address = job.shippingAddress ?: "No address",
-                status = job.orderStatus ?: "UNKNOWN",
-                price = "₹${job.totalAmount ?: 0.0}",
-                isActive = false
-            )
+    if (historyJobs.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            androidx.compose.material3.Text("No past tasks found", color = androidx.compose.ui.graphics.Color.Gray)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(historyJobs) { job ->
+                EngineerTaskCard(
+                    orderId = job.orderId.take(8).uppercase(),
+                    customerName = job.customerName ?: "Unknown",
+                    address = job.shippingAddress ?: "No address",
+                    status = job.orderStatus ?: "UNKNOWN",
+                    price = "₹${job.totalAmount ?: 0.0}",
+                    isActive = false
+                )
+            }
         }
     }
 }

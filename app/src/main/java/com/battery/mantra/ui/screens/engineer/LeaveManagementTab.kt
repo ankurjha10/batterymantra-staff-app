@@ -20,8 +20,20 @@ import com.battery.mantra.data.models.LeaveRequestResponse
 @Composable
 fun LeaveManagementTab(
     leaves: List<LeaveRequestResponse>,
-    onApplyLeaveClick: () -> Unit
+    onApplyLeaveClick: (String, String, String) -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        ApplyLeaveDialog(
+            onDismiss = { showDialog = false },
+            onSubmit = { startDate, endDate, reason ->
+                showDialog = false
+                onApplyLeaveClick(startDate, endDate, reason)
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,13 +52,16 @@ fun LeaveManagementTab(
             )
             
             Button(
-                onClick = onApplyLeaveClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                onClick = { showDialog = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFD32F2F),
+                    contentColor = Color.White
+                ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Apply")
+                Icon(Icons.Default.Add, contentDescription = "Apply", tint = Color.White)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Apply Leave")
+                Text("Apply Leave", color = Color.White)
             }
         }
         
@@ -55,6 +70,7 @@ fun LeaveManagementTab(
         if (leaves.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("No leave requests found", color = Color.Gray)
+
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -114,4 +130,58 @@ fun LeaveCard(leave: LeaveRequestResponse) {
             )
         }
     }
+}
+
+@Composable
+fun ApplyLeaveDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String, String, String) -> Unit
+) {
+    var startDate by remember { mutableStateOf("") }
+    var endDate by remember { mutableStateOf("") }
+    var reason by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Apply for Leave", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    label = { Text("Start Date (YYYY-MM-DD)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = endDate,
+                    onValueChange = { endDate = it },
+                    label = { Text("End Date (YYYY-MM-DD)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = reason,
+                    onValueChange = { reason = it },
+                    label = { Text("Reason") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSubmit(startDate, endDate, reason) },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+            ) {
+                Text("Apply", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = Color.Gray)
+            }
+        },
+        containerColor = Color.White
+    )
 }

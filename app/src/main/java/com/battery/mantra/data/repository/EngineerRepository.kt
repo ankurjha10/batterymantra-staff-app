@@ -87,13 +87,29 @@ class EngineerRepository(
     suspend fun checkIn(): Result<com.battery.mantra.data.models.AttendanceResponse> = try {
         val response = api.checkIn()
         if (response.isSuccessful) Result.success(response.body()!!)
-        else Result.failure(Exception("Check-in failed"))
+        else {
+            val errorString = response.errorBody()?.string()
+            val errorMessage = try {
+                org.json.JSONObject(errorString ?: "").getString("message")
+            } catch (e: Exception) {
+                "Check-in failed"
+            }
+            Result.failure(Exception(errorMessage))
+        }
     } catch (e: Exception) { Result.failure(e) }
 
     suspend fun checkOut(): Result<com.battery.mantra.data.models.AttendanceResponse> = try {
         val response = api.checkOut()
         if (response.isSuccessful) Result.success(response.body()!!)
-        else Result.failure(Exception("Check-out failed"))
+        else {
+            val errorString = response.errorBody()?.string()
+            val errorMessage = try {
+                org.json.JSONObject(errorString ?: "").getString("message")
+            } catch (e: Exception) {
+                "Check-out failed"
+            }
+            Result.failure(Exception(errorMessage))
+        }
     } catch (e: Exception) { Result.failure(e) }
 
     suspend fun getAttendance(): Result<List<com.battery.mantra.data.models.AttendanceResponse>> = try {
@@ -105,7 +121,15 @@ class EngineerRepository(
     suspend fun applyLeave(startDate: String, endDate: String, reason: String): Result<com.battery.mantra.data.models.LeaveRequestResponse> = try {
         val response = api.applyLeave(com.battery.mantra.data.models.ApplyLeaveRequest(startDate, endDate, reason))
         if (response.isSuccessful) Result.success(response.body()!!)
-        else Result.failure(Exception("Failed to apply leave"))
+        else {
+            val errorString = response.errorBody()?.string()
+            val errorMessage = try {
+                org.json.JSONObject(errorString ?: "").getString("message")
+            } catch (e: Exception) {
+                "Failed to apply leave"
+            }
+            Result.failure(Exception(errorMessage))
+        }
     } catch (e: Exception) { Result.failure(e) }
 
     suspend fun getMyLeaves(): Result<List<com.battery.mantra.data.models.LeaveRequestResponse>> = try {

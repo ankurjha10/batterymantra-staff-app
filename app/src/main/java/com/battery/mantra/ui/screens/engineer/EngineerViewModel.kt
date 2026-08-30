@@ -23,7 +23,7 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
     private val _uiState = MutableStateFlow<EngineerDashboardState>(EngineerDashboardState.Loading)
     val uiState: StateFlow<EngineerDashboardState> = _uiState.asStateFlow()
 
-    private val _selectedTabIndex = MutableStateFlow(1)
+    private val _selectedTabIndex = MutableStateFlow(0)
     val selectedTabIndex: StateFlow<Int> = _selectedTabIndex.asStateFlow()
 
     private val _isOnDuty = MutableStateFlow(true)
@@ -112,20 +112,26 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
         }
     }
 
-    fun checkIn() {
+    fun checkIn(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = repository.checkIn()
             if (result.isSuccess) {
                 fetchAttendance()
+                onSuccess("Checked In Successfully")
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to Check In")
             }
         }
     }
 
-    fun checkOut() {
+    fun checkOut(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = repository.checkOut()
             if (result.isSuccess) {
                 fetchAttendance()
+                onSuccess("Checked Out Successfully")
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to Check Out")
             }
         }
     }

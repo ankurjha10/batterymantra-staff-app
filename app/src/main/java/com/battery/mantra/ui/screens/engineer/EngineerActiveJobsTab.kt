@@ -16,22 +16,28 @@ fun EngineerActiveJobsTab(
     onCallClick: (String, String) -> Unit
 ) {
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(activeJobs) { job ->
-            EngineerTaskCard(
-                orderId = job.orderId.take(8).uppercase(),
-                customerName = job.customerName ?: "Unknown",
-                address = job.shippingAddress ?: "No address",
-                price = "₹${job.totalAmount ?: 0.0}",
-                status = job.orderStatus ?: "UNKNOWN",
-                actionText = "Start Dispatch",
-                onActionClick = { onNavigateToJobExecution(job.orderId) },
-                onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") }
-            )
+    if (activeJobs.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            androidx.compose.material3.Text("No active tasks found", color = androidx.compose.ui.graphics.Color.Gray)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(activeJobs) { job ->
+                EngineerTaskCard(
+                    orderId = job.orderId.take(8).uppercase(),
+                    customerName = job.customerName ?: "Unknown",
+                    address = job.shippingAddress ?: "No address",
+                    price = "₹${job.totalAmount ?: 0.0}",
+                    status = job.orderStatus ?: "UNKNOWN",
+                    actionText = "Execute Job",
+                    onActionClick = { onNavigateToJobExecution(job.orderId) },
+                    onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") }
+                )
+            }
         }
     }
 }

@@ -40,6 +40,8 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
     init {
         fetchProfile()
         fetchJobs()
+        fetchAttendance()
+        fetchLeaves()
     }
 
     private fun fetchProfile() {

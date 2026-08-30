@@ -22,42 +22,99 @@ fun EngineerHomeTab(
     onCheckIn: () -> Unit,
     onCheckOut: () -> Unit
 ) {
-    val todayAttendance = attendance.firstOrNull { /* We would filter by today's date if date is passed */ true }
-    
+    val today = java.time.LocalDate.now().toString()
+    val todayAttendance = attendance.firstOrNull { it.date == today }
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+            colors = CardDefaults.outlinedCardColors(containerColor = Color.White)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier
+                    .background(Color.White)
+                    .padding(28.dp)
+                    .fillMaxWidth()
             ) {
-                Text(
-                    text = "Daily Attendance",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "Status: ${todayAttendance?.status ?: "PENDING"}",
-                    fontSize = 16.sp,
-                    color = Color.DarkGray
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Surface(
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = Color(0xFFE0F2FE),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Outlined.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF0284C7),
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Daily Attendance",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF0F172A)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    val isPresent = todayAttendance?.status == "PRESENT"
+                    Surface(
+                        color = if (isPresent) Color(0xFFDCFCE7) else Color(0xFFF1F5F9),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp, 
+                            if (isPresent) Color(0xFF86EFAC) else Color(0xFFCBD5E1)
+                        ),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(
+                                        if (isPresent) Color(0xFF10B981) else Color(0xFF64748B), 
+                                        shape = androidx.compose.foundation.shape.CircleShape
+                                    )
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "STATUS: ${todayAttendance?.status ?: "PENDING"}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp,
+                                color = if (isPresent) Color(0xFF166534) else Color(0xFF334155)
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(32.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     if (todayAttendance == null || todayAttendance.checkInTime == null) {
@@ -93,7 +150,7 @@ fun EngineerHomeTab(
                     if (todayAttendance != null && todayAttendance.checkOutTime != null) {
                         Text(
                             text = "Done for the day!",
-                            color = Color(0xFF2E7D32),
+                            color = Color(0xFF34D399),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -102,4 +159,5 @@ fun EngineerHomeTab(
             }
         }
     }
+}
 }

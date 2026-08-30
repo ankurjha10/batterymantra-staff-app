@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.ui.theme.BackgroundSurface
-import com.battery.mantra.data.repository.EngineerTask
 import com.battery.mantra.data.models.UserResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -113,8 +113,8 @@ fun EngineerDashboardScreen(
                 NavigationBarItem(
                     selected = selectedTabIndex == 2,
                     onClick = { onTabSelected(2) },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile", modifier = Modifier.size(24.dp)) },
-                    label = { Text("Profile") },
+                    icon = { Icon(Icons.Default.History, contentDescription = "History", modifier = Modifier.size(24.dp)) },
+                    label = { Text("History") },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
                         selectedTextColor = Color(0xFFD32F2F),
@@ -128,6 +128,19 @@ fun EngineerDashboardScreen(
                     onClick = { onTabSelected(3) },
                     icon = { Icon(Icons.Default.Event, contentDescription = "Leaves", modifier = Modifier.size(24.dp)) },
                     label = { Text("Leaves") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.White,
+                        selectedTextColor = Color(0xFFD32F2F),
+                        indicatorColor = Color(0xFFD32F2F),
+                        unselectedIconColor = Color(0xFF5F6368),
+                        unselectedTextColor = Color(0xFF5F6368)
+                    )
+                )
+                NavigationBarItem(
+                    selected = selectedTabIndex == 4,
+                    onClick = { onTabSelected(4) },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile", modifier = Modifier.size(24.dp)) },
+                    label = { Text("Profile") },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
                         selectedTextColor = Color(0xFFD32F2F),
@@ -175,6 +188,9 @@ fun EngineerDashboardScreen(
                         3 -> LeaveManagementTab(
                             leaves = leaves,
                             onApplyLeaveClick = { /* TODO: Open Apply Leave Dialog */ }
+                        )
+                        4 -> EngineerProfileTab(
+                            profile = profile
                         )
                     }
                 }

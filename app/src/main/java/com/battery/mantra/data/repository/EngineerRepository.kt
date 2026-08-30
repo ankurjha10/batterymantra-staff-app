@@ -4,28 +4,14 @@ import com.battery.mantra.data.remote.BatteryMantraApi
 import com.battery.mantra.data.models.OrderResponse
 import com.battery.mantra.data.models.UserResponse
 
-data class EngineerTask(
-    val id: String,
-    val customerName: String,
-    val customerPhone: String,
-    val address: String,
-    val status: String,
-    val price: String
-)
-
 class EngineerRepository(
     private val api: BatteryMantraApi
 ) {
-    suspend fun getActiveJobs(): Result<List<EngineerTask>> {
+    suspend fun getActiveJobs(): Result<List<OrderResponse>> {
         return try {
-            val response = api.getMyOrders()
+            val response = api.getEngineerOrders("active")
             if (response.isSuccessful && response.body() != null) {
-                // Filter active jobs (e.g. ASSIGNED, DISPATCHED)
-                val activeStatuses = listOf("ASSIGNED", "DISPATCHED", "PENDING", "ACCEPTED")
-                val activeOrders = response.body()!!.filter {
-                    activeStatuses.contains(it.orderStatus?.uppercase())
-                }.map { it.toEngineerTask() }
-                Result.success(activeOrders)
+                Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Failed to fetch jobs"))
             }
@@ -34,16 +20,11 @@ class EngineerRepository(
         }
     }
 
-    suspend fun getHistoryJobs(): Result<List<EngineerTask>> {
+    suspend fun getHistoryJobs(): Result<List<OrderResponse>> {
         return try {
-            val response = api.getMyOrders()
+            val response = api.getEngineerOrders("history")
             if (response.isSuccessful && response.body() != null) {
-                // Filter history jobs (e.g. COMPLETED, CANCELLED, FAILED)
-                val historyStatuses = listOf("COMPLETED", "DELIVERED", "CANCELLED", "FAILED")
-                val historyOrders = response.body()!!.filter {
-                    historyStatuses.contains(it.orderStatus?.uppercase())
-                }.map { it.toEngineerTask() }
-                Result.success(historyOrders)
+                Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Failed to fetch jobs"))
             }
@@ -107,14 +88,4 @@ class EngineerRepository(
         else Result.failure(Exception("Failed to fetch leaves"))
     } catch (e: Exception) { Result.failure(e) }
 
-    private fun OrderResponse.toEngineerTask(): EngineerTask {
-        return EngineerTask(
-            id = this.orderId,
-            customerName = this.customerName ?: "Unknown",
-            customerPhone = this.customerPhone ?: "",
-            address = this.shippingAddress ?: "No address provided",
-            status = this.orderStatus ?: "UNKNOWN",
-            price = "₹${this.totalAmount ?: 0.0}"
-        )
-    }
 }

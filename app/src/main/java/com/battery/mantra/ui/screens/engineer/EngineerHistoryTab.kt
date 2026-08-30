@@ -6,12 +6,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.battery.mantra.data.repository.EngineerTask
+import com.battery.mantra.data.models.OrderResponse
 import com.battery.mantra.ui.components.EngineerTaskCard
 
 @Composable
 fun EngineerHistoryTab(
-    historyJobs: List<EngineerTask>
+    historyJobs: List<OrderResponse>
 ) {
 
     LazyColumn(
@@ -21,11 +21,11 @@ fun EngineerHistoryTab(
     ) {
         items(historyJobs) { job ->
             EngineerTaskCard(
-                orderId = job.id.take(8).uppercase(),
-                customerName = job.customerName,
-                address = job.address,
-                status = job.status,
-                price = job.price,
+                orderId = job.orderId.take(8).uppercase(),
+                customerName = job.customerName ?: "Unknown",
+                address = job.shippingAddress ?: "No address",
+                status = job.orderStatus ?: "UNKNOWN",
+                price = "₹${job.totalAmount ?: 0.0}",
                 isActive = false
             )
         }

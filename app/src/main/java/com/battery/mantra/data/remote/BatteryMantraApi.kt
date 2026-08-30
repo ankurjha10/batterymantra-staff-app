@@ -132,7 +132,7 @@ interface BatteryMantraApi {
     suspend fun deleteNotification(@Path("id") id: String): Response<Unit>
 
     // --- Profile & Shared ---
-    @GET("api/users/me")
+    @GET("api/engineer/profile")
     suspend fun getProfile(): Response<UserResponse>
 
     // --- Engineer Features ---
@@ -141,6 +141,9 @@ interface BatteryMantraApi {
 
     @POST("api/engineer/orders/{orderId}/log-call")
     suspend fun logCall(@Path("orderId") orderId: String): Response<Unit>
+
+    @GET("api/engineer/orders")
+    suspend fun getEngineerOrders(@Query("type") type: String): Response<List<OrderResponse>>
 
     // --- Engineer Attendance & Leaves ---
     @POST("api/engineer/attendance/check-in")

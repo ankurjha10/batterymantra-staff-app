@@ -6,12 +6,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.battery.mantra.data.repository.EngineerTask
+import com.battery.mantra.data.models.OrderResponse
 import com.battery.mantra.ui.components.EngineerTaskCard
 
 @Composable
 fun EngineerActiveJobsTab(
-    activeJobs: List<EngineerTask>,
+    activeJobs: List<OrderResponse>,
     onNavigateToJobExecution: (String) -> Unit,
     onCallClick: (String, String) -> Unit
 ) {
@@ -23,14 +23,14 @@ fun EngineerActiveJobsTab(
     ) {
         items(activeJobs) { job ->
             EngineerTaskCard(
-                orderId = job.id.take(8).uppercase(),
-                customerName = job.customerName,
-                address = job.address,
-                price = job.price,
-                status = job.status,
+                orderId = job.orderId.take(8).uppercase(),
+                customerName = job.customerName ?: "Unknown",
+                address = job.shippingAddress ?: "No address",
+                price = "₹${job.totalAmount ?: 0.0}",
+                status = job.orderStatus ?: "UNKNOWN",
                 actionText = "Start Dispatch",
-                onActionClick = { onNavigateToJobExecution(job.id) },
-                onCallClick = { onCallClick(job.id, job.customerPhone) }
+                onActionClick = { onNavigateToJobExecution(job.orderId) },
+                onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") }
             )
         }
     }

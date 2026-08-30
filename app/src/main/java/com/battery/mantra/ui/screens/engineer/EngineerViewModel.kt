@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.battery.mantra.data.repository.EngineerRepository
-import com.battery.mantra.data.repository.EngineerTask
 import com.battery.mantra.data.models.UserResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +13,8 @@ import kotlinx.coroutines.launch
 sealed class EngineerDashboardState {
     object Loading : EngineerDashboardState()
     data class Success(
-        val activeJobs: List<EngineerTask>,
-        val historyJobs: List<EngineerTask>
+        val activeJobs: List<com.battery.mantra.data.models.OrderResponse>,
+        val historyJobs: List<com.battery.mantra.data.models.OrderResponse>
     ) : EngineerDashboardState()
     data class Error(val message: String) : EngineerDashboardState()
 }

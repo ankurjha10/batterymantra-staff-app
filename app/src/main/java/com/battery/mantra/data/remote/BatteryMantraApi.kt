@@ -143,13 +143,13 @@ interface BatteryMantraApi {
     suspend fun getEngineerOrders(@Query("type") type: String): Response<List<OrderResponse>>
 
     @POST("api/engineer/orders/{orderId}/send-otp")
-    suspend fun sendCompletionOtp(@Path("orderId") orderId: String): Response<String>
+    suspend fun sendCompletionOtp(@Path("orderId") orderId: String): Response<okhttp3.ResponseBody>
 
     @POST("api/engineer/orders/{orderId}/complete")
     suspend fun completeJob(
         @Path("orderId") orderId: String,
         @Body request: com.battery.mantra.data.models.EngineerCompleteJobRequest
-    ): Response<OrderResponse>
+    ): Response<okhttp3.ResponseBody>
 
     // --- Engineer Attendance & Leaves ---
     @POST("api/engineer/attendance/check-in")

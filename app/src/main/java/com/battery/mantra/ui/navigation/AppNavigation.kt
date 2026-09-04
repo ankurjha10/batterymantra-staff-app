@@ -377,7 +377,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { engineerViewModel.onTabSelected(it) },
                 onNavigateToJobExecution = { jobId ->
-                    navController.navigate("${Screen.JobExecution.route}/$jobId")
+                    navController.navigate(Screen.JobExecution.createRoute(jobId))
                 },
                 onCallClick = { orderId, phone ->
                     engineerViewModel.logCall(orderId)
@@ -433,7 +433,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 viewModel = viewModel,
                 onBackClick = { navController.navigateUp() },
                 onNavigateToJobExecution = { jobId ->
-                    navController.navigate("${Screen.JobExecution.route}/$jobId")
+                    navController.navigate(Screen.JobExecution.createRoute(jobId))
                 }
             )
         }

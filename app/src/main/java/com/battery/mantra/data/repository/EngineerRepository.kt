@@ -50,7 +50,7 @@ class EngineerRepository(
         return try {
             val response = api.sendCompletionOtp(orderId)
             if (response.isSuccessful) {
-                Result.success(response.body() ?: "OTP Sent")
+                Result.success(response.body()?.string() ?: "OTP Sent")
             } else {
                 Result.failure(Exception("Failed to send OTP"))
             }
@@ -59,13 +59,14 @@ class EngineerRepository(
         }
     }
 
-    suspend fun completeJob(orderId: String, request: com.battery.mantra.data.models.EngineerCompleteJobRequest): Result<OrderResponse> {
+    suspend fun completeJob(orderId: String, request: com.battery.mantra.data.models.EngineerCompleteJobRequest): Result<Unit> {
         return try {
             val response = api.completeJob(orderId, request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            if (response.isSuccessful) {
+                Result.success(Unit)
             } else {
-                Result.failure(Exception("Failed to complete job"))
+                val errorMsg = response.errorBody()?.string() ?: "Failed to complete job"
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)

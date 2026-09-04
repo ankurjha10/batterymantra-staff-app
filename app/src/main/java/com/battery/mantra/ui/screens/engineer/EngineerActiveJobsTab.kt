@@ -28,13 +28,16 @@ fun EngineerActiveJobsTab(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(activeJobs) { job ->
+                val status = job.orderStatus?.uppercase() ?: "UNKNOWN"
+                val isCompleted = listOf("COMPLETED", "DELIVERED", "INSTALLED", "CANCELLED", "FAILED").contains(status)
+                
                 EngineerTaskCard(
                     orderId = job.orderId.take(8).uppercase(),
                     customerName = job.customerName ?: "Unknown",
                     address = job.shippingAddress ?: "No address",
                     price = "₹${job.totalAmount ?: 0.0}",
-                    status = job.orderStatus ?: "UNKNOWN",
-                    actionText = "Execute Job",
+                    status = status,
+                    actionText = if (isCompleted) "" else "Execute Job",
                     onActionClick = { onNavigateToJobExecution(job.orderId) },
                     onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") },
                     onNavigateClick = {

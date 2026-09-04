@@ -30,7 +30,7 @@ fun JobExecutionScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    var serialNumber by remember { mutableStateOf("") }
+    var serialNumber by remember { mutableStateOf("N/A") }
     var oldBatteryCollected by remember { mutableStateOf(false) }
     var paymentMode by remember { mutableStateOf("CASH") }
     var otp by remember { mutableStateOf("") }
@@ -97,47 +97,20 @@ fun JobExecutionScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Step 1: Serial Number
-                    Text("1. Enter New Battery Serial Number", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = serialNumber,
-                        onValueChange = { serialNumber = it },
-                        label = { Text("Serial Number") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = step == 1,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    
-                    if (step == 1) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = { 
-                                if (serialNumber.isNotBlank()) viewModel.setStep(2)
-                                else coroutineScope.launch { snackbarHostState.showSnackbar("Enter serial number") }
-                            },
-                            modifier = Modifier.align(Alignment.End).height(48.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
-                        ) {
-                            Text("Next", fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Step 2: Old Battery & Payment
+                    // Step 1: Old Battery & Payment
                     if (step >= 2) {
-                        Text("2. Old Battery & Payment", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Text("1. Old Battery & Payment", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
                                 checked = oldBatteryCollected,
                                 onCheckedChange = { oldBatteryCollected = it },
-                                enabled = step == 2
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = Color(0xFFD32F2F),
+                                    uncheckedColor = Color.Gray,
+                                    checkmarkColor = Color.White
+                                )
                             )
                             Text("Old Battery Collected (Scrap Discount applied)")
                         }
@@ -146,10 +119,18 @@ fun JobExecutionScreen(
                         
                         Text("Payment Collection Mode:")
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(selected = paymentMode == "CASH", onClick = { paymentMode = "CASH" }, enabled = step == 2)
+                            RadioButton(
+                                selected = paymentMode == "CASH", 
+                                onClick = { paymentMode = "CASH" }, 
+                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                            )
                             Text("Cash")
                             Spacer(modifier = Modifier.width(16.dp))
-                            RadioButton(selected = paymentMode == "UPI", onClick = { paymentMode = "UPI" }, enabled = step == 2)
+                            RadioButton(
+                                selected = paymentMode == "UPI", 
+                                onClick = { paymentMode = "UPI" }, 
+                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                            )
                             Text("UPI / Online")
                         }
 
@@ -161,16 +142,16 @@ fun JobExecutionScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                             ) {
-                                Text("Next", fontWeight = FontWeight.Bold)
+                                Text("Next", fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
                         
                         Spacer(modifier = Modifier.height(24.dp))
                     }
 
-                    // Step 3: OTP Verification
+                    // Step 2: OTP Verification
                     if (step >= 3) {
-                        Text("3. Customer OTP Verification", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Text("2. Verify Customer OTP", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         if (!otpSent) {
@@ -182,9 +163,9 @@ fun JobExecutionScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth().height(48.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                             ) {
-                                Text("Send OTP to Customer", fontWeight = FontWeight.Bold)
+                                Text("Send OTP to Customer", fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         } else {
                             OutlinedTextField(
@@ -192,7 +173,14 @@ fun JobExecutionScreen(
                                 onValueChange = { otp = it },
                                 label = { Text("Enter OTP from Customer") },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color(0xFFD32F2F),
+                                    focusedLabelColor = Color(0xFFD32F2F),
+                                    cursorColor = Color(0xFFD32F2F),
+                                    focusedTextColor = Color.Black,
+                                    unfocusedTextColor = Color.Black
+                                )
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
@@ -201,14 +189,14 @@ fun JobExecutionScreen(
                                     coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
                                 } 
                             }) {
-                                Text("Resend OTP", color = Color(0xFF1976D2))
+                                Text("Resend OTP", color = Color(0xFFD32F2F))
                             }
                             
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             Button(
                                 onClick = { 
-                                    viewModel.completeJob(serialNumber, oldBatteryCollected, paymentMode, otp) { success, msg ->
+                                    viewModel.completeJob(oldBatteryCollected, paymentMode, otp) { success, msg ->
                                         if (success) {
                                             onBackClick() // Go back on success
                                         } else {
@@ -224,7 +212,7 @@ fun JobExecutionScreen(
                                 if (isSubmitting) {
                                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                                 } else {
-                                    Text("Mark Job as Completed", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                    Text("Mark Job as Completed", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
                         }

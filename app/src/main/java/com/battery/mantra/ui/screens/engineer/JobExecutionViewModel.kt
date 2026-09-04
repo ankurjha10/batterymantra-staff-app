@@ -25,7 +25,7 @@ class JobExecutionViewModel(
     private val _uiState = MutableStateFlow<JobExecutionState>(JobExecutionState.Loading)
     val uiState: StateFlow<JobExecutionState> = _uiState.asStateFlow()
 
-    private val _step = MutableStateFlow(1)
+    private val _step = MutableStateFlow(2)
     val step: StateFlow<Int> = _step.asStateFlow()
 
     private val _otpSent = MutableStateFlow(false)
@@ -72,9 +72,9 @@ class JobExecutionViewModel(
         }
     }
 
-    fun completeJob(serialNumber: String, oldBatteryCollected: Boolean, paymentMode: String, otp: String, onResult: (Boolean, String) -> Unit) {
-        if (otp.isBlank() || serialNumber.isBlank()) {
-            onResult(false, "Please fill in all required fields")
+    fun completeJob(oldBatteryCollected: Boolean, paymentMode: String, otp: String, onResult: (Boolean, String) -> Unit) {
+        if (otp.isBlank()) {
+            onResult(false, "Please enter the OTP")
             return
         }
 
@@ -82,7 +82,7 @@ class JobExecutionViewModel(
         viewModelScope.launch {
             val request = EngineerCompleteJobRequest(
                 otp = otp,
-                serialNumber = serialNumber,
+                serialNumber = "N/A",
                 oldBatteryCollected = oldBatteryCollected,
                 paymentMode = paymentMode
             )

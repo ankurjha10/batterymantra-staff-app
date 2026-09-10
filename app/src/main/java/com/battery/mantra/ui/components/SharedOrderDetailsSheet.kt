@@ -1,4 +1,4 @@
-package com.battery.mantra.ui.screens.admin
+package com.battery.mantra.ui.components
 
 import android.content.Intent
 import android.net.Uri
@@ -27,8 +27,9 @@ import com.battery.mantra.data.models.OrderResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminOrderDetailsSheet(
+fun SharedOrderDetailsSheet(
     order: OrderResponse,
+    isAdmin: Boolean = false,
     onDismiss: () -> Unit,
     onAssignEngineer: (String) -> Unit = {},
     onUpdateStatus: (String, String) -> Unit = { _, _ -> }
@@ -119,7 +120,7 @@ fun AdminOrderDetailsSheet(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(statusColor.copy(alpha = 0.15f))
-                                .clickable(enabled = !isTerminalState) { statusExpanded = true }
+                                .clickable(enabled = isAdmin && !isTerminalState) { statusExpanded = true }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -191,20 +192,43 @@ fun AdminOrderDetailsSheet(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(40.dp)
-                                                    .clip(RoundedCornerShape(8.dp))
-                                                    .background(Color(0xFFF1F5F9)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text("${item.quantity}x", fontWeight = FontWeight.Bold, color = Color(0xFF64748B))
+                                            val imageModifier = Modifier
+                                                .size(48.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(Color(0xFFF1F5F9))
+
+                                            if (!item.productImage.isNullOrEmpty()) {
+                                                coil.compose.AsyncImage(
+                                                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                                        .data(item.productImage)
+                                                        .crossfade(true)
+                                                        .build(),
+                                                    contentDescription = "Product Image",
+                                                    modifier = imageModifier,
+                                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                                )
+                                            } else {
+                                                Box(
+                                                    modifier = imageModifier,
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(Icons.Outlined.Inventory2, contentDescription = null, tint = Color.LightGray)
+                                                }
                                             }
+                                            
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Column {
-                                                Text(text = "PID: ${item.productId.take(8)}", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                                                if (item.exchangeOldBattery) {
-                                                    Text(text = "With Exchange", fontSize = 12.sp, color = Color(0xFFD32F2F))
+                                                Text(
+                                                    text = item.productName ?: "PID: ${item.productId.take(8)}", 
+                                                    fontWeight = FontWeight.SemiBold, 
+                                                    fontSize = 14.sp
+                                                )
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text(text = "Qty: ${item.quantity}", fontSize = 12.sp, color = Color.Gray)
+                                                    if (item.exchangeOldBattery) {
+                                                        Spacer(modifier = Modifier.width(8.dp))
+                                                        Text(text = "• With Exchange", fontSize = 12.sp, color = Color(0xFFD32F2F))
+                                                    }
                                                 }
                                             }
                                         }
@@ -214,6 +238,40 @@ fun AdminOrderDetailsSheet(
                         }
                     }
                 }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+
+                // Order Details (Payment, Delivery)
+                item {
+                    InfoCard(title = "Order Details", icon = Icons.Outlined.Info) {
+                        // Dates
+                        DetailRow(icon = Icons.Outlined.CalendarToday, text = "Placed: ${order.placedAt?.take(10) ?: "N/A"}")
+                        DetailRow(icon = Icons.Outlined.EventAvailable, text = "Installation: ${order.installationDate ?: "N/A"}")
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Delivery
+                        DetailRow(icon = Icons.Outlined.LocalShipping, text = "Delivery Method: ${order.deliveryMethod ?: "STANDARD"}")
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        
+                        // Payment
+                        val isPaid = order.paymentStatus?.uppercase() == "PAID"
+                        val paymentColor = if (isPaid) Color(0xFF10B981) else Color(0xFFD32F2F)
+                        val paymentMethod = order.paymentMethod ?: "COD"
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Payments, contentDescription = "Payment", tint = Color.LightGray, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Payment: ", fontSize = 14.sp, color = Color.DarkGray)
+                            Text(
+                                text = "${if (isPaid) "PAID" else "PENDING"} ($paymentMethod)",
+                                fontSize = 14.sp, color = paymentColor, fontWeight = FontWeight.Bold
+                            )
+                        }
+                        DetailRow(icon = Icons.Outlined.AttachMoney, text = "Total Amount: ₹${order.totalAmount ?: 0.0}")
+                    }
+                }
+                
+                item { Spacer(modifier = Modifier.height(16.dp)) }
 
                 // Customer Details Card
                 item {
@@ -339,11 +397,11 @@ fun AdminOrderDetailsSheet(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text("Already Assigned To", fontSize = 12.sp, color = Color.Gray)
+                        Text("Assigned To", fontSize = 12.sp, color = Color.Gray)
                         Text(assignedName ?: "Unknown", fontWeight = FontWeight.Bold, color = Color(0xFF10B981), fontSize = 16.sp)
                     }
                 }
-            } else if (order.orderStatus == "PENDING" || order.orderStatus == "CONFIRMED") {
+            } else if (isAdmin && (order.orderStatus == "PENDING" || order.orderStatus == "CONFIRMED")) {
                 Button(
                     onClick = { 
                         onDismiss()

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.battery.mantra.data.models.OrderResponse
@@ -15,6 +17,7 @@ fun EngineerActiveJobsTab(
     onNavigateToJobExecution: (String) -> Unit,
     onCallClick: (String, String) -> Unit
 ) {
+    var selectedOrderForDetails by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<OrderResponse?>(null) }
 
     if (activeJobs.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
@@ -57,9 +60,20 @@ fun EngineerActiveJobsTab(
                             // Fallback if Google Maps is not installed
                             context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri))
                         }
+                    },
+                    onClick = {
+                        selectedOrderForDetails = job
                     }
                 )
             }
+        }
+        
+        if (selectedOrderForDetails != null) {
+            com.battery.mantra.ui.components.SharedOrderDetailsSheet(
+                order = selectedOrderForDetails!!,
+                isAdmin = false,
+                onDismiss = { selectedOrderForDetails = null }
+            )
         }
     }
 }

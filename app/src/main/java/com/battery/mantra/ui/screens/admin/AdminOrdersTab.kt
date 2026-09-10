@@ -297,12 +297,12 @@ fun AdminOrdersTab(
     }
 
     if (selectedOrderForDetails != null) {
-        AdminOrderDetailsSheet(
+        com.battery.mantra.ui.components.SharedOrderDetailsSheet(
             order = selectedOrderForDetails!!,
+            isAdmin = true,
             onDismiss = { selectedOrderForDetails = null },
-            onAssignEngineer = { orderId -> 
-                selectedOrderForDetails = null
-                selectedOrderIdToAssign = orderId 
+            onAssignEngineer = { orderId ->
+                selectedOrderIdToAssign = orderId
             },
             onUpdateStatus = onUpdateStatus
         )

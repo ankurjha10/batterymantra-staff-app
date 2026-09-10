@@ -1,16 +1,22 @@
 package com.battery.mantra.ui.screens.engineer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,24 +85,99 @@ fun JobExecutionScreen(
                 is JobExecutionState.Success -> {
                     val order = (uiState as JobExecutionState.Success).order
                     
-                    // Job Summary Card
+                    // Premium Job Summary Card
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 24.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Customer: ${order.customerName ?: "Unknown"}", fontWeight = FontWeight.Bold)
+                            // Product Info Header
                             if (!order.orderItems.isNullOrEmpty()) {
-                                Text("Product ID: ${order.orderItems.first().productId}")
+                                val item = order.orderItems.first()
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    val imageModifier = Modifier
+                                        .size(60.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFFF1F5F9))
+
+                                    if (!item.productImage.isNullOrEmpty()) {
+                                        coil.compose.AsyncImage(
+                                            model = coil.request.ImageRequest.Builder(androidx.compose.ui.platform.LocalContext.current)
+                                                .data(item.productImage)
+                                                .crossfade(true)
+                                                .build(),
+                                            contentDescription = "Product Image",
+                                            modifier = imageModifier,
+                                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = imageModifier,
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(androidx.compose.material.icons.Icons.Outlined.Inventory2, contentDescription = null, tint = Color.LightGray)
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.width(16.dp))
+
+                                    Column {
+                                        Text(
+                                            text = item.productName ?: "Product ID: ${item.productId.take(8)}",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            color = Color(0xFF1E293B)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(text = "Qty: ${item.quantity}", fontSize = 13.sp, color = Color.Gray)
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Divider(color = Color(0xFFF1F5F9))
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
-                            Text("Phone: ${order.customerPhone ?: "No Phone"}")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Address: ${order.shippingAddress ?: "No address"}", color = Color.Gray)
-                            if (order.paymentStatus?.uppercase() == "PAID") {
-                                Text("Amount Paid: ₹${order.totalAmount}", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
-                            } else {
-                                Text("Amount Due: ₹${order.totalAmount}", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+
+                            // Customer Details
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(androidx.compose.material.icons.Icons.Outlined.Person, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(order.customerName ?: "Unknown Customer", fontWeight = FontWeight.SemiBold, color = Color(0xFF334155))
+                                    Text(order.customerPhone ?: "No Phone", fontSize = 13.sp, color = Color.Gray)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(androidx.compose.material.icons.Icons.Outlined.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(order.shippingAddress ?: "No address provided", fontSize = 13.sp, color = Color.Gray, lineHeight = 18.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Payment Highlight
+                            val isPaid = order.paymentStatus?.uppercase() == "PAID"
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isPaid) Color(0xFFDCFCE7) else Color(0xFFFEE2E2))
+                                    .padding(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(if (isPaid) "Amount Paid" else "Amount Due", fontWeight = FontWeight.SemiBold, color = if (isPaid) Color(0xFF166534) else Color(0xFF991B1B))
+                                    Text("₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = if (isPaid) Color(0xFF166534) else Color(0xFF991B1B))
+                                }
                             }
                         }
                     }
@@ -106,20 +187,22 @@ fun JobExecutionScreen(
                         Text("1. Old Battery & Payment", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = oldBatteryCollected,
-                                onCheckedChange = { oldBatteryCollected = it },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = Color(0xFFD32F2F),
-                                    uncheckedColor = Color.Gray,
-                                    checkmarkColor = Color.White
+                        val requiresExchange = order.orderItems?.any { it.exchangeOldBattery } == true
+                        if (requiresExchange) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = oldBatteryCollected,
+                                    onCheckedChange = { oldBatteryCollected = it },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = Color(0xFFD32F2F),
+                                        uncheckedColor = Color.Gray,
+                                        checkmarkColor = Color.White
+                                    )
                                 )
-                            )
-                            Text("Old Battery Collected (Scrap Discount applied)")
+                                Text("Old Battery Collected (Scrap Discount applied)")
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
-
-                        Spacer(modifier = Modifier.height(16.dp))
                         
                         val isPaid = order.paymentStatus?.uppercase() == "PAID"
                         if (isPaid) {

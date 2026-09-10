@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.animation.core.tween
@@ -368,6 +369,14 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val attendance by engineerViewModel.attendance.collectAsState()
             val leaves by engineerViewModel.leaves.collectAsState()
             val selectedTabIndex by engineerViewModel.selectedTabIndex.collectAsState()
+            val context = androidx.compose.ui.platform.LocalContext.current
+
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            LaunchedEffect(navBackStackEntry) {
+                if (navBackStackEntry?.destination?.route == Screen.EngineerDashboard.route) {
+                    engineerViewModel.fetchJobs()
+                }
+            }
 
             EngineerDashboardScreen(
                 uiState = uiState,

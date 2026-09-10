@@ -170,8 +170,13 @@ fun JobExecutionScreen(
                         } else {
                             OutlinedTextField(
                                 value = otp,
-                                onValueChange = { otp = it },
+                                onValueChange = { newValue -> 
+                                    if (newValue.all { it.isDigit() }) {
+                                        otp = newValue 
+                                    }
+                                },
                                 label = { Text("Enter OTP from Customer") },
+                                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = OutlinedTextFieldDefaults.colors(

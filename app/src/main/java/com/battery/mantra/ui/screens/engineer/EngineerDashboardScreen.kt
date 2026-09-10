@@ -115,23 +115,31 @@ fun EngineerDashboardScreen(
                     title = {
                         Text(
                             text = "My Active Task",
-                            color = Color(0xFFD32F2F),
+                            color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFFD32F2F))
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.Black)
                         }
                     },
                     actions = {
                         IconButton(onClick = onNavigateToNotifications) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Notifications",
-                                tint = Color(0xFFD32F2F)
-                            )
+                            BadgedBox(
+                                badge = {
+                                    Badge(containerColor = Color.Red) {
+                                        Text("2") // Example badge count
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Notifications,
+                                    contentDescription = "Notifications",
+                                    tint = Color.Black
+                                )
+                            }
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

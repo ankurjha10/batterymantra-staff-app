@@ -102,6 +102,18 @@ class JobExecutionViewModel(
         }
     }
 
+    suspend fun checkPaymentStatusSilent(): Boolean {
+        val result = repository.checkQrPaymentStatus(orderId)
+        if (result.isSuccess) {
+            val status = result.getOrNull()
+            if (status?.paymentStatus?.uppercase() == "PAID") {
+                _qrPaymentVerified.value = true
+                return true
+            }
+        }
+        return false
+    }
+
     fun sendOtp(onResult: (String) -> Unit) {
         viewModelScope.launch {
             val result = repository.sendCompletionOtp(orderId)

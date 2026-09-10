@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
@@ -20,6 +22,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +47,9 @@ fun JobExecutionScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
+    var showQrDialog by remember { mutableStateOf(false) }
+    var showSuccessAnimation by remember { mutableStateOf(false) }
+
     var serialNumber by remember { mutableStateOf("N/A") }
     var oldBatteryCollected by remember { mutableStateOf(false) }
     var paymentMode by remember { mutableStateOf("CASH") }
@@ -47,14 +61,14 @@ fun JobExecutionScreen(
                 title = { 
                     Text(
                         text = "Job #$jobId".take(12), 
-                        color = Color(0xFFD32F2F), 
+                        color = Color.Black, 
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFFD32F2F))
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -262,66 +276,20 @@ fun JobExecutionScreen(
                                                     Text("₹${order.totalAmount} paid via UPI", fontSize = 13.sp, color = Color(0xFF166534))
                                                 }
                                             }
-                                        } else if (qrImageUrl != null) {
-                                            // QR Code Display
-                                            Column(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                Text("Customer ko ye QR scan karwao", fontSize = 13.sp, color = Color.Gray)
-                                                Spacer(modifier = Modifier.height(12.dp))
-
-                                                Card(
-                                                    modifier = Modifier.size(220.dp),
-                                                    shape = RoundedCornerShape(16.dp),
-                                                    elevation = CardDefaults.cardElevation(6.dp),
-                                                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                                                ) {
-                                                    Box(
-                                                        modifier = Modifier.fillMaxSize().padding(8.dp),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        coil.compose.AsyncImage(
-                                                            model = coil.request.ImageRequest.Builder(LocalContext.current)
-                                                                .data(qrImageUrl)
-                                                                .crossfade(true)
-                                                                .build(),
-                                                            contentDescription = "Razorpay UPI QR Code",
-                                                            modifier = Modifier.fillMaxSize(),
-                                                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
-                                                        )
-                                                    }
-                                                }
-
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                Text("Amount: ₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1E293B))
-                                                Spacer(modifier = Modifier.height(16.dp))
-
-                                                // Verify Payment Button
-                                                Button(
-                                                    onClick = {
-                                                        viewModel.verifyQrPayment { success, msg ->
-                                                            coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
-                                                        }
-                                                    },
-                                                    enabled = !qrLoading,
-                                                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                                                    shape = RoundedCornerShape(12.dp),
-                                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
-                                                ) {
-                                                    if (qrLoading) {
-                                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                                                    } else {
-                                                        Text("🔄 Verify Payment Status", fontWeight = FontWeight.Bold, color = Color.White)
-                                                    }
-                                                }
-                                            }
                                         } else {
-                                            // Generate QR button
+                                            // Show button to generate or open dialog
                                             Button(
                                                 onClick = {
-                                                    viewModel.generateQrCode { msg ->
-                                                        coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
+                                                    if (qrImageUrl != null) {
+                                                        showQrDialog = true
+                                                    } else {
+                                                        viewModel.generateQrCode { msg ->
+                                                            if (msg.contains("successfully", ignoreCase = true)) {
+                                                                showQrDialog = true
+                                                            } else {
+                                                                coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 enabled = !qrLoading,
@@ -332,7 +300,7 @@ fun JobExecutionScreen(
                                                 if (qrLoading) {
                                                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                                                 } else {
-                                                    Text("Generate UPI QR Code", fontWeight = FontWeight.Bold, color = Color.White)
+                                                    Text(if (qrImageUrl != null) "Show UPI QR Code" else "Generate & Show QR", fontWeight = FontWeight.Bold, color = Color.White)
                                                 }
                                             }
                                         }
@@ -440,7 +408,106 @@ fun JobExecutionScreen(
                         }
                     }
                 }
+        }
+    }
+
+    if (showQrDialog && uiState is JobExecutionState.Success) {
+        val order = (uiState as JobExecutionState.Success).order
+        val qrImageUrl by viewModel.qrImageUrl.collectAsState()
+
+        Dialog(
+            onDismissRequest = { showQrDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Top Bar
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(onClick = { showQrDialog = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(32.dp))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Amount Due: ₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF1E293B))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Ask the customer to scan this QR code", fontSize = 16.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    if (qrImageUrl != null) {
+                        coil.compose.AsyncImage(
+                            model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                .data(qrImageUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Razorpay UPI QR Code",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color(0xFF6366F1), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Waiting for payment...", color = Color.Gray, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(48.dp))
+                }
             }
         }
+        
+        LaunchedEffect(showQrDialog) {
+            while (isActive && showQrDialog) {
+                delay(3000) // Poll every 3 seconds
+                val isPaid = viewModel.checkPaymentStatusSilent()
+                if (isPaid) {
+                    showQrDialog = false
+                    showSuccessAnimation = true
+                    delay(2500)
+                    showSuccessAnimation = false
+                    viewModel.setStep(3) // Advance to OTP step
+                    break
+                }
+            }
+        }
+    }
+
+    // Success Animation Overlay
+    AnimatedVisibility(
+        visible = showSuccessAnimation,
+        enter = fadeIn() + scaleIn(),
+        exit = fadeOut() + scaleOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xCCFFFFFF)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = "Success",
+                    tint = Color(0xFF388E3C),
+                    modifier = Modifier.size(120.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Payment Received!", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF388E3C))
+            }
+        }
+    }
     }
 }

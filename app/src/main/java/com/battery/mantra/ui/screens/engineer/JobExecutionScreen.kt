@@ -248,7 +248,7 @@ fun JobExecutionScreen(
                                         RadioButton(
                                             selected = paymentMode == "UPI", 
                                             onClick = { paymentMode = "UPI" }, 
-                                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF6366F1))
+                                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
                                         )
                                         Text("UPI / QR Code", fontWeight = if (paymentMode == "UPI") FontWeight.Bold else FontWeight.Normal)
                                     }
@@ -295,7 +295,7 @@ fun JobExecutionScreen(
                                                 enabled = !qrLoading,
                                                 modifier = Modifier.fillMaxWidth().height(48.dp),
                                                 shape = RoundedCornerShape(12.dp),
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                                             ) {
                                                 if (qrLoading) {
                                                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
@@ -461,10 +461,14 @@ fun JobExecutionScreen(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color(0xFF6366F1), strokeWidth = 2.dp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Waiting for payment...", color = Color.Gray, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(48.dp))
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth().height(4.dp),
+                        color = Color(0xFFD32F2F),
+                        trackColor = Color(0xFFF1F5F9)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Auto-verifying payment status...", color = Color.Gray, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         }

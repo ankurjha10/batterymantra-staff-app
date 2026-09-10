@@ -28,6 +28,8 @@ fun EngineerTaskCard(
     address: String,
     price: String,
     status: String,
+    paymentMethod: String? = null,
+    paymentStatus: String? = null,
     actionText: String = "",
     isActive: Boolean = true,
     onActionClick: () -> Unit = {},
@@ -196,16 +198,19 @@ fun EngineerTaskCard(
                                 }
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
-                                    Text(text = "Collect Payment", color = Color(0xFF5F6368), fontSize = 12.sp)
+                                    val isPaid = paymentStatus?.uppercase() == "PAID"
+                                    Text(text = if (isPaid) "Amount Paid" else "Collect Payment", color = Color(0xFF5F6368), fontSize = 12.sp)
                                     Text(text = price, color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
+                            val methodText = paymentMethod?.uppercase() ?: "COD"
+                            val isPaid = paymentStatus?.uppercase() == "PAID"
                             Box(
                                 modifier = Modifier
-                                    .background(Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
+                                    .background(if (isPaid) Color(0xFFDCFCE7) else Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Text(text = "COD", color = Color.DarkGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(text = methodText, color = if (isPaid) Color(0xFF166534) else Color.DarkGray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

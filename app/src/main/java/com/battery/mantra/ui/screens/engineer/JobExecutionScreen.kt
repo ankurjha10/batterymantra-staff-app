@@ -93,7 +93,11 @@ fun JobExecutionScreen(
                             Text("Phone: ${order.customerPhone ?: "No Phone"}")
                             Spacer(modifier = Modifier.height(8.dp))
                             Text("Address: ${order.shippingAddress ?: "No address"}", color = Color.Gray)
-                            Text("Amount Due: ₹${order.totalAmount}", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                            if (order.paymentStatus?.uppercase() == "PAID") {
+                                Text("Amount Paid: ₹${order.totalAmount}", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                            } else {
+                                Text("Amount Due: ₹${order.totalAmount}", color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
 
@@ -117,21 +121,27 @@ fun JobExecutionScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        Text("Payment Collection Mode:")
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(
-                                selected = paymentMode == "CASH", 
-                                onClick = { paymentMode = "CASH" }, 
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
-                            )
-                            Text("Cash")
-                            Spacer(modifier = Modifier.width(16.dp))
-                            RadioButton(
-                                selected = paymentMode == "UPI", 
-                                onClick = { paymentMode = "UPI" }, 
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
-                            )
-                            Text("UPI / Online")
+                        val isPaid = order.paymentStatus?.uppercase() == "PAID"
+                        if (isPaid) {
+                            Text("Payment Status:", fontWeight = FontWeight.SemiBold)
+                            Text("Amount already paid online (₹${order.totalAmount})", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        } else {
+                            Text("Payment Collection Mode:")
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(
+                                    selected = paymentMode == "CASH", 
+                                    onClick = { paymentMode = "CASH" }, 
+                                    colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                                )
+                                Text("Cash")
+                                Spacer(modifier = Modifier.width(16.dp))
+                                RadioButton(
+                                    selected = paymentMode == "UPI", 
+                                    onClick = { paymentMode = "UPI" }, 
+                                    colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                                )
+                                Text("UPI / Online")
+                            }
                         }
 
                         if (step == 2) {
@@ -201,7 +211,12 @@ fun JobExecutionScreen(
                             
                             Button(
                                 onClick = { 
-                                    viewModel.completeJob(oldBatteryCollected, paymentMode, otp) { success, msg ->
+                                    val finalPaymentMode = if (order.paymentStatus?.uppercase() == "PAID") {
+                                        order.paymentMethod?.uppercase() ?: "ONLINE"
+                                    } else {
+                                        paymentMode
+                                    }
+                                    viewModel.completeJob(oldBatteryCollected, finalPaymentMode, otp) { success, msg ->
                                         if (success) {
                                             onBackClick() // Go back on success
                                         } else {

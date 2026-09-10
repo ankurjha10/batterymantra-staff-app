@@ -31,6 +31,8 @@ fun EngineerHistoryTab(
                     address = job.shippingAddress ?: "No address",
                     status = job.orderStatus ?: "UNKNOWN",
                     price = "₹${job.totalAmount ?: 0.0}",
+                    paymentMethod = job.paymentMethod,
+                    paymentStatus = job.paymentStatus,
                     isActive = false
                 )
             }

@@ -37,6 +37,8 @@ fun EngineerActiveJobsTab(
                     address = job.shippingAddress ?: "No address",
                     price = "₹${job.totalAmount ?: 0.0}",
                     status = status,
+                    paymentMethod = job.paymentMethod,
+                    paymentStatus = job.paymentStatus,
                     actionText = if (isCompleted) "" else "Execute Job",
                     onActionClick = { onNavigateToJobExecution(job.orderId) },
                     onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") },

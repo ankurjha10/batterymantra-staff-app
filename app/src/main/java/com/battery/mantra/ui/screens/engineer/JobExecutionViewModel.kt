@@ -34,6 +34,15 @@ class JobExecutionViewModel(
     private val _isSubmitting = MutableStateFlow(false)
     val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
 
+    private val _qrImageUrl = MutableStateFlow<String?>(null)
+    val qrImageUrl: StateFlow<String?> = _qrImageUrl.asStateFlow()
+
+    private val _qrLoading = MutableStateFlow(false)
+    val qrLoading: StateFlow<Boolean> = _qrLoading.asStateFlow()
+
+    private val _qrPaymentVerified = MutableStateFlow(false)
+    val qrPaymentVerified: StateFlow<Boolean> = _qrPaymentVerified.asStateFlow()
+
     init {
         loadOrderDetails()
     }
@@ -58,6 +67,39 @@ class JobExecutionViewModel(
 
     fun setStep(newStep: Int) {
         _step.value = newStep
+    }
+
+    fun generateQrCode(onResult: (String) -> Unit) {
+        _qrLoading.value = true
+        viewModelScope.launch {
+            val result = repository.generateQrCode(orderId)
+            _qrLoading.value = false
+            if (result.isSuccess) {
+                _qrImageUrl.value = result.getOrNull()?.imageUrl
+                onResult("QR Code generated successfully!")
+            } else {
+                onResult(result.exceptionOrNull()?.message ?: "Failed to generate QR code")
+            }
+        }
+    }
+
+    fun verifyQrPayment(onResult: (Boolean, String) -> Unit) {
+        _qrLoading.value = true
+        viewModelScope.launch {
+            val result = repository.checkQrPaymentStatus(orderId)
+            _qrLoading.value = false
+            if (result.isSuccess) {
+                val status = result.getOrNull()
+                if (status?.paymentStatus?.uppercase() == "PAID") {
+                    _qrPaymentVerified.value = true
+                    onResult(true, "Payment verified successfully! ✅")
+                } else {
+                    onResult(false, "Payment not received yet. Please wait and try again.")
+                }
+            } else {
+                onResult(false, result.exceptionOrNull()?.message ?: "Failed to verify payment")
+            }
+        }
     }
 
     fun sendOtp(onResult: (String) -> Unit) {

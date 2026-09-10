@@ -184,6 +184,10 @@ fun JobExecutionScreen(
 
                     // Step 1: Old Battery & Payment
                     if (step >= 2) {
+                        val qrImageUrl by viewModel.qrImageUrl.collectAsState()
+                        val qrLoading by viewModel.qrLoading.collectAsState()
+                        val qrPaymentVerified by viewModel.qrPaymentVerified.collectAsState()
+
                         Text("1. Old Battery & Payment", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
@@ -209,31 +213,146 @@ fun JobExecutionScreen(
                             Text("Payment Status:", fontWeight = FontWeight.SemiBold)
                             Text("Amount already paid online (₹${order.totalAmount})", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
                         } else {
-                            Text("Payment Collection Mode:")
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(
-                                    selected = paymentMode == "CASH", 
-                                    onClick = { paymentMode = "CASH" }, 
-                                    colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
-                                )
-                                Text("Cash")
-                                Spacer(modifier = Modifier.width(16.dp))
-                                RadioButton(
-                                    selected = paymentMode == "UPI", 
-                                    onClick = { paymentMode = "UPI" }, 
-                                    colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
-                                )
-                                Text("UPI / Online")
+                            // Payment Collection Mode Card
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(2.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text("Payment Collection Mode", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF475569))
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        RadioButton(
+                                            selected = paymentMode == "CASH", 
+                                            onClick = { paymentMode = "CASH" }, 
+                                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
+                                        )
+                                        Text("Cash", fontWeight = if (paymentMode == "CASH") FontWeight.Bold else FontWeight.Normal)
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        RadioButton(
+                                            selected = paymentMode == "UPI", 
+                                            onClick = { paymentMode = "UPI" }, 
+                                            colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF6366F1))
+                                        )
+                                        Text("UPI / QR Code", fontWeight = if (paymentMode == "UPI") FontWeight.Bold else FontWeight.Normal)
+                                    }
+
+                                    // Razorpay QR Code Section
+                                    if (paymentMode == "UPI") {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        HorizontalDivider(color = Color(0xFFF1F5F9))
+                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                        if (qrPaymentVerified) {
+                                            // Payment verified success state
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clip(RoundedCornerShape(12.dp))
+                                                    .background(Color(0xFFDCFCE7))
+                                                    .padding(16.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                    Text("✅", fontSize = 32.sp)
+                                                    Spacer(modifier = Modifier.height(8.dp))
+                                                    Text("Payment Received!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF166534))
+                                                    Text("₹${order.totalAmount} paid via UPI", fontSize = 13.sp, color = Color(0xFF166534))
+                                                }
+                                            }
+                                        } else if (qrImageUrl != null) {
+                                            // QR Code Display
+                                            Column(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text("Customer ko ye QR scan karwao", fontSize = 13.sp, color = Color.Gray)
+                                                Spacer(modifier = Modifier.height(12.dp))
+
+                                                Card(
+                                                    modifier = Modifier.size(220.dp),
+                                                    shape = RoundedCornerShape(16.dp),
+                                                    elevation = CardDefaults.cardElevation(6.dp),
+                                                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        coil.compose.AsyncImage(
+                                                            model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                                                .data(qrImageUrl)
+                                                                .crossfade(true)
+                                                                .build(),
+                                                            contentDescription = "Razorpay UPI QR Code",
+                                                            modifier = Modifier.fillMaxSize(),
+                                                            contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                                                        )
+                                                    }
+                                                }
+
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text("Amount: ₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1E293B))
+                                                Spacer(modifier = Modifier.height(16.dp))
+
+                                                // Verify Payment Button
+                                                Button(
+                                                    onClick = {
+                                                        viewModel.verifyQrPayment { success, msg ->
+                                                            coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
+                                                        }
+                                                    },
+                                                    enabled = !qrLoading,
+                                                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                                                    shape = RoundedCornerShape(12.dp),
+                                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
+                                                ) {
+                                                    if (qrLoading) {
+                                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                                    } else {
+                                                        Text("🔄 Verify Payment Status", fontWeight = FontWeight.Bold, color = Color.White)
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            // Generate QR button
+                                            Button(
+                                                onClick = {
+                                                    viewModel.generateQrCode { msg ->
+                                                        coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
+                                                    }
+                                                },
+                                                enabled = !qrLoading,
+                                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                                shape = RoundedCornerShape(12.dp),
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
+                                            ) {
+                                                if (qrLoading) {
+                                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                                } else {
+                                                    Text("Generate UPI QR Code", fontWeight = FontWeight.Bold, color = Color.White)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
 
                         if (step == 2) {
                             Spacer(modifier = Modifier.height(16.dp))
+                            val canProceed = paymentMode == "CASH" || (paymentMode == "UPI" && qrPaymentVerified)
                             Button(
                                 onClick = { viewModel.setStep(3) },
+                                enabled = canProceed,
                                 modifier = Modifier.align(Alignment.End).height(48.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFD32F2F),
+                                    disabledContainerColor = Color(0xFFBDBDBD)
+                                )
                             ) {
                                 Text("Next", fontWeight = FontWeight.Bold, color = Color.White)
                             }

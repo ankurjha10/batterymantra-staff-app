@@ -151,4 +151,30 @@ class EngineerRepository(
         if (response.isSuccessful) Result.success(Unit)
         else Result.failure(Exception("Failed to delete notification"))
     } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun generateQrCode(orderId: String): Result<com.battery.mantra.data.models.QrCodeResponse> = try {
+        val response = api.generateQrCode(orderId)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            val errorMsg = response.errorBody()?.string()
+            val message = try {
+                org.json.JSONObject(errorMsg ?: "").getString("message")
+            } catch (e: Exception) { "Failed to generate QR code" }
+            Result.failure(Exception(message))
+        }
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun checkQrPaymentStatus(orderId: String): Result<com.battery.mantra.data.models.PaymentStatusResponse> = try {
+        val response = api.checkQrPaymentStatus(orderId)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            val errorMsg = response.errorBody()?.string()
+            val message = try {
+                org.json.JSONObject(errorMsg ?: "").getString("message")
+            } catch (e: Exception) { "Failed to check payment status" }
+            Result.failure(Exception(message))
+        }
+    } catch (e: Exception) { Result.failure(e) }
 }

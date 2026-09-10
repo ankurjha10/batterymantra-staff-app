@@ -201,5 +201,11 @@ interface BatteryMantraApi {
 
     @PATCH("api/admin/users/{userId}/status")
     suspend fun toggleUserStatus(@Path("userId") userId: String, @Query("isActive") isActive: Boolean): Response<Unit>
-}
 
+    // --- Razorpay QR Code Payment ---
+    @POST("api/payments/razorpay/generate-qr/{orderId}")
+    suspend fun generateQrCode(@Path("orderId") orderId: String): Response<com.battery.mantra.data.models.QrCodeResponse>
+
+    @GET("api/payments/razorpay/status/{orderId}")
+    suspend fun checkQrPaymentStatus(@Path("orderId") orderId: String): Response<com.battery.mantra.data.models.PaymentStatusResponse>
+}

@@ -124,11 +124,11 @@ fun EngineerProfileTab(
                 ProfileDetailRow(icon = Icons.Default.DateRange, label = "Joined On", value = joinedDate)
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                val completedJobs = historyJobs.filter { it.orderStatus == "COMPLETED" || it.orderStatus == "DELIVERED" || it.orderStatus == "INSTALLED" }.size
+                val completedJobs = profile.totalJobsCompleted ?: historyJobs.filter { it.orderStatus == "COMPLETED" || it.orderStatus == "DELIVERED" || it.orderStatus == "INSTALLED" }.size
                 ProfileDetailRow(icon = Icons.Default.Work, label = "Total Jobs Completed", value = "$completedJobs")
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                ProfileDetailRow(icon = Icons.Default.LocationCity, label = "Assigned Hub", value = "N/A")
+                ProfileDetailRow(icon = Icons.Default.LocationCity, label = "Assigned Hub", value = profile.assignedPartnerName ?: "N/A")
             }
         }
         

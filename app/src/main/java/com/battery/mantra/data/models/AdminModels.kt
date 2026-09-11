@@ -38,7 +38,9 @@ data class UserResponse(
     @SerializedName("permissions") val permissions: List<String>?,
     @SerializedName("active") val active: Boolean?,
     @SerializedName("isActive") val isActive: Boolean?,
-    @SerializedName("createdAt") val createdAt: String?
+    @SerializedName("createdAt") val createdAt: String?,
+    @SerializedName("totalJobsCompleted") val totalJobsCompleted: Int?,
+    @SerializedName("assignedPartnerName") val assignedPartnerName: String?
 )
 
 data class CityResponse(

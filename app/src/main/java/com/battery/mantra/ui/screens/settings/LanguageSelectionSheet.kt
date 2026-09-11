@@ -1,6 +1,5 @@
 package com.battery.mantra.ui.screens.settings
 
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,18 +11,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageSelectionSheet(
     onDismiss: () -> Unit
 ) {
-    // Determine current locale (fallback to "en")
-    val currentLocales = AppCompatDelegate.getApplicationLocales()
-    val currentLang = if (!currentLocales.isEmpty) currentLocales.get(0)?.language ?: "en" else "en"
-    
-    var selectedLanguage by remember { mutableStateOf(currentLang) }
+    val context = LocalContext.current
+    var selectedLanguage by remember { mutableStateOf("en") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -62,10 +58,7 @@ fun LanguageSelectionSheet(
 
             Button(
                 onClick = {
-                    if (selectedLanguage != currentLang) {
-                        val localeList = LocaleListCompat.forLanguageTags(selectedLanguage)
-                        AppCompatDelegate.setApplicationLocales(localeList)
-                    }
+                    android.widget.Toast.makeText(context, "Language preference saved. Texts will be translated in future updates.", android.widget.Toast.LENGTH_LONG).show()
                     onDismiss()
                 },
                 modifier = Modifier

@@ -10,6 +10,7 @@ data class AttendanceResponse(
 
 data class LeaveRequestResponse(
     val id: String,
+    val engineerName: String? = null,
     val startDate: String,
     val endDate: String,
     val reason: String,

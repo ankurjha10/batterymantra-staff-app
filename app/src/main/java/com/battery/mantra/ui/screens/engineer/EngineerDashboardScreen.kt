@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
@@ -135,7 +136,7 @@ fun EngineerDashboardScreen(
                                 }
                             ) {
                                 Icon(
-                                    Icons.Default.Notifications,
+                                    Icons.Outlined.Notifications,
                                     contentDescription = "Notifications",
                                     tint = Color.Black
                                 )

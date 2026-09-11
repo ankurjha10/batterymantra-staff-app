@@ -177,4 +177,11 @@ class EngineerRepository(
             Result.failure(Exception(message))
         }
     } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun updateFcmToken(token: String): Result<Unit> = try {
+        val request = com.battery.mantra.data.models.FcmTokenRequest(fcmToken = token)
+        val response = api.updateFcmToken(request)
+        if (response.isSuccessful) Result.success(Unit)
+        else Result.failure(Exception("Failed to update FCM token"))
+    } catch (e: Exception) { Result.failure(e) }
 }

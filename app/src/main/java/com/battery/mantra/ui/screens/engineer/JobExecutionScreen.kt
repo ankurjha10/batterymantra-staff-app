@@ -6,8 +6,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
@@ -33,6 +34,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+@Suppress("FunctionName")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobExecutionScreen(
@@ -68,7 +70,7 @@ fun JobExecutionScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -151,7 +153,7 @@ fun JobExecutionScreen(
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Divider(color = Color(0xFFF1F5F9))
+                                HorizontalDivider(color = Color(0xFFF1F5F9))
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
@@ -475,12 +477,12 @@ fun JobExecutionScreen(
         
         LaunchedEffect(showQrDialog) {
             while (isActive && showQrDialog) {
-                delay(3000) // Poll every 3 seconds
+                delay(3000.milliseconds) // Poll every 3 seconds
                 val isPaid = viewModel.checkPaymentStatusSilent()
                 if (isPaid) {
                     showQrDialog = false
                     showSuccessAnimation = true
-                    delay(2500)
+                    delay(2500.milliseconds)
                     showSuccessAnimation = false
                     viewModel.setStep(3) // Advance to OTP step
                     break

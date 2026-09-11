@@ -42,6 +42,18 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
         fetchJobs()
         fetchAttendance()
         fetchLeaves()
+        updateFcmTokenFromFirebase()
+    }
+
+    private fun updateFcmTokenFromFirebase() {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                viewModelScope.launch {
+                    repository.updateFcmToken(token)
+                }
+            }
+        }
     }
 
     private fun fetchProfile() {

@@ -61,12 +61,13 @@ fun EngineerProfileTab(
         
         Spacer(modifier = Modifier.height(8.dp))
         
+        val isActive = profile.isActive == true || profile.active == true
         Badge(
-            containerColor = if (profile.isActive == true) Color(0xFF2E7D32) else Color(0xFFD32F2F),
+            containerColor = if (isActive) Color(0xFF2E7D32) else Color(0xFFD32F2F),
             contentColor = Color.White
         ) {
             Text(
-                text = if (profile.isActive == true) "ACTIVE" else "INACTIVE",
+                text = if (isActive) "ACTIVE" else "INACTIVE",
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold

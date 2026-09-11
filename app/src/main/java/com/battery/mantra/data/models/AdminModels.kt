@@ -36,6 +36,7 @@ data class UserResponse(
     @SerializedName("phoneNumber") val phone: String?,
     @SerializedName("role") val role: String?,
     @SerializedName("permissions") val permissions: List<String>?,
+    @SerializedName("active") val active: Boolean?,
     @SerializedName("isActive") val isActive: Boolean?,
     @SerializedName("createdAt") val createdAt: String?
 )

@@ -221,13 +221,38 @@ fun EngineerTaskCard(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Progress Tracker
+                    val statusUpper = status.uppercase()
+                    val isDispatched = statusUpper == "DISPATCHED" || statusUpper == "DELIVERED" || statusUpper == "COMPLETED" || statusUpper == "INSTALLED"
+                    val isDelivered = statusUpper == "DELIVERED" || statusUpper == "COMPLETED" || statusUpper == "INSTALLED"
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        verticalAlignment = Alignment.Top
                     ) {
-                        ProgressStep(label = "Assigned", isSelected = true)
-                        ProgressStep(label = "Dispatched", isSelected = false)
-                        ProgressStep(label = "Delivered", isSelected = false)
+                        ProgressStep(
+                            modifier = Modifier.weight(1f),
+                            label = "Assigned",
+                            isCompleted = isDispatched,
+                            isCurrent = !isDispatched,
+                            isFirst = true,
+                            isLast = false
+                        )
+                        ProgressStep(
+                            modifier = Modifier.weight(1f),
+                            label = "Dispatched",
+                            isCompleted = isDelivered,
+                            isCurrent = isDispatched && !isDelivered,
+                            isFirst = false,
+                            isLast = false
+                        )
+                        ProgressStep(
+                            modifier = Modifier.weight(1f),
+                            label = "Delivered",
+                            isCompleted = false,
+                            isCurrent = isDelivered,
+                            isFirst = false,
+                            isLast = true
+                        )
                     }
                 }
 
@@ -256,28 +281,65 @@ fun EngineerTaskCard(
 }
 
 @Composable
-fun ProgressStep(label: String, isSelected: Boolean) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        if (isSelected) {
+fun ProgressStep(
+    modifier: Modifier = Modifier,
+    label: String,
+    isCompleted: Boolean,
+    isCurrent: Boolean,
+    isFirst: Boolean = false,
+    isLast: Boolean = false
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            // Line before circle
+            if (!isFirst) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(2.dp)
+                        .background(if (isCompleted || isCurrent) Color(0xFFD32F2F) else Color(0xFFE0E0E0))
+                        .align(Alignment.CenterStart)
+                )
+            }
+            // Line after circle
+            if (!isLast) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(2.dp)
+                        .background(if (isCompleted) Color(0xFFD32F2F) else Color(0xFFE0E0E0))
+                        .align(Alignment.CenterEnd)
+                )
+            }
+
+            // Circle
+            val circleSize = if (isCurrent) 16.dp else 12.dp
             Box(
                 modifier = Modifier
-                    .size(16.dp)
-                    .background(Color.White, CircleShape)
-                    .border(4.dp, Color(0xFFD32F2F), CircleShape)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .background(Color(0xFFE0E0E0), CircleShape)
+                    .size(circleSize)
+                    .background(
+                        if (isCompleted) Color(0xFFD32F2F) else if (isCurrent) Color.White else Color(0xFFE0E0E0),
+                        CircleShape
+                    )
+                    .border(
+                        if (isCurrent) 4.dp else 0.dp,
+                        if (isCurrent) Color(0xFFD32F2F) else Color.Transparent,
+                        CircleShape
+                    )
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = label,
             fontSize = 12.sp,
-            color = if (isSelected) Color(0xFFD32F2F) else Color.DarkGray,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            color = if (isCompleted || isCurrent) Color(0xFFD32F2F) else Color.DarkGray,
+            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
         )
     }
 }

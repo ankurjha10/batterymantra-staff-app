@@ -222,7 +222,7 @@ fun EngineerTaskCard(
 
                     // Progress Tracker
                     val statusUpper = status.uppercase()
-                    val isDispatched = statusUpper == "DISPATCHED" || statusUpper == "DELIVERED" || statusUpper == "COMPLETED" || statusUpper == "INSTALLED"
+                    val isDispatched = statusUpper == "DISPATCHED" || statusUpper == "SHIPPED" || statusUpper == "DELIVERED" || statusUpper == "COMPLETED" || statusUpper == "INSTALLED"
                     val isDelivered = statusUpper == "DELIVERED" || statusUpper == "COMPLETED" || statusUpper == "INSTALLED"
 
                     Row(
@@ -294,7 +294,9 @@ fun ProgressStep(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp), // Force fixed height to align lines perfectly
             contentAlignment = Alignment.Center
         ) {
             // Line before circle

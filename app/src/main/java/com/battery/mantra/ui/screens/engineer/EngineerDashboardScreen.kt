@@ -119,7 +119,7 @@ fun EngineerDashboardScreen(
 
                 val drawerItems = listOf(
                     Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.home), Icons.Default.Home, 0),
-                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.my_tasks), Icons.AutoMirrored.Filled.Assignment, 1),
+                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.my_tasks), Icons.Default.Assignment, 1),
                     Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.history), Icons.Default.History, 2),
                     Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.leaves), Icons.Default.Event, 3),
                     Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.profile), Icons.Default.Person, 4)
@@ -160,7 +160,7 @@ fun EngineerDashboardScreen(
                 HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color(0xFFD32F2F)) },
+                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFD32F2F)) },
                     label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.logout), color = Color.Black, fontSize = 16.sp) },
                     selected = false,
                     colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),

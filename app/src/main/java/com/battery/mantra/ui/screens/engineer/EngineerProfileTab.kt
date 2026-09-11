@@ -116,12 +116,13 @@ fun EngineerProfileTab(
                 ProfileDetailRow(icon = Icons.Default.Badge, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.employee_id), value = profile.userId)
                 Spacer(modifier = Modifier.height(12.dp))
                 
+                val notApplicableString = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_applicable)
                 val joinedDate = try {
                     if (!profile.createdAt.isNullOrBlank()) {
                         ZonedDateTime.parse(profile.createdAt).format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-                    } else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_applicable)
+                    } else notApplicableString
                 } catch (e: Exception) {
-                    androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_applicable)
+                    notApplicableString
                 }
                 ProfileDetailRow(icon = Icons.Default.DateRange, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.joined_on), value = joinedDate)
                 Spacer(modifier = Modifier.height(12.dp))

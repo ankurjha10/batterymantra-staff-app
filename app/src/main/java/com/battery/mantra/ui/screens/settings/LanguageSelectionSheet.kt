@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +61,7 @@ fun LanguageSelectionSheet(
 
             Button(
                 onClick = {
-                    scope.kotlinx.coroutines.launch {
+                    scope.launch {
                         tokenManager.saveLanguage(selectedLanguage)
                         
                         // Change Language

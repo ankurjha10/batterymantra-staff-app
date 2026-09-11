@@ -231,8 +231,8 @@ fun EngineerDashboardScreen(
                             if (activeJobsCount > 0) {
                                 BadgedBox(
                                     badge = {
-                                        Badge(containerColor = Color.Red) {
-                                            Text(activeJobsCount.toString())
+                                        Badge(containerColor = Color.Red, contentColor = Color.White) {
+                                            Text(activeJobsCount.toString(), color = Color.White)
                                         }
                                     }
                                 ) {
@@ -351,11 +351,18 @@ fun EngineerDashboardScreen(
                                 onTabSelected = onTabSelected
                             )
 
-                            1 -> EngineerActiveJobsTab(
-                                activeJobs = state.activeJobs,
-                                onNavigateToJobExecution = onNavigateToJobExecution,
-                                onCallClick = onCallClick
-                            )
+                            1 -> {
+                                val todayStr = java.time.LocalDate.now().toString()
+                                val todayAttendance = attendance.firstOrNull { it.date == todayStr }
+                                val isDayCompleted = todayAttendance != null && todayAttendance.checkOutTime != null
+                                
+                                EngineerActiveJobsTab(
+                                    activeJobs = state.activeJobs,
+                                    isDayCompleted = isDayCompleted,
+                                    onNavigateToJobExecution = onNavigateToJobExecution,
+                                    onCallClick = onCallClick
+                                )
+                            }
 
                             2 -> EngineerHistoryTab(
                                 historyJobs = state.historyJobs

@@ -14,6 +14,7 @@ import com.battery.mantra.ui.components.EngineerTaskCard
 @Composable
 fun EngineerActiveJobsTab(
     activeJobs: List<OrderResponse>,
+    isDayCompleted: Boolean = false,
     onNavigateToJobExecution: (String) -> Unit,
     onCallClick: (String, String) -> Unit
 ) {
@@ -43,7 +44,13 @@ fun EngineerActiveJobsTab(
                     paymentMethod = job.paymentMethod,
                     paymentStatus = job.paymentStatus,
                     actionText = if (isCompleted) "" else "Execute Job",
-                    onActionClick = { onNavigateToJobExecution(job.orderId) },
+                    onActionClick = { 
+                        if (isDayCompleted) {
+                            android.widget.Toast.makeText(context, "You have checked out for the day. Cannot execute job.", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            onNavigateToJobExecution(job.orderId) 
+                        }
+                    },
                     onCallClick = { onCallClick(job.orderId, job.customerPhone ?: "") },
                     onNavigateClick = {
                         val uri = if (job.latitude != null && job.longitude != null) {

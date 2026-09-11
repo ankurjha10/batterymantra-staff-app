@@ -193,20 +193,24 @@ fun EngineerHomeTab(
                 if (activeAttendance != null) {
                     Button(
                         onClick = onCheckOut,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828), contentColor = Color.White),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Check Out")
+                        Text("Check Out", color = Color.White)
                     }
                 } else if (todayAttendance != null && todayAttendance.checkOutTime != null) {
-                    Text("Done \uD83D\uDC4D", color = Color(0xFF34D399), fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color(0xFF34D399), modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Day Completed", color = Color(0xFF34D399), fontWeight = FontWeight.Bold)
+                    }
                 } else {
                     Button(
                         onClick = onCheckIn,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Check In")
+                        Text("Check In", color = Color.White)
                     }
                 }
             }

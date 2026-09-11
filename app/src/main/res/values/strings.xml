@@ -113,7 +113,6 @@
 
     <!-- History Tab -->
     <string name="no_past_tasks">No past tasks found</string>
-    <string name="no_address">No address</string>
 
     <!-- Leave Management Tab -->
     <string name="my_leaves">My Leaves</string>
@@ -147,7 +146,7 @@
     <string name="tap_to_update">Tap to update</string>
     <string name="order_items">Order Items</string>
     <string name="no_items_found">No items found</string>
-    <string name="qty_prefix">Qty: %1$d</string>
+    <string name="qty_prefix_format">Qty: %1$d</string>
     <string name="with_exchange">• With Exchange</string>
     <string name="order_details">Order Details</string>
     <string name="placed_prefix">Placed: %1$s</string>

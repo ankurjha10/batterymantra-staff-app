@@ -224,7 +224,7 @@ fun SharedOrderDetailsSheet(
                                                     fontSize = 14.sp
                                                 )
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.qty_prefix, item.quantity), fontSize = 12.sp, color = Color.Gray)
+                                                    Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.qty_prefix_format, item.quantity), fontSize = 12.sp, color = Color.Gray)
                                                     if (item.exchangeOldBattery) {
                                                         Spacer(modifier = Modifier.width(8.dp))
                                                         Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.with_exchange), fontSize = 12.sp, color = Color(0xFFD32F2F))

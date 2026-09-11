@@ -37,10 +37,18 @@ fun EngineerHomeTab(
     onCheckOut: () -> Unit,
     onTabSelected: (Int) -> Unit
 ) {
-    val today = LocalDate.now()
+    val zoneId = java.time.ZoneId.of("Asia/Kolkata")
+    val now = java.time.ZonedDateTime.now(zoneId)
+    val today = now.toLocalDate()
     val formattedDate = today.format(DateTimeFormatter.ofPattern("EEEE, dd MMM"))
     val todayStr = today.toString()
     val todayAttendance = attendance.firstOrNull { it.date == todayStr }
+
+    val greeting = when (now.hour) {
+        in 0..11 -> "Good Morning"
+        in 12..16 -> "Good Afternoon"
+        else -> "Good Evening"
+    }
 
     Column(
         modifier = Modifier
@@ -56,7 +64,7 @@ fun EngineerHomeTab(
         ) {
             Column {
                 Text(
-                    text = "Good Morning, ${profile?.name?.split(" ")?.firstOrNull() ?: "Engineer"}! \uD83D\uDC4B",
+                    text = "$greeting, ${profile?.name?.split(" ")?.firstOrNull() ?: "Engineer"}! \uD83D\uDC4B",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.Black

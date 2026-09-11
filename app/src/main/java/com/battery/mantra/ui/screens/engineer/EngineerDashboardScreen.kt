@@ -352,7 +352,8 @@ fun EngineerDashboardScreen(
                             )
 
                             1 -> {
-                                val todayStr = java.time.LocalDate.now().toString()
+                                val zoneId = java.time.ZoneId.of("Asia/Kolkata")
+                                val todayStr = java.time.LocalDate.now(zoneId).toString()
                                 val todayAttendance = attendance.firstOrNull { it.date == todayStr }
                                 val isDayCompleted = todayAttendance != null && todayAttendance.checkOutTime != null
                                 

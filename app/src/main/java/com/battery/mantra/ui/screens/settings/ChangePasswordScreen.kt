@@ -55,13 +55,13 @@ fun ChangePasswordScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Change Password", fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text("Change Password", fontWeight = FontWeight.Bold, color = Color.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFD32F2F))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
         containerColor = Color(0xFFF8F9FA)
@@ -103,7 +103,9 @@ fun ChangePasswordScreen(
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFD32F2F),
-                    focusedLabelColor = Color(0xFFD32F2F)
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -124,7 +126,9 @@ fun ChangePasswordScreen(
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFD32F2F),
-                    focusedLabelColor = Color(0xFFD32F2F)
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 
@@ -145,7 +149,9 @@ fun ChangePasswordScreen(
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFD32F2F),
-                    focusedLabelColor = Color(0xFFD32F2F)
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
                 )
             )
 

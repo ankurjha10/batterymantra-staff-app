@@ -65,7 +65,7 @@ fun EngineerTaskCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Order #$orderId",
+                        text = "${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.order_number)}$orderId",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -93,7 +93,7 @@ fun EngineerTaskCard(
                 }
 
                 Text(
-                    text = if (isActive) "Current Task" else "Past Task",
+                    text = if (isActive) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.current_task) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.past_task),
                     color = Color(0xFF5F6368),
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
@@ -105,7 +105,7 @@ fun EngineerTaskCard(
 
                 // Customer Details
                 Text(
-                    text = "Customer",
+                    text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.customer_label),
                     color = Color(0xFF5F6368),
                     fontSize = 12.sp
                 )
@@ -132,7 +132,7 @@ fun EngineerTaskCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
-                            Text(text = "Delivery Address", color = Color(0xFF5F6368), fontSize = 12.sp)
+                            Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.delivery_address), color = Color(0xFF5F6368), fontSize = 12.sp)
                             Text(text = address, color = Color.Black, fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp))
                         }
                     }
@@ -157,7 +157,7 @@ fun EngineerTaskCard(
                         ) {
                             Icon(Icons.Outlined.Call, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "CALL", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.call_button), color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
 
                         OutlinedButton(
@@ -171,7 +171,7 @@ fun EngineerTaskCard(
                         ) {
                             Icon(Icons.Outlined.Navigation, contentDescription = null, tint = Color(0xFF1976D2), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "NAVIGATE", color = Color(0xFF1976D2), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.navigate_button), color = Color(0xFF1976D2), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
 
@@ -202,7 +202,7 @@ fun EngineerTaskCard(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     val isPaid = paymentStatus?.uppercase() == "PAID"
-                                    Text(text = if (isPaid) "Amount Paid" else "Collect Payment", color = Color(0xFF5F6368), fontSize = 12.sp)
+                                    Text(text = if (isPaid) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.amount_paid) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.collect_payment), color = Color(0xFF5F6368), fontSize = 12.sp)
                                     Text(text = price, color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
@@ -231,7 +231,7 @@ fun EngineerTaskCard(
                     ) {
                         ProgressStep(
                             modifier = Modifier.weight(1f),
-                            label = "Assigned",
+                            label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.assigned_status),
                             isCompleted = isDispatched,
                             isCurrent = !isDispatched,
                             isFirst = true,
@@ -239,7 +239,7 @@ fun EngineerTaskCard(
                         )
                         ProgressStep(
                             modifier = Modifier.weight(1f),
-                            label = "Dispatched",
+                            label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.dispatched_status),
                             isCompleted = isDelivered,
                             isCurrent = isDispatched && !isDelivered,
                             isFirst = false,
@@ -247,7 +247,7 @@ fun EngineerTaskCard(
                         )
                         ProgressStep(
                             modifier = Modifier.weight(1f),
-                            label = "Delivered",
+                            label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.delivered_status),
                             isCompleted = false,
                             isCurrent = isDelivered,
                             isFirst = false,

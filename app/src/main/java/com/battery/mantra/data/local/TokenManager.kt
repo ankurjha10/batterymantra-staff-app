@@ -20,6 +20,7 @@ class TokenManager(private val context: Context) {
         private val ROLE_KEY = stringPreferencesKey("user_role")
         private val PERMISSIONS_KEY = androidx.datastore.preferences.core.stringSetPreferencesKey("user_permissions")
         private val CLEARED_NOTIFS_KEY = androidx.datastore.preferences.core.longPreferencesKey("cleared_notifs_time")
+        private val LANGUAGE_KEY = stringPreferencesKey("app_language")
     }
 
     private var cachedJwt: String? = null
@@ -103,6 +104,18 @@ class TokenManager(private val context: Context) {
     fun getNotificationsClearedTime(): Long {
         return runBlocking {
             context.dataStore.data.first()[CLEARED_NOTIFS_KEY] ?: 0L
+        }
+    }
+
+    suspend fun saveLanguage(languageCode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[LANGUAGE_KEY] = languageCode
+        }
+    }
+
+    fun getLanguage(): String {
+        return runBlocking {
+            context.dataStore.data.first()[LANGUAGE_KEY] ?: "en"
         }
     }
 }

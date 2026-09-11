@@ -62,7 +62,7 @@ fun JobExecutionScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        text = "Job #$jobId".take(12), 
+                        text = "${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.job_number)}$jobId".take(12), 
                         color = Color.Black, 
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
@@ -143,13 +143,13 @@ fun JobExecutionScreen(
 
                                     Column {
                                         Text(
-                                            text = item.productName ?: "Product ID: ${item.productId.take(8)}",
+                                            text = item.productName ?: "${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.product_id_prefix)} ${item.productId.take(8)}",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp,
                                             color = Color(0xFF1E293B)
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Text(text = "Qty: ${item.quantity}", fontSize = 13.sp, color = Color.Gray)
+                                        Text(text = "${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.qty_prefix)} ${item.quantity}", fontSize = 13.sp, color = Color.Gray)
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -162,8 +162,8 @@ fun JobExecutionScreen(
                                 Icon(androidx.compose.material.icons.Icons.Outlined.Person, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
-                                    Text(order.customerName ?: "Unknown Customer", fontWeight = FontWeight.SemiBold, color = Color(0xFF334155))
-                                    Text(order.customerPhone ?: "No Phone", fontSize = 13.sp, color = Color.Gray)
+                                    Text(order.customerName ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.unknown_customer), fontWeight = FontWeight.SemiBold, color = Color(0xFF334155))
+                                    Text(order.customerPhone ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_phone), fontSize = 13.sp, color = Color.Gray)
                                 }
                             }
 
@@ -172,7 +172,7 @@ fun JobExecutionScreen(
                             Row(verticalAlignment = Alignment.Top) {
                                 Icon(androidx.compose.material.icons.Icons.Outlined.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(order.shippingAddress ?: "No address provided", fontSize = 13.sp, color = Color.Gray, lineHeight = 18.sp)
+                                Text(order.shippingAddress ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_address_provided), fontSize = 13.sp, color = Color.Gray, lineHeight = 18.sp)
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -191,7 +191,7 @@ fun JobExecutionScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(if (isPaid) "Amount Paid" else "Amount Due", fontWeight = FontWeight.SemiBold, color = if (isPaid) Color(0xFF166534) else Color(0xFF991B1B))
+                                    Text(if (isPaid) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.amount_paid) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.amount_due), fontWeight = FontWeight.SemiBold, color = if (isPaid) Color(0xFF166534) else Color(0xFF991B1B))
                                     Text("₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = if (isPaid) Color(0xFF166534) else Color(0xFF991B1B))
                                 }
                             }
@@ -204,7 +204,7 @@ fun JobExecutionScreen(
                         val qrLoading by viewModel.qrLoading.collectAsState()
                         val qrPaymentVerified by viewModel.qrPaymentVerified.collectAsState()
 
-                        Text("1. Old Battery & Payment", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.step_1_battery_payment), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         val requiresExchange = order.orderItems?.any { it.exchangeOldBattery } == true
@@ -219,15 +219,15 @@ fun JobExecutionScreen(
                                         checkmarkColor = Color.White
                                     )
                                 )
-                                Text("Old Battery Collected (Scrap Discount applied)")
+                                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.old_battery_collected))
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                         
                         val isPaid = order.paymentStatus?.uppercase() == "PAID"
                         if (isPaid) {
-                            Text("Payment Status:", fontWeight = FontWeight.SemiBold)
-                            Text("Amount already paid online (₹${order.totalAmount})", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                            Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.payment_status_label), fontWeight = FontWeight.SemiBold)
+                            Text("${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.amount_paid_online)} (₹${order.totalAmount})", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
                         } else {
                             // Payment Collection Mode Card
                             Card(
@@ -237,7 +237,7 @@ fun JobExecutionScreen(
                                 elevation = CardDefaults.cardElevation(2.dp)
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("Payment Collection Mode", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF475569))
+                                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.payment_collection_mode), fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF475569))
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         RadioButton(
@@ -245,14 +245,14 @@ fun JobExecutionScreen(
                                             onClick = { paymentMode = "CASH" }, 
                                             colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
                                         )
-                                        Text("Cash", fontWeight = if (paymentMode == "CASH") FontWeight.Bold else FontWeight.Normal)
+                                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.cash), fontWeight = if (paymentMode == "CASH") FontWeight.Bold else FontWeight.Normal)
                                         Spacer(modifier = Modifier.width(16.dp))
                                         RadioButton(
                                             selected = paymentMode == "UPI", 
                                             onClick = { paymentMode = "UPI" }, 
                                             colors = RadioButtonDefaults.colors(selectedColor = Color(0xFFD32F2F))
                                         )
-                                        Text("UPI / QR Code", fontWeight = if (paymentMode == "UPI") FontWeight.Bold else FontWeight.Normal)
+                                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.upi_qr_code), fontWeight = if (paymentMode == "UPI") FontWeight.Bold else FontWeight.Normal)
                                     }
 
                                     // Razorpay QR Code Section
@@ -274,8 +274,8 @@ fun JobExecutionScreen(
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                                     Text("✅", fontSize = 32.sp)
                                                     Spacer(modifier = Modifier.height(8.dp))
-                                                    Text("Payment Received!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF166534))
-                                                    Text("₹${order.totalAmount} paid via UPI", fontSize = 13.sp, color = Color(0xFF166534))
+                                                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.payment_received), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF166534))
+                                                    Text("₹${order.totalAmount} ${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.paid_via_upi)}", fontSize = 13.sp, color = Color(0xFF166534))
                                                 }
                                             }
                                         } else {
@@ -302,7 +302,7 @@ fun JobExecutionScreen(
                                                 if (qrLoading) {
                                                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                                                 } else {
-                                                    Text(if (qrImageUrl != null) "Show UPI QR Code" else "Generate & Show QR", fontWeight = FontWeight.Bold, color = Color.White)
+                                                    Text(if (qrImageUrl != null) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.show_upi_qr) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.generate_show_qr), fontWeight = FontWeight.Bold, color = Color.White)
                                                 }
                                             }
                                         }
@@ -324,7 +324,7 @@ fun JobExecutionScreen(
                                     disabledContainerColor = Color(0xFFBDBDBD)
                                 )
                             ) {
-                                Text("Next", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.next), fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
                         
@@ -333,7 +333,7 @@ fun JobExecutionScreen(
 
                     // Step 2: OTP Verification
                     if (step >= 3) {
-                        Text("2. Verify Customer OTP", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.step_2_verify_otp), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         if (!otpSent) {
@@ -347,7 +347,7 @@ fun JobExecutionScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                             ) {
-                                Text("Send OTP to Customer", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.send_otp_to_customer), fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         } else {
                             OutlinedTextField(
@@ -357,7 +357,7 @@ fun JobExecutionScreen(
                                         otp = newValue 
                                     }
                                 },
-                                label = { Text("Enter OTP from Customer") },
+                                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.enter_otp_from_customer)) },
                                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
@@ -376,7 +376,7 @@ fun JobExecutionScreen(
                                     coroutineScope.launch { snackbarHostState.showSnackbar(msg) }
                                 } 
                             }) {
-                                Text("Resend OTP", color = Color(0xFFD32F2F))
+                                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.resend_otp), color = Color(0xFFD32F2F))
                             }
                             
                             Spacer(modifier = Modifier.height(16.dp))
@@ -404,7 +404,7 @@ fun JobExecutionScreen(
                                 if (isSubmitting) {
                                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                                 } else {
-                                    Text("Mark Job as Completed", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.mark_job_as_completed), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
                         }
@@ -443,9 +443,9 @@ fun JobExecutionScreen(
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Amount Due: ₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF1E293B))
+                    Text("${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.amount_due)}: ₹${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF1E293B))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Ask the customer to scan this QR code", fontSize = 16.sp, color = Color.Gray)
+                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.ask_customer_to_scan_qr), fontSize = 16.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(24.dp))
 
                     if (qrImageUrl != null) {
@@ -469,7 +469,7 @@ fun JobExecutionScreen(
                         trackColor = Color(0xFFF1F5F9)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Auto-verifying payment status...", color = Color.Gray, fontSize = 14.sp)
+                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.auto_verifying_payment), color = Color.Gray, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(32.dp))
                 }
             }
@@ -511,7 +511,7 @@ fun JobExecutionScreen(
                     modifier = Modifier.size(120.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Payment Received!", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF388E3C))
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.payment_received), fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF388E3C))
             }
         }
     }

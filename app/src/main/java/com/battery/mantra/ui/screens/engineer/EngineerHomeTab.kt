@@ -45,9 +45,9 @@ fun EngineerHomeTab(
     val todayAttendance = attendance.firstOrNull { it.date == todayStr }
 
     val greeting = when (now.hour) {
-        in 0..11 -> "Good Morning"
-        in 12..16 -> "Good Afternoon"
-        else -> "Good Evening"
+        in 0..11 -> androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.good_morning)
+        in 12..16 -> androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.good_afternoon)
+        else -> androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.good_evening)
     }
 
     Column(
@@ -64,7 +64,7 @@ fun EngineerHomeTab(
         ) {
             Column {
                 Text(
-                    text = "$greeting, ${profile?.name?.split(" ")?.firstOrNull() ?: "Engineer"}! \uD83D\uDC4B",
+                    text = "$greeting, ${profile?.name?.split(" ")?.firstOrNull() ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.engineer)}! \uD83D\uDC4B",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.Black
@@ -96,7 +96,7 @@ fun EngineerHomeTab(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = "${activeJobs.size}", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD32F2F))
-                    Text(text = "Active Tasks", fontSize = 12.sp, color = Color.Gray)
+                    Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.active_tasks), fontSize = 12.sp, color = Color.Gray)
                 }
             }
             
@@ -112,7 +112,7 @@ fun EngineerHomeTab(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = "$pendingLeaves", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-                    Text(text = "Pending Leaves", fontSize = 12.sp, color = Color.Gray)
+                    Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.pending_leaves), fontSize = 12.sp, color = Color.Gray)
                 }
             }
         }
@@ -121,7 +121,7 @@ fun EngineerHomeTab(
 
         // Next Task Widget
         Text(
-            text = "Next Task",
+            text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.next_task),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
@@ -147,8 +147,8 @@ fun EngineerHomeTab(
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = nextJob.orderItems?.firstOrNull()?.productName ?: "Battery Check", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 16.sp)
-                        Text(text = nextJob.shippingAddress ?: "Customer Location", color = Color.DarkGray, fontSize = 12.sp, maxLines = 1)
+                        Text(text = nextJob.orderItems?.firstOrNull()?.productName ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.battery_check), fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 16.sp)
+                        Text(text = nextJob.shippingAddress ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.customer_location), color = Color.DarkGray, fontSize = 12.sp, maxLines = 1)
                     }
                 }
             }
@@ -159,7 +159,7 @@ fun EngineerHomeTab(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Box(modifier = Modifier.padding(24.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("No active tasks right now. \uD83C\uDF89", color = Color.Gray)
+                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_active_tasks), color = Color.Gray)
                 }
             }
         }
@@ -168,7 +168,7 @@ fun EngineerHomeTab(
 
         // Compact Attendance Card
         Text(
-            text = "Attendance",
+            text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.attendance),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black,
@@ -187,13 +187,15 @@ fun EngineerHomeTab(
             ) {
                 val isPresent = todayAttendance?.status == "PRESENT"
                 Column {
+                    val statusText = todayAttendance?.status ?: "PENDING"
+                    val localizedStatusText = if (statusText == "PENDING") androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.status_pending) else statusText
                     Text(
-                        text = "Status: ${todayAttendance?.status ?: "PENDING"}",
+                        text = "${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.status_label)} $localizedStatusText",
                         fontWeight = FontWeight.Bold,
                         color = if (isPresent) Color(0xFF166534) else Color(0xFF334155)
                     )
                     if (isPresent && todayAttendance?.checkInTime != null) {
-                        Text(text = "In: ${todayAttendance.checkInTime.substringBefore(":")}", fontSize = 12.sp, color = Color.Gray)
+                        Text(text = "${androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.in_label)} ${todayAttendance.checkInTime.substringBefore(":")}", fontSize = 12.sp, color = Color.Gray)
                     }
                 }
                 
@@ -204,13 +206,13 @@ fun EngineerHomeTab(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828), contentColor = Color.White),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Check Out", color = Color.White)
+                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.check_out), color = Color.White)
                     }
                 } else if (todayAttendance != null && todayAttendance.checkOutTime != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = Color(0xFF34D399), modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Day Completed", color = Color(0xFF34D399), fontWeight = FontWeight.Bold)
+                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.day_completed), color = Color(0xFF34D399), fontWeight = FontWeight.Bold)
                     }
                 } else {
                     Button(
@@ -218,7 +220,7 @@ fun EngineerHomeTab(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Check In", color = Color.White)
+                        Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.check_in), color = Color.White)
                     }
                 }
             }

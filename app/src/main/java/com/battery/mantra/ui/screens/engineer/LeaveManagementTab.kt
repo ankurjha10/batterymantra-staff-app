@@ -45,7 +45,7 @@ fun LeaveManagementTab(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "My Leaves",
+                text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.my_leaves),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -61,7 +61,7 @@ fun LeaveManagementTab(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Apply", tint = Color.White)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Apply Leave", color = Color.White)
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.apply_leave), color = Color.White)
             }
         }
         
@@ -69,7 +69,7 @@ fun LeaveManagementTab(
         
         if (leaves.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No leave requests found", color = Color.Gray)
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_leave_requests), color = Color.Gray)
 
             }
         } else {
@@ -124,7 +124,7 @@ fun LeaveCard(leave: LeaveRequestResponse) {
             
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Reason: ${leave.reason}",
+                text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.reason_prefix, leave.reason),
                 fontSize = 14.sp,
                 color = Color.DarkGray
             )
@@ -155,17 +155,17 @@ fun ApplyLeaveSheet(
             confirmButton = {
                 TextButton(onClick = {
                     startDatePickerState.selectedDateMillis?.let { millis ->
-                        val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.of("UTC")).toLocalDate()
+                        val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.of("Asia/Kolkata")).toLocalDate()
                         startDate = date.toString()
                     }
                     showStartDatePicker = false
                 },
                 colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFD32F2F))
-                ) { Text("OK") }
+                ) { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.ok_button)) }
             },
             dismissButton = {
                 TextButton(onClick = { showStartDatePicker = false },
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)) { Text("Cancel") }
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)) { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.cancel_button)) }
             },
             colors = DatePickerDefaults.colors(containerColor = Color.White)
         ) {
@@ -195,17 +195,17 @@ fun ApplyLeaveSheet(
             confirmButton = {
                 TextButton(onClick = {
                     endDatePickerState.selectedDateMillis?.let { millis ->
-                        val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.of("UTC")).toLocalDate()
+                        val date = java.time.Instant.ofEpochMilli(millis).atZone(java.time.ZoneId.of("Asia/Kolkata")).toLocalDate()
                         endDate = date.toString()
                     }
                     showEndDatePicker = false
                 },
                 colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFD32F2F))
-                ) { Text("OK") }
+                ) { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.ok_button)) }
             },
             dismissButton = {
                 TextButton(onClick = { showEndDatePicker = false },
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)) { Text("Cancel") }
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Gray)) { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.cancel_button)) }
             },
             colors = DatePickerDefaults.colors(containerColor = Color.White)
         ) {
@@ -242,7 +242,7 @@ fun ApplyLeaveSheet(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Apply for Leave",
+                text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.apply_for_leave),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF0F172A),
@@ -253,7 +253,7 @@ fun ApplyLeaveSheet(
                 value = startDate,
                 onValueChange = { },
                 readOnly = true,
-                label = { Text("Start Date") },
+                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.start_date)) },
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
                     IconButton(onClick = { showStartDatePicker = true }) {
@@ -272,7 +272,7 @@ fun ApplyLeaveSheet(
                 value = endDate,
                 onValueChange = { },
                 readOnly = true,
-                label = { Text("End Date") },
+                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.end_date)) },
                 modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
                     IconButton(onClick = { showEndDatePicker = true }) {
@@ -290,7 +290,7 @@ fun ApplyLeaveSheet(
             OutlinedTextField(
                 value = reason,
                 onValueChange = { reason = it },
-                label = { Text("Reason") },
+                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.reason_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -308,7 +308,7 @@ fun ApplyLeaveSheet(
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
+                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.cancel_button), color = Color(0xFF64748B), fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
@@ -317,7 +317,7 @@ fun ApplyLeaveSheet(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Text("Apply Leave", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.apply_leave), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

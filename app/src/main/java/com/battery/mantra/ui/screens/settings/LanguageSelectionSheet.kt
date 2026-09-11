@@ -19,7 +19,9 @@ fun LanguageSelectionSheet(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
-    var selectedLanguage by remember { mutableStateOf("en") }
+    val tokenManager = (context.applicationContext as com.battery.mantra.BatteryMantraApp).container.tokenManager
+    var selectedLanguage by remember { mutableStateOf(tokenManager.getLanguage()) }
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -31,7 +33,7 @@ fun LanguageSelectionSheet(
                 .padding(bottom = 32.dp, start = 24.dp, end = 24.dp, top = 8.dp)
         ) {
             Text(
-                text = "Select Language",
+                text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.select_language),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -39,8 +41,8 @@ fun LanguageSelectionSheet(
             )
 
             LanguageOption(
-                title = "English",
-                subtitle = "English",
+                title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.english),
+                subtitle = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.english_subtitle),
                 isSelected = selectedLanguage == "en",
                 onClick = { selectedLanguage = "en" }
             )
@@ -48,8 +50,8 @@ fun LanguageSelectionSheet(
             HorizontalDivider(color = Color(0xFFF1F5F9))
             
             LanguageOption(
-                title = "Hindi",
-                subtitle = "हिन्दी",
+                title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.hindi),
+                subtitle = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.hindi_subtitle),
                 isSelected = selectedLanguage == "hi",
                 onClick = { selectedLanguage = "hi" }
             )
@@ -58,8 +60,22 @@ fun LanguageSelectionSheet(
 
             Button(
                 onClick = {
-                    android.widget.Toast.makeText(context, "Language preference saved. Texts will be translated in future updates.", android.widget.Toast.LENGTH_LONG).show()
-                    onDismiss()
+                    scope.kotlinx.coroutines.launch {
+                        tokenManager.saveLanguage(selectedLanguage)
+                        
+                        // Change Language
+                        val locale = java.util.Locale(selectedLanguage)
+                        java.util.Locale.setDefault(locale)
+                        val config = context.resources.configuration
+                        config.setLocale(locale)
+                        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+                        
+                        android.widget.Toast.makeText(context, context.getString(com.battery.mantra.R.string.language_saved), android.widget.Toast.LENGTH_LONG).show()
+                        onDismiss()
+                        
+                        // Recreate Activity to apply changes
+                        (context as? android.app.Activity)?.recreate()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -70,7 +86,7 @@ fun LanguageSelectionSheet(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Apply Language", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.apply_language), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -40,7 +40,7 @@ fun ChangePasswordScreen(
     LaunchedEffect(state) {
         when (state) {
             is PasswordChangeState.Success -> {
-                android.widget.Toast.makeText(context, "Password updated successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, context.getString(com.battery.mantra.R.string.password_updated_success), android.widget.Toast.LENGTH_SHORT).show()
                 viewModel.resetPasswordState()
                 onBack()
             }
@@ -55,7 +55,7 @@ fun ChangePasswordScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Change Password", fontWeight = FontWeight.Bold, color = Color.Black) },
+                title = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.change_password), fontWeight = FontWeight.Bold, color = Color.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
@@ -75,14 +75,14 @@ fun ChangePasswordScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Set a new password",
+                text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.set_new_password),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Your new password must be at least 6 characters long.",
+                text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.new_password_rule),
                 fontSize = 14.sp,
                 color = Color.Gray
             )
@@ -91,12 +91,12 @@ fun ChangePasswordScreen(
             OutlinedTextField(
                 value = currentPassword,
                 onValueChange = { currentPassword = it },
-                label = { Text("Current Password") },
+                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.current_password)) },
                 visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (currentPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
-                        Icon(imageVector = image, contentDescription = if (currentPasswordVisible) "Hide password" else "Show password")
+                        Icon(imageVector = image, contentDescription = if (currentPasswordVisible) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.hide_password) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.show_password))
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -114,12 +114,12 @@ fun ChangePasswordScreen(
             OutlinedTextField(
                 value = newPassword,
                 onValueChange = { newPassword = it },
-                label = { Text("New Password") },
+                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.new_password)) },
                 visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (newPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                        Icon(imageVector = image, contentDescription = if (newPasswordVisible) "Hide password" else "Show password")
+                        Icon(imageVector = image, contentDescription = if (newPasswordVisible) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.hide_password) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.show_password))
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -137,12 +137,12 @@ fun ChangePasswordScreen(
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = { Text("Confirm New Password") },
+                label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.confirm_new_password)) },
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                        Icon(imageVector = image, contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password")
+                        Icon(imageVector = image, contentDescription = if (confirmPasswordVisible) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.hide_password) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.show_password))
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -180,7 +180,7 @@ fun ChangePasswordScreen(
                 if (state is PasswordChangeState.Loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Update Password", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.update_password), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

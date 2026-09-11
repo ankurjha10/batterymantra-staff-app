@@ -78,7 +78,7 @@ fun EngineerProfileTab(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = profile.name ?: "Unknown Engineer",
+            text = profile.name ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.unknown_engineer),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black
@@ -92,7 +92,7 @@ fun EngineerProfileTab(
             contentColor = Color.White
         ) {
             Text(
-                text = if (isActive) "ACTIVE" else "INACTIVE",
+                text = if (isActive) androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.active) else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.inactive),
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -110,27 +110,27 @@ fun EngineerProfileTab(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
-                Text("Professional Details", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.professional_details), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                ProfileDetailRow(icon = Icons.Default.Badge, label = "Employee ID", value = profile.userId)
+                ProfileDetailRow(icon = Icons.Default.Badge, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.employee_id), value = profile.userId)
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 val joinedDate = try {
                     if (!profile.createdAt.isNullOrBlank()) {
                         ZonedDateTime.parse(profile.createdAt).format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-                    } else "N/A"
+                    } else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_applicable)
                 } catch (e: Exception) {
-                    "N/A"
+                    androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_applicable)
                 }
-                ProfileDetailRow(icon = Icons.Default.DateRange, label = "Joined On", value = joinedDate)
+                ProfileDetailRow(icon = Icons.Default.DateRange, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.joined_on), value = joinedDate)
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 val completedJobs = profile.totalJobsCompleted ?: historyJobs.filter { it.orderStatus == "COMPLETED" || it.orderStatus == "DELIVERED" || it.orderStatus == "INSTALLED" }.size
-                ProfileDetailRow(icon = Icons.Default.Work, label = "Total Jobs Completed", value = "$completedJobs")
+                ProfileDetailRow(icon = Icons.Default.Work, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.total_jobs_completed), value = "$completedJobs")
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                ProfileDetailRow(icon = Icons.Default.LocationCity, label = "Assigned Hub", value = profile.assignedPartnerName ?: "N/A")
+                ProfileDetailRow(icon = Icons.Default.LocationCity, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.assigned_hub), value = profile.assignedPartnerName ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_applicable))
             }
         }
         
@@ -144,12 +144,12 @@ fun EngineerProfileTab(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
-                Text("Contact Details", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.contact_details), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                ProfileDetailRow(icon = Icons.Default.Phone, label = "Phone", value = profile.phone ?: "Not Provided")
+                ProfileDetailRow(icon = Icons.Default.Phone, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.phone), value = profile.phone ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_provided))
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileDetailRow(icon = Icons.Default.Email, label = "Email", value = profile.email ?: "Not Provided")
+                ProfileDetailRow(icon = Icons.Default.Email, label = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.email), value = profile.email ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.not_provided))
             }
         }
         
@@ -163,11 +163,11 @@ fun EngineerProfileTab(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.padding(bottom = 8.dp, start = 8.dp))
+                Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.settings), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.padding(bottom = 8.dp, start = 8.dp))
                 
-                SettingsRow(icon = Icons.Default.Lock, title = "Change Password", onClick = onChangePasswordClick)
+                SettingsRow(icon = Icons.Default.Lock, title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.change_password), onClick = onChangePasswordClick)
                 HorizontalDivider(color = Color(0xFFF1F5F9))
-                SettingsRow(icon = Icons.Default.Language, title = "App Language", onClick = onChangeLanguageClick)
+                SettingsRow(icon = Icons.Default.Language, title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.app_language), onClick = onChangeLanguageClick)
             }
         }
         

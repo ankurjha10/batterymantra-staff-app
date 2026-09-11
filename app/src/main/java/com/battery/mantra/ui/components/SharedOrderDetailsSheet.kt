@@ -65,7 +65,7 @@ fun SharedOrderDetailsSheet(
             ) {
                 Column {
                     Text(
-                        text = "Order Summary",
+                        text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.order_summary),
                         fontSize = 14.sp,
                         color = Color.Gray,
                         fontWeight = FontWeight.Medium
@@ -84,7 +84,7 @@ fun SharedOrderDetailsSheet(
                     shadowElevation = 2.dp
                 ) {
                     IconButton(onClick = onDismiss) {
-                        Icon(Icons.Outlined.Close, contentDescription = "Close", tint = Color.Gray)
+                        Icon(Icons.Outlined.Close, contentDescription = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.close_button), tint = Color.Gray)
                     }
                 }
             }
@@ -124,7 +124,7 @@ fun SharedOrderDetailsSheet(
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = order.orderStatus ?: "UNKNOWN",
+                                text = order.orderStatus ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.unknown_status),
                                 color = statusColor,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
@@ -173,16 +173,16 @@ fun SharedOrderDetailsSheet(
                         }
                         if (!isTerminalState) {
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Tap to update", fontSize = 11.sp, color = Color.Gray)
+                            Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.tap_to_update), fontSize = 11.sp, color = Color.Gray)
                         }
                     }
                 }
 
                 // Order Items Card
                 item {
-                    InfoCard(title = "Order Items", icon = Icons.Outlined.Inventory2) {
+                    InfoCard(title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.order_items), icon = Icons.Outlined.Inventory2) {
                         if (order.orderItems.isNullOrEmpty()) {
-                            Text(text = "No items found", color = Color.Gray, fontSize = 14.sp)
+                            Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_items_found), color = Color.Gray, fontSize = 14.sp)
                         } else {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 order.orderItems.forEach { item ->
@@ -224,10 +224,10 @@ fun SharedOrderDetailsSheet(
                                                     fontSize = 14.sp
                                                 )
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Text(text = "Qty: ${item.quantity}", fontSize = 12.sp, color = Color.Gray)
+                                                    Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.qty_prefix, item.quantity), fontSize = 12.sp, color = Color.Gray)
                                                     if (item.exchangeOldBattery) {
                                                         Spacer(modifier = Modifier.width(8.dp))
-                                                        Text(text = "• With Exchange", fontSize = 12.sp, color = Color(0xFFD32F2F))
+                                                        Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.with_exchange), fontSize = 12.sp, color = Color(0xFFD32F2F))
                                                     }
                                                 }
                                             }
@@ -242,10 +242,10 @@ fun SharedOrderDetailsSheet(
 
                 // Order Details (Payment, Delivery)
                 item {
-                    InfoCard(title = "Order Details", icon = Icons.Outlined.Info) {
+                    InfoCard(title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.order_details), icon = Icons.Outlined.Info) {
                         // Dates
-                        DetailRow(icon = Icons.Outlined.CalendarToday, text = "Placed: ${order.placedAt?.take(10) ?: "N/A"}")
-                        DetailRow(icon = Icons.Outlined.EventAvailable, text = "Installation: ${order.installationDate ?: "N/A"}")
+                        DetailRow(icon = Icons.Outlined.CalendarToday, text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.placed_prefix, order.placedAt?.take(10) ?: "N/A"))
+                        DetailRow(icon = Icons.Outlined.EventAvailable, text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.installation_prefix, order.installationDate ?: "N/A"))
                         Spacer(modifier = Modifier.height(12.dp))
                         
                         // Delivery

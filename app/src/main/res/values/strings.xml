@@ -8,4 +8,148 @@
     <string name="forgot_password">Forgot Password?</string>
     <string name="app_logo_text">BatteryMantra</string>
     <string name="portal_subtitle">Internal Partner &amp; Engineer Portal</string>
+    
+    <!-- Engineer Dashboard -->
+    <string name="engineer">Engineer</string>
+    <string name="home">Home</string>
+    <string name="my_tasks">My Tasks</string>
+    <string name="history">History</string>
+    <string name="leaves">Leaves</string>
+    <string name="profile">Profile</string>
+    <string name="logout">Logout</string>
+    <string name="app_version">App v1.0.0</string>
+    <string name="my_active_task">My Active Task</string>
+
+    <!-- Engineer Home Tab -->
+    <string name="good_morning">Good Morning</string>
+    <string name="good_afternoon">Good Afternoon</string>
+    <string name="good_evening">Good Evening</string>
+    <string name="active_tasks">Active Tasks</string>
+    <string name="pending_leaves">Pending Leaves</string>
+    <string name="next_task">Next Task</string>
+    <string name="battery_check">Battery Check</string>
+    <string name="customer_location">Customer Location</string>
+    <string name="no_active_tasks">No active tasks right now. \uD83C\uDF89</string>
+    <string name="attendance">Attendance</string>
+    <string name="status_label">Status:</string>
+    <string name="status_pending">PENDING</string>
+    <string name="in_label">In:</string>
+    <string name="check_out">Check Out</string>
+    <string name="day_completed">Day Completed</string>
+    <string name="check_in">Check In</string>
+
+    <!-- Engineer Active Jobs Tab -->
+    <string name="no_active_tasks_found">No active tasks found</string>
+    <string name="unknown_customer">Unknown</string>
+    <string name="no_address">No address</string>
+    <string name="execute_job">Execute Job</string>
+    <string name="checked_out_error">You have checked out for the day. Cannot execute job.</string>
+
+    <!-- Engineer Profile Tab -->
+    <string name="unknown_engineer">Unknown Engineer</string>
+    <string name="active">ACTIVE</string>
+    <string name="inactive">INACTIVE</string>
+    <string name="professional_details">Professional Details</string>
+    <string name="employee_id">Employee ID</string>
+    <string name="not_applicable">N/A</string>
+    <string name="joined_on">Joined On</string>
+    <string name="total_jobs_completed">Total Jobs Completed</string>
+    <string name="assigned_hub">Assigned Hub</string>
+    <string name="contact_details">Contact Details</string>
+    <string name="phone">Phone</string>
+    <string name="not_provided">Not Provided</string>
+    <string name="email">Email</string>
+    <string name="settings">Settings</string>
+    <string name="change_password">Change Password</string>
+    <string name="app_language">App Language</string>
+
+    <!-- Settings and Auth -->
+    <string name="password_updated_success">Password updated successfully!</string>
+    <string name="set_new_password">Set a new password</string>
+    <string name="new_password_rule">Your new password must be at least 6 characters long.</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="update_password">Update Password</string>
+
+    <!-- Language Sheet -->
+    <string name="select_language">Select Language</string>
+    <string name="english">English</string>
+    <string name="english_subtitle">English</string>
+    <string name="hindi">Hindi</string>
+    <string name="hindi_subtitle">हिन्दी</string>
+    <string name="language_saved">Language preference saved.</string>
+    <string name="apply_language">Apply Language</string>
+
+    <!-- Job Execution Screen -->
+    <string name="job_number">Job #</string>
+    <string name="product_id_prefix">Product ID:</string>
+    <string name="qty_prefix">Qty:</string>
+    <string name="no_phone">No Phone</string>
+    <string name="no_address_provided">No address provided</string>
+    <string name="amount_paid">Amount Paid</string>
+    <string name="amount_due">Amount Due</string>
+    <string name="step_1_battery_payment">1. Old Battery &amp; Payment</string>
+    <string name="old_battery_collected">Old Battery Collected (Scrap Discount applied)</string>
+    <string name="payment_status_label">Payment Status:</string>
+    <string name="amount_paid_online">Amount already paid online</string>
+    <string name="payment_collection_mode">Payment Collection Mode</string>
+    <string name="cash">Cash</string>
+    <string name="upi_qr_code">UPI / QR Code</string>
+    <string name="payment_received">Payment Received!</string>
+    <string name="paid_via_upi">paid via UPI</string>
+    <string name="show_upi_qr">Show UPI QR Code</string>
+    <string name="generate_show_qr">Generate &amp; Show QR</string>
+    <string name="next">Next</string>
+    <string name="step_2_verify_otp">2. Verify Customer OTP</string>
+    <string name="send_otp_to_customer">Send OTP to Customer</string>
+    <string name="enter_otp_from_customer">Enter OTP from Customer</string>
+    <string name="resend_otp">Resend OTP</string>
+    <string name="mark_job_as_completed">Mark Job as Completed</string>
+    <string name="ask_customer_to_scan_qr">Ask the customer to scan this QR code</string>
+    <string name="auto_verifying_payment">Auto-verifying payment status...</string>
+
+    <!-- History Tab -->
+    <string name="no_past_tasks">No past tasks found</string>
+    <string name="no_address">No address</string>
+
+    <!-- Leave Management Tab -->
+    <string name="my_leaves">My Leaves</string>
+    <string name="apply_leave">Apply Leave</string>
+    <string name="no_leave_requests">No leave requests found</string>
+    <string name="reason_prefix">Reason: %1$s</string>
+    <string name="apply_for_leave">Apply for Leave</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="ok_button">OK</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="reason_label">Reason</string>
+
+    <!-- Task Card -->
+    <string name="order_number">Order #</string>
+    <string name="current_task">Current Task</string>
+    <string name="past_task">Past Task</string>
+    <string name="customer_label">Customer</string>
+    <string name="delivery_address">Delivery Address</string>
+    <string name="call_button">CALL</string>
+    <string name="navigate_button">NAVIGATE</string>
+    <string name="collect_payment">Collect Payment</string>
+    <string name="assigned_status">Assigned</string>
+    <string name="dispatched_status">Dispatched</string>
+    <string name="delivered_status">Delivered</string>
+
+    <!-- Order Details Sheet -->
+    <string name="order_summary">Order Summary</string>
+    <string name="close_button">Close</string>
+    <string name="unknown_status">UNKNOWN</string>
+    <string name="tap_to_update">Tap to update</string>
+    <string name="order_items">Order Items</string>
+    <string name="no_items_found">No items found</string>
+    <string name="qty_prefix">Qty: %1$d</string>
+    <string name="with_exchange">• With Exchange</string>
+    <string name="order_details">Order Details</string>
+    <string name="placed_prefix">Placed: %1$s</string>
+    <string name="installation_prefix">Installation: %1$s</string>
 </resources>

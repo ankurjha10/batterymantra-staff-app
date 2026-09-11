@@ -100,7 +100,7 @@ fun EngineerDashboardScreen(
                         Spacer(Modifier.width(16.dp))
                         Column {
                             Text(
-                                text = profile?.name ?: "Engineer",
+                                text = profile?.name ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.engineer),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
                                 color = Color.Black
@@ -118,11 +118,11 @@ fun EngineerDashboardScreen(
                 Spacer(Modifier.height(8.dp))
 
                 val drawerItems = listOf(
-                    Triple("Home", Icons.Default.Home, 0),
-                    Triple("My Tasks", Icons.Default.Assignment, 1),
-                    Triple("History", Icons.Default.History, 2),
-                    Triple("Leaves", Icons.Default.Event, 3),
-                    Triple("Profile", Icons.Default.Person, 4)
+                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.home), Icons.Default.Home, 0),
+                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.my_tasks), Icons.AutoMirrored.Filled.Assignment, 1),
+                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.history), Icons.Default.History, 2),
+                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.leaves), Icons.Default.Event, 3),
+                    Triple(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.profile), Icons.Default.Person, 4)
                 )
 
                 drawerItems.forEach { (title, icon, index) ->
@@ -160,8 +160,8 @@ fun EngineerDashboardScreen(
                 HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFD32F2F)) },
-                    label = { Text("Logout", color = Color.Black, fontSize = 16.sp) },
+                    icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color(0xFFD32F2F)) },
+                    label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.logout), color = Color.Black, fontSize = 16.sp) },
                     selected = false,
                     colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -172,7 +172,7 @@ fun EngineerDashboardScreen(
                 )
 
                 Text(
-                    text = "App v1.0.0",
+                    text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.app_version),
                     color = Color.Gray,
                     fontSize = 12.sp,
                     modifier = Modifier
@@ -188,7 +188,7 @@ fun EngineerDashboardScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "My Active Task",
+                            text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.my_active_task),
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
@@ -272,7 +272,7 @@ fun EngineerDashboardScreen(
                                 )
                             }
                         },
-                        label = { Text("My Tasks") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.my_tasks)) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.White,
                             selectedTextColor = Color(0xFFD32F2F),
@@ -291,7 +291,7 @@ fun EngineerDashboardScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                         },
-                        label = { Text("History") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.history)) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.White,
                             selectedTextColor = Color(0xFFD32F2F),
@@ -310,7 +310,7 @@ fun EngineerDashboardScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                         },
-                        label = { Text("Leaves") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.leaves)) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.White,
                             selectedTextColor = Color(0xFFD32F2F),
@@ -329,7 +329,7 @@ fun EngineerDashboardScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                         },
-                        label = { Text("Profile") },
+                        label = { Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.profile)) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.White,
                             selectedTextColor = Color(0xFFD32F2F),

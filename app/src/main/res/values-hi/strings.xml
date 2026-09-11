@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">बैटरी मंत्र</string>
+    <string name="welcome_back">वापसी पर स्वागत है</string>
+    <string name="sign_in_to_continue">अपने डैशबोर्ड में जारी रखने के लिए साइन इन करें</string>
+    <string name="phone_or_email">फोन नंबर या ईमेल</string>
+    <string name="password">पासवर्ड</string>
+    <string name="login_to_dashboard">डैशबोर्ड में लॉग इन करें</string>
+    <string name="forgot_password">पासवर्ड भूल गए?</string>
+    <string name="app_logo_text">बैटरीमंत्र</string>
+    <string name="portal_subtitle">इंटरनल पार्टनर और इंजीनियर पोर्टल</string>
+    
+    <!-- Engineer Dashboard -->
+    <string name="engineer">इंजीनियर</string>
+    <string name="home">होम</string>
+    <string name="my_tasks">मेरे कार्य</string>
+    <string name="history">इतिहास</string>
+    <string name="leaves">छुट्टियां</string>
+    <string name="profile">प्रोफ़ाइल</string>
+    <string name="logout">लॉग आउट</string>
+    <string name="app_version">ऐप v1.0.0</string>
+    <string name="my_active_task">मेरा सक्रिय कार्य</string>
+
+    <!-- Engineer Home Tab -->
+    <string name="good_morning">सुप्रभात</string>
+    <string name="good_afternoon">नमस्कार</string>
+    <string name="good_evening">शुभ संध्या</string>
+    <string name="active_tasks">सक्रिय कार्य</string>
+    <string name="pending_leaves">लंबित छुट्टियां</string>
+    <string name="next_task">अगला कार्य</string>
+    <string name="battery_check">बैटरी चेक</string>
+    <string name="customer_location">ग्राहक का स्थान</string>
+    <string name="no_active_tasks">अभी कोई सक्रिय कार्य नहीं है। \uD83C\uDF89</string>
+    <string name="attendance">उपस्थिति</string>
+    <string name="status_label">स्थिति:</string>
+    <string name="status_pending">लंबित</string>
+    <string name="in_label">आगमन:</string>
+    <string name="check_out">चेक आउट</string>
+    <string name="day_completed">दिन पूरा हुआ</string>
+    <string name="check_in">चेक इन</string>
+
+    <!-- Engineer Active Jobs Tab -->
+    <string name="no_active_tasks_found">कोई सक्रिय कार्य नहीं मिला</string>
+    <string name="unknown_customer">अज्ञात</string>
+    <string name="no_address">कोई पता नहीं</string>
+    <string name="execute_job">कार्य निष्पादित करें</string>
+    <string name="checked_out_error">आपने आज के लिए चेक आउट कर लिया है। कार्य निष्पादित नहीं कर सकते।</string>
+
+    <!-- Engineer Profile Tab -->
+    <string name="unknown_engineer">अज्ञात इंजीनियर</string>
+    <string name="active">सक्रिय</string>
+    <string name="inactive">निष्क्रिय</string>
+    <string name="professional_details">पेशेवर विवरण</string>
+    <string name="employee_id">कर्मचारी आईडी</string>
+    <string name="not_applicable">उपलब्ध नहीं</string>
+    <string name="joined_on">शामिल होने की तिथि</string>
+    <string name="total_jobs_completed">कुल पूर्ण किए गए कार्य</string>
+    <string name="assigned_hub">निर्दिष्ट हब</string>
+    <string name="contact_details">संपर्क विवरण</string>
+    <string name="phone">फ़ोन</string>
+    <string name="not_provided">प्रदान नहीं किया गया</string>
+    <string name="email">ईमेल</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="change_password">पासवर्ड बदलें</string>
+    <string name="app_language">ऐप की भाषा</string>
+
+    <!-- Settings and Auth -->
+    <string name="password_updated_success">पासवर्ड सफलतापूर्वक अपडेट किया गया!</string>
+    <string name="set_new_password">एक नया पासवर्ड सेट करें</string>
+    <string name="new_password_rule">आपका नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।</string>
+    <string name="current_password">वर्तमान पासवर्ड</string>
+    <string name="new_password">नया पासवर्ड</string>
+    <string name="confirm_new_password">नए पासवर्ड की पुष्टि करें</string>
+    <string name="hide_password">पासवर्ड छुपाएं</string>
+    <string name="show_password">पासवर्ड दिखाएं</string>
+    <string name="update_password">पासवर्ड अपडेट करें</string>
+
+    <!-- Language Sheet -->
+    <string name="select_language">भाषा चुनें</string>
+    <string name="english">English</string>
+    <string name="english_subtitle">English</string>
+    <string name="hindi">Hindi</string>
+    <string name="hindi_subtitle">हिन्दी</string>
+    <string name="language_saved">भाषा वरीयता सहेजी गई।</string>
+    <string name="apply_language">भाषा लागू करें</string>
+
+    <!-- Job Execution Screen -->
+    <string name="job_number">कार्य #</string>
+    <string name="product_id_prefix">उत्पाद आईडी:</string>
+    <string name="qty_prefix">मात्रा:</string>
+    <string name="no_phone">कोई फोन नहीं</string>
+    <string name="no_address_provided">कोई पता प्रदान नहीं किया गया</string>
+    <string name="amount_paid">भुगतान की गई राशि</string>
+    <string name="amount_due">देय राशि</string>
+    <string name="step_1_battery_payment">1. पुरानी बैटरी और भुगतान</string>
+    <string name="old_battery_collected">पुरानी बैटरी एकत्र की गई (स्क्रैप छूट लागू)</string>
+    <string name="payment_status_label">भुगतान की स्थिति:</string>
+    <string name="amount_paid_online">राशि का भुगतान ऑनलाइन हो चुका है</string>
+    <string name="payment_collection_mode">भुगतान संग्रह मोड</string>
+    <string name="cash">नकद</string>
+    <string name="upi_qr_code">UPI / क्यूआर कोड</string>
+    <string name="payment_received">भुगतान प्राप्त हुआ!</string>
+    <string name="paid_via_upi">UPI के माध्यम से भुगतान किया गया</string>
+    <string name="show_upi_qr">UPI क्यूआर कोड दिखाएं</string>
+    <string name="generate_show_qr">क्यूआर जनरेट और दिखाएं</string>
+    <string name="next">अगला</string>
+    <string name="step_2_verify_otp">2. ग्राहक OTP सत्यापित करें</string>
+    <string name="send_otp_to_customer">ग्राहक को OTP भेजें</string>
+    <string name="enter_otp_from_customer">ग्राहक से OTP दर्ज करें</string>
+    <string name="resend_otp">OTP फिर से भेजें</string>
+    <string name="mark_job_as_completed">कार्य पूर्ण के रूप में चिह्नित करें</string>
+    <string name="ask_customer_to_scan_qr">ग्राहक को यह क्यूआर कोड स्कैन करने के लिए कहें</string>
+    <string name="auto_verifying_payment">भुगतान स्थिति स्वतः-सत्यापित हो रही है...</string>
+
+    <!-- History Tab -->
+    <string name="no_past_tasks">कोई पिछला कार्य नहीं मिला</string>
+    <string name="no_address">कोई पता नहीं</string>
+
+    <!-- Leave Management Tab -->
+    <string name="my_leaves">मेरी छुट्टियां</string>
+    <string name="apply_leave">छुट्टी के लिए आवेदन करें</string>
+    <string name="no_leave_requests">कोई छुट्टी अनुरोध नहीं मिला</string>
+    <string name="reason_prefix">कारण: %1$s</string>
+    <string name="apply_for_leave">छुट्टी के लिए आवेदन करें</string>
+    <string name="cancel_button">रद्द करें</string>
+    <string name="ok_button">ठीक है</string>
+    <string name="start_date">प्रारंभ तिथि</string>
+    <string name="end_date">अंतिम तिथि</string>
+    <string name="reason_label">कारण</string>
+
+    <!-- Task Card -->
+    <string name="order_number">ऑर्डर #</string>
+    <string name="current_task">वर्तमान कार्य</string>
+    <string name="past_task">पिछला कार्य</string>
+    <string name="customer_label">ग्राहक</string>
+    <string name="delivery_address">वितरण का पता</string>
+    <string name="call_button">कॉल करें</string>
+    <string name="navigate_button">नेविगेट करें</string>
+    <string name="collect_payment">भुगतान प्राप्त करें</string>
+    <string name="assigned_status">असाइन किया गया</string>
+    <string name="dispatched_status">भेज दिया गया</string>
+    <string name="delivered_status">वितरित किया गया</string>
+
+    <!-- Order Details Sheet -->
+    <string name="order_summary">ऑर्डर सारांश</string>
+    <string name="close_button">बंद करें</string>
+    <string name="unknown_status">अज्ञात</string>
+    <string name="tap_to_update">अपडेट करने के लिए टैप करें</string>
+    <string name="order_items">ऑर्डर आइटम</string>
+    <string name="no_items_found">कोई आइटम नहीं मिला</string>
+    <string name="qty_prefix">मात्रा: %1$d</string>
+    <string name="with_exchange">• एक्सचेंज के साथ</string>
+    <string name="order_details">ऑर्डर विवरण</string>
+    <string name="placed_prefix">ऑर्डर दिया: %1$s</string>
+    <string name="installation_prefix">इंस्टॉलेशन: %1$s</string>
+</resources>

@@ -22,7 +22,7 @@ fun EngineerActiveJobsTab(
 
     if (activeJobs.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-            androidx.compose.material3.Text("No active tasks found", color = androidx.compose.ui.graphics.Color.Gray)
+            androidx.compose.material3.Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_active_tasks_found), color = androidx.compose.ui.graphics.Color.Gray)
         }
     } else {
         val context = androidx.compose.ui.platform.LocalContext.current
@@ -37,16 +37,16 @@ fun EngineerActiveJobsTab(
                 
                 EngineerTaskCard(
                     orderId = job.orderId.take(8).uppercase(),
-                    customerName = job.customerName ?: "Unknown",
-                    address = job.shippingAddress ?: "No address",
+                    customerName = job.customerName ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.unknown_customer),
+                    address = job.shippingAddress ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_address),
                     price = "₹${job.totalAmount ?: 0.0}",
                     status = status,
                     paymentMethod = job.paymentMethod,
                     paymentStatus = job.paymentStatus,
-                    actionText = if (isCompleted) "" else "Execute Job",
+                    actionText = if (isCompleted) "" else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.execute_job),
                     onActionClick = { 
                         if (isDayCompleted) {
-                            android.widget.Toast.makeText(context, "You have checked out for the day. Cannot execute job.", android.widget.Toast.LENGTH_SHORT).show()
+                            android.widget.Toast.makeText(context, context.getString(com.battery.mantra.R.string.checked_out_error), android.widget.Toast.LENGTH_SHORT).show()
                         } else {
                             onNavigateToJobExecution(job.orderId) 
                         }

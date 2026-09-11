@@ -113,7 +113,7 @@ fun LoginScreen(
 
             // App Name
             Text(
-                text = "BatteryMantra",
+                text = stringResource(R.string.app_logo_text),
                 color = Color.White,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
@@ -122,7 +122,7 @@ fun LoginScreen(
 
             // Subtitle
             Text(
-                text = "Internal Partner & Engineer Portal",
+                text = stringResource(R.string.portal_subtitle),
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp)
@@ -144,14 +144,14 @@ fun LoginScreen(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Welcome Back",
+                        text = stringResource(R.string.welcome_back),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
 
                     Text(
-                        text = "Sign in to continue to your dashboard",
+                        text = stringResource(R.string.sign_in_to_continue),
                         fontSize = 14.sp,
                         color = Color(0xFF5F6368),
                         modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -162,7 +162,7 @@ fun LoginScreen(
                         value = loginUiState.identifier,
                         onValueChange = onIdentifierChange,
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Phone Number or Email", color = Color.Gray) },
+                        placeholder = { Text(stringResource(R.string.phone_or_email), color = Color.Gray) },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.Black,
@@ -181,7 +181,7 @@ fun LoginScreen(
                         value = loginUiState.password,
                         onValueChange = onPasswordChange,
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Password", color = Color.Gray) },
+                        placeholder = { Text(stringResource(R.string.password), color = Color.Gray) },
                         shape = RoundedCornerShape(12.dp),
                         visualTransformation = if (loginUiState.passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -220,7 +220,7 @@ fun LoginScreen(
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.padding(4.dp))
                         } else {
                             Text(
-                                text = "Login to Dashboard",
+                                text = stringResource(R.string.login_to_dashboard),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White

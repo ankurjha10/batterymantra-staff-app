@@ -26,5 +26,10 @@ class AuthRepository(
 
     suspend fun logout() {
         tokenManager.clearTokens()
+        try {
+            com.google.firebase.installations.FirebaseInstallations.getInstance().delete()
+        } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "Failed to delete FCM token on logout", e)
+        }
     }
 }

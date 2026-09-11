@@ -1,6 +1,8 @@
 package com.battery.mantra.ui.screens.engineer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Home
@@ -16,8 +18,10 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.ui.theme.BackgroundSurface
@@ -49,49 +53,86 @@ fun EngineerDashboardScreen(
             ModalDrawerSheet(
                 drawerContainerColor = Color.White
             ) {
-                Spacer(Modifier.height(24.dp))
-                Row(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Profile Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFDEAEA))
+                        .padding(top = 48.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color(0xFFD32F2F),
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    Text(
-                        "Engineer Menu",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        color = Color.Black
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFD32F2F)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = profile?.name?.firstOrNull()?.toString()?.uppercase() ?: "E",
+                                color = Color.White,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = profile?.name ?: "Engineer",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                color = Color.Black
+                            )
+                            if (!profile?.phone.isNullOrBlank()) {
+                                Text(
+                                    text = profile?.phone ?: "",
+                                    fontSize = 14.sp,
+                                    color = Color.DarkGray
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+
+                val drawerItems = listOf(
+                    Triple("Home", Icons.Default.Home, 0),
+                    Triple("My Tasks", Icons.Default.Assignment, 1),
+                    Triple("History", Icons.Default.History, 2),
+                    Triple("Leaves", Icons.Default.Event, 3),
+                    Triple("Profile", Icons.Default.Person, 4)
+                )
+
+                drawerItems.forEach { (title, icon, index) ->
+                    val isSelected = selectedTabIndex == index
+                    NavigationDrawerItem(
+                        icon = {
+                            Icon(
+                                icon,
+                                contentDescription = title,
+                                tint = if (isSelected) Color(0xFFD32F2F) else Color(0xFF5F6368)
+                            )
+                        },
+                        label = {
+                            Text(
+                                title,
+                                color = if (isSelected) Color(0xFFD32F2F) else Color.Black,
+                                fontSize = 16.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        },
+                        selected = isSelected,
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = Color(0xFFFDEAEA),
+                            unselectedContainerColor = Color.Transparent
+                        ),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            onTabSelected(index)
+                        }
                     )
                 }
-                HorizontalDivider(color = Color(0xFFEEEEEE))
-                Spacer(Modifier.height(16.dp))
-
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = null, tint = Color(0xFFD32F2F)) },
-                    label = { Text("Home", color = Color.Black, fontSize = 16.sp) },
-                    selected = false,
-                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFFD32F2F)) },
-                    label = { Text("Profile", color = Color.Black, fontSize = 16.sp) },
-                    selected = false,
-                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        onTabSelected(4)
-                    }
-                )
 
                 Spacer(Modifier.weight(1f))
                 HorizontalDivider(color = Color(0xFFEEEEEE))
@@ -101,11 +142,21 @@ fun EngineerDashboardScreen(
                     label = { Text("Logout", color = Color.Black, fontSize = 16.sp) },
                     selected = false,
                     colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     onClick = {
                         scope.launch { drawerState.close() }
                         onLogout()
                     }
+                )
+
+                Text(
+                    text = "App v1.0.0",
+                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    textAlign = TextAlign.Center
                 )
             }
         }
@@ -176,11 +227,28 @@ fun EngineerDashboardScreen(
                         selected = selectedTabIndex == 1,
                         onClick = { onTabSelected(1) },
                         icon = {
-                            Icon(
-                                Icons.Default.Assignment,
-                                contentDescription = "My Tasks",
-                                modifier = Modifier.size(24.dp)
-                            )
+                            val activeJobsCount = (uiState as? EngineerDashboardState.Success)?.activeJobs?.size ?: 0
+                            if (activeJobsCount > 0) {
+                                BadgedBox(
+                                    badge = {
+                                        Badge(containerColor = Color.Red) {
+                                            Text(activeJobsCount.toString())
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        Icons.Default.Assignment,
+                                        contentDescription = "My Tasks",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    Icons.Default.Assignment,
+                                    contentDescription = "My Tasks",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         },
                         label = { Text("My Tasks") },
                         colors = NavigationBarItemDefaults.colors(
@@ -274,9 +342,13 @@ fun EngineerDashboardScreen(
                         val state = uiState as EngineerDashboardState.Success
                         when (selectedTabIndex) {
                             0 -> EngineerHomeTab(
+                                profile = profile,
                                 attendance = attendance,
+                                activeJobs = state.activeJobs,
+                                leaves = leaves,
                                 onCheckIn = onCheckIn,
-                                onCheckOut = onCheckOut
+                                onCheckOut = onCheckOut,
+                                onTabSelected = onTabSelected
                             )
 
                             1 -> EngineerActiveJobsTab(

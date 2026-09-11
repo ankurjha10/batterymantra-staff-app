@@ -46,6 +46,28 @@ fun EngineerDashboardScreen(
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    
+    var showChangePassword by remember { mutableStateOf(false) }
+    var showLanguageSheet by remember { mutableStateOf(false) }
+
+    if (showChangePassword) {
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val authRepo = (context.applicationContext as com.battery.mantra.BatteryMantraApp).container.authRepository
+        val settingsViewModel: com.battery.mantra.ui.screens.settings.SettingsViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+            factory = com.battery.mantra.ui.screens.settings.SettingsViewModel.provideFactory(authRepo)
+        )
+        com.battery.mantra.ui.screens.settings.ChangePasswordScreen(
+            viewModel = settingsViewModel,
+            onBack = { showChangePassword = false }
+        )
+        return
+    }
+
+    if (showLanguageSheet) {
+        com.battery.mantra.ui.screens.settings.LanguageSelectionSheet(
+            onDismiss = { showLanguageSheet = false }
+        )
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -376,7 +398,9 @@ fun EngineerDashboardScreen(
 
                             4 -> EngineerProfileTab(
                                 profile = profile,
-                                historyJobs = state.historyJobs
+                                historyJobs = state.historyJobs,
+                                onChangePasswordClick = { showChangePassword = true },
+                                onChangeLanguageClick = { showLanguageSheet = true }
                             )
                         }
                     }

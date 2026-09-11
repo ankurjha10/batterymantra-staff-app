@@ -34,7 +34,9 @@ import java.time.ZonedDateTime
 @Composable
 fun EngineerProfileTab(
     profile: UserResponse?,
-    historyJobs: List<OrderResponse>
+    historyJobs: List<OrderResponse>,
+    onChangePasswordClick: () -> Unit,
+    onChangeLanguageClick: () -> Unit
 ) {
     if (profile == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -163,9 +165,9 @@ fun EngineerProfileTab(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.padding(bottom = 8.dp, start = 8.dp))
                 
-                SettingsRow(icon = Icons.Default.Lock, title = "Change Password", onClick = { /* TODO */ })
+                SettingsRow(icon = Icons.Default.Lock, title = "Change Password", onClick = onChangePasswordClick)
                 HorizontalDivider(color = Color(0xFFF1F5F9))
-                SettingsRow(icon = Icons.Default.Language, title = "App Language", onClick = { /* TODO */ })
+                SettingsRow(icon = Icons.Default.Language, title = "App Language", onClick = onChangeLanguageClick)
             }
         }
         

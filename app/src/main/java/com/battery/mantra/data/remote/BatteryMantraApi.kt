@@ -26,6 +26,9 @@ interface BatteryMantraApi {
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
+    @PUT("api/user/password")
+    suspend fun changePassword(@Body request: com.battery.mantra.data.models.PasswordChangeRequest): Response<Unit>
+
     @GET("api/orders")
     suspend fun getMyOrders(): Response<List<OrderResponse>>
 

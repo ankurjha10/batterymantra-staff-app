@@ -24,6 +24,19 @@ class AuthRepository(
         }
     }
 
+    suspend fun changePassword(request: com.battery.mantra.data.models.PasswordChangeRequest): Result<Unit> {
+        return try {
+            val response = api.changePassword(request)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Password change failed: ${response.code()} ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun logout() {
         tokenManager.clearTokens()
         try {

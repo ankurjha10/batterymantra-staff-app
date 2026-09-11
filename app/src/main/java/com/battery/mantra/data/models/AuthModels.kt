@@ -15,3 +15,8 @@ data class LoginResponse(
     @SerializedName("name") val name: String,
     @SerializedName("permissions") val permissions: List<String>? = null
 )
+
+data class PasswordChangeRequest(
+    @SerializedName("currentPassword") val currentPassword: String,
+    @SerializedName("newPassword") val newPassword: String
+)

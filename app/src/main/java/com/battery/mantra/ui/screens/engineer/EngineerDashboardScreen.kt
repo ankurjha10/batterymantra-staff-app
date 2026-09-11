@@ -375,7 +375,8 @@ fun EngineerDashboardScreen(
                             )
 
                             4 -> EngineerProfileTab(
-                                profile = profile
+                                profile = profile,
+                                historyJobs = state.historyJobs
                             )
                         }
                     }

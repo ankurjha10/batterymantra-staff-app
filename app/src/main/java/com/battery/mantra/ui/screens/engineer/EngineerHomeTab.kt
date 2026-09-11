@@ -139,8 +139,8 @@ fun EngineerHomeTab(
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = nextJob.vehicleModel ?: "Battery Check", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 16.sp)
-                        Text(text = nextJob.address ?: "Customer Location", color = Color.DarkGray, fontSize = 12.sp, maxLines = 1)
+                        Text(text = nextJob.orderItems?.firstOrNull()?.productName ?: "Battery Check", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 16.sp)
+                        Text(text = nextJob.shippingAddress ?: "Customer Location", color = Color.DarkGray, fontSize = 12.sp, maxLines = 1)
                     }
                 }
             }

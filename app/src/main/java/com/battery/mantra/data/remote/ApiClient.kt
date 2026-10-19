@@ -28,12 +28,15 @@ object ApiClient {
             var response = chain.proceed(requestBuilder.build())
             
             if ((response.code == 401 || response.code == 403) && !chain.request().url.encodedPath.contains("auth/refresh")) {
+                android.util.Log.w("AuthInterceptor", "Received HTTP ${response.code} for ${chain.request().method} ${chain.request().url}")
                 val refreshToken = tokenManager.getCachedRefresh()
+                android.util.Log.d("AuthInterceptor", "Refresh token present: ${!refreshToken.isNullOrEmpty()}")
                 if (!refreshToken.isNullOrEmpty()) {
                     synchronized(ApiClient::class.java) {
                         val currentToken = tokenManager.getCachedJwt()
                         if (currentToken != null && currentToken != token) {
                             // Token already refreshed by another thread
+                            android.util.Log.d("AuthInterceptor", "Token already refreshed by another thread, retrying with current token")
                             response.close()
                             return@Interceptor chain.proceed(chain.request().newBuilder().header("Authorization", "Bearer $currentToken").build())
                         }
@@ -49,13 +52,18 @@ object ApiClient {
 
                         try {
                             val refreshRes = refreshClient.newCall(refreshReq).execute()
+                            android.util.Log.d("AuthInterceptor", "Refresh response — HTTP ${refreshRes.code}")
                             if (refreshRes.isSuccessful) {
                                 val resBody = refreshRes.body?.string()
+                                android.util.Log.d("AuthInterceptor", "Refresh response body present: ${resBody != null}")
                                 if (resBody != null) {
+                                    android.util.Log.d("AuthInterceptor", "Refresh response raw body: $resBody")
                                     val type = object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type
                                     val map: Map<String, String> = com.google.gson.Gson().fromJson(resBody, type)
+                                    android.util.Log.d("AuthInterceptor", "JSON parsed successfully — keys: ${map.keys}")
                                     val newAccessToken = map["accessToken"]
                                     val newRefreshToken = map["refreshToken"]
+                                    android.util.Log.d("AuthInterceptor", "accessToken present: ${newAccessToken != null}, refreshToken present: ${newRefreshToken != null}")
                                     if (newAccessToken != null && newRefreshToken != null) {
                                         kotlinx.coroutines.runBlocking {
                                             tokenManager.saveTokens(newAccessToken, newRefreshToken, tokenManager.getCachedRole() ?: "", tokenManager.getCachedPermissions().toList())
@@ -64,12 +72,20 @@ object ApiClient {
                                         android.util.Log.d("AuthInterceptor", "Token refreshed successfully, retrying request...")
                                         return@Interceptor chain.proceed(chain.request().newBuilder().header("Authorization", "Bearer $newAccessToken").build())
                                     }
+                                    android.util.Log.e("AuthInterceptor", "BRANCH 4d/4e: Refresh succeeded (HTTP ${refreshRes.code}) but response missing required keys — accessToken: ${newAccessToken != null}, refreshToken: ${newRefreshToken != null}, raw body: $resBody")
+                                } else {
+                                    android.util.Log.e("AuthInterceptor", "BRANCH 4c: Refresh succeeded (HTTP ${refreshRes.code}) but response body was null")
                                 }
+                            } else {
+                                val errorBody = try { refreshRes.body?.string() } catch (_: Exception) { "<unreadable>" }
+                                android.util.Log.e("AuthInterceptor", "BRANCH 4b: Refresh endpoint returned HTTP ${refreshRes.code}, body: $errorBody")
                             }
                         } catch (e: Exception) {
-                            android.util.Log.e("AuthInterceptor", "Failed to refresh token", e)
+                            android.util.Log.e("AuthInterceptor", "BRANCH 4f: Exception during refresh call", e)
                         }
                     }
+                } else {
+                    android.util.Log.e("AuthInterceptor", "BRANCH 4a: No refresh token available (null or empty), cannot attempt refresh")
                 }
                 
                 android.util.Log.e("AuthInterceptor", "Token refresh failed or not available for URL: ${chain.request().url}. Clearing tokens...")

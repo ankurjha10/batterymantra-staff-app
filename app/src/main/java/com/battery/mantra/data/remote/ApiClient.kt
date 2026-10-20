@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 
 object ApiClient {
-    private const val BASE_URL = "https://200.97.165.54.nip.io/"
+    private const val BASE_URL = "https://api.batterymantra.com/"
 
     fun createBatteryMantraApi(tokenManager: TokenManager): BatteryMantraApi {
         val loggingInterceptor = HttpLoggingInterceptor().apply {

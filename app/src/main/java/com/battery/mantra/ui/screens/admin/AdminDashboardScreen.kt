@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.PhoneCallback
 import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +48,11 @@ fun AdminDashboardScreen(
     targetSearchQuery: String? = null,
     targetFilter: String? = null,
     unreadNotificationsCount: Int = 0,
+    pendingCallbacksCount: Int = 0,
+    pendingEnquiriesCount: Int = 0,
+    pendingLeavesCount: Int = 0,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
     onTargetConsumed: () -> Unit = {},
     onTabSelected: (Int) -> Unit,
     onNavigateToUsers: () -> Unit = {},
@@ -61,7 +67,11 @@ fun AdminDashboardScreen(
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onUpdateStatus: (String, String) -> Unit = { _, _ -> },
     onCreatePartner: (com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
+    onUpdatePartner: (String, com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
+    onTogglePartnerStatus: (String, String?, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
+    onUpdateEngineer: (String, com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
+    onToggleEngineerStatus: (String, String?, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
     onCreateOrderClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
@@ -118,6 +128,13 @@ fun AdminDashboardScreen(
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Outlined.PhoneCallback, contentDescription = null) },
                         label = { Text("Callbacks") },
+                        badge = {
+                            if (pendingCallbacksCount > 0) {
+                                Badge(containerColor = Color.Red) {
+                                    Text(pendingCallbacksCount.toString(), color = Color.White)
+                                }
+                            }
+                        },
                         selected = false,
                         onClick = { 
                             scope.launch { drawerState.close() }
@@ -135,6 +152,13 @@ fun AdminDashboardScreen(
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Outlined.QuestionAnswer, contentDescription = null) },
                         label = { Text("Enquiries") },
+                        badge = {
+                            if (pendingEnquiriesCount > 0) {
+                                Badge(containerColor = Color.Red) {
+                                    Text(pendingEnquiriesCount.toString(), color = Color.White)
+                                }
+                            }
+                        },
                         selected = false,
                         onClick = { 
                             scope.launch { drawerState.close() }
@@ -183,6 +207,13 @@ fun AdminDashboardScreen(
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Default.Event, contentDescription = null) },
                         label = { Text("Leave Requests") },
+                        badge = {
+                            if (pendingLeavesCount > 0) {
+                                Badge(containerColor = Color.Red) {
+                                    Text(pendingLeavesCount.toString(), color = Color.White)
+                                }
+                            }
+                        },
                         selected = false,
                         onClick = { 
                             scope.launch { drawerState.close() }
@@ -262,8 +293,19 @@ fun AdminDashboardScreen(
                     ) 
                 },
                 navigationIcon = {
+                    val totalDrawerPending = pendingCallbacksCount + pendingEnquiriesCount + pendingLeavesCount
                     IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.Black)
+                        BadgedBox(
+                            badge = {
+                                if (totalDrawerPending > 0) {
+                                    Badge(containerColor = Color.Red) {
+                                        Text(totalDrawerPending.toString(), color = Color.White)
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.Black)
+                        }
                     }
                 },
                 actions = {
@@ -392,12 +434,17 @@ fun AdminDashboardScreen(
         },
         containerColor = BackgroundSurface
     ) { innerPadding ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (selectedTabIndex) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when (selectedTabIndex) {
                 0 -> AdminOverviewTab(
                     ordersState = ordersState,
                     partnersState = partnersState,
@@ -420,16 +467,21 @@ fun AdminDashboardScreen(
                 2 -> AdminPartnersTab(
                     partnersState = partnersState,
                     citiesState = citiesState,
-                    onCreatePartner = onCreatePartner
+                    onCreatePartner = onCreatePartner,
+                    onUpdatePartner = onUpdatePartner,
+                    onTogglePartnerStatus = onTogglePartnerStatus
                 )
                 3 -> AdminEngineersTab(
                     engineersState = engineersState,
                     partnersState = partnersState,
-                    onCreateEngineer = onCreateEngineer
+                    onCreateEngineer = onCreateEngineer,
+                    onUpdateEngineer = onUpdateEngineer,
+                    onToggleEngineerStatus = onToggleEngineerStatus
                 )
                 4 -> AdminUsersTab(usersState = usersState)
             }
         }
     }
+}
 }
 }

@@ -29,7 +29,11 @@ import androidx.compose.runtime.getValue
 @Composable
 fun NotificationsScreen(
     viewModel: AdminViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onNavigateToCallbacks: () -> Unit = {},
+    onNavigateToEnquiries: () -> Unit = {},
+    onNavigateToLeaves: () -> Unit = {},
+    onNavigateToProducts: () -> Unit = {}
 ) {
     val notificationsState by viewModel.notificationsState.collectAsState()
 
@@ -169,9 +173,30 @@ fun NotificationsScreen(
                                     message = formattedMessage,
                                     time = formattedTime,
                                     onClick = {
-                                        if (isNewOrder && orderId != null) {
-                                            viewModel.navigateToOrder(orderId, "New Orders")
-                                            onBackClick()
+                                        val titleLower = notification.title.lowercase()
+                                        val msgLower = notification.message.lowercase()
+                                        when {
+                                            titleLower.contains("order") || msgLower.contains("order") -> {
+                                                if (orderId != null) {
+                                                    viewModel.navigateToOrder(orderId, "New Orders")
+                                                } else {
+                                                    viewModel.onTabSelected(1)
+                                                }
+                                                onBackClick()
+                                            }
+                                            titleLower.contains("callback") || msgLower.contains("callback") -> {
+                                                onNavigateToCallbacks()
+                                            }
+                                            titleLower.contains("enquiry") || msgLower.contains("enquiry") -> {
+                                                onNavigateToEnquiries()
+                                            }
+                                            titleLower.contains("leave") || msgLower.contains("leave") -> {
+                                                onNavigateToLeaves()
+                                            }
+                                            titleLower.contains("low stock") || titleLower.contains("product") ||
+                                            msgLower.contains("low stock") || msgLower.contains("product") -> {
+                                                onNavigateToProducts()
+                                            }
                                         }
                                     }
                                 )

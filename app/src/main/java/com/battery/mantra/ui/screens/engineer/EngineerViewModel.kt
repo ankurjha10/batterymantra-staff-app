@@ -30,6 +30,21 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
 
     private val _profileState = MutableStateFlow<UserResponse?>(null)
     val profileState: StateFlow<UserResponse?> = _profileState.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    fun refreshAll() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            fetchProfile()
+            fetchJobs()
+            fetchAttendance()
+            fetchLeaves()
+            fetchNotifications()
+            kotlinx.coroutines.delay(600)
+            _isRefreshing.value = false
+        }
+    }
 
     fun onTabSelected(index: Int) {
         _selectedTabIndex.value = index

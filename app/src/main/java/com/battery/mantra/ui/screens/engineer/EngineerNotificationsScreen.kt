@@ -30,7 +30,9 @@ import androidx.compose.runtime.getValue
 fun EngineerNotificationsScreen(
     viewModel: EngineerViewModel,
     onBackClick: () -> Unit,
-    onNavigateToJobExecution: (String) -> Unit = {}
+    onNavigateToJobExecution: (String) -> Unit = {},
+    onNavigateToTasks: () -> Unit = {},
+    onNavigateToLeaves: () -> Unit = {}
 ) {
     val notificationsState by viewModel.notificationsState.collectAsState()
 
@@ -179,8 +181,19 @@ fun EngineerNotificationsScreen(
                                         message = formattedMessage,
                                         time = formattedTime,
                                         onClick = {
-                                            if (isNewOrder && orderId != null) {
-                                                onNavigateToJobExecution(orderId)
+                                            val titleLower = notification.title.lowercase()
+                                            val msgLower = notification.message.lowercase()
+                                            when {
+                                                orderId != null -> {
+                                                    onNavigateToJobExecution(orderId)
+                                                }
+                                                titleLower.contains("order") || titleLower.contains("task") || titleLower.contains("assigned") ||
+                                                msgLower.contains("order") || msgLower.contains("task") -> {
+                                                    onNavigateToTasks()
+                                                }
+                                                titleLower.contains("leave") || msgLower.contains("leave") -> {
+                                                    onNavigateToLeaves()
+                                                }
                                             }
                                         }
                                     )

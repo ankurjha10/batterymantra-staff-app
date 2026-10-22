@@ -96,6 +96,45 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun updatePartner(id: String, request: com.battery.mantra.data.models.CreatePartnerRequest): Result<PartnerResponse> {
+        return try {
+            val response = api.updateAdminPartner(id, request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to update partner: ${response.code()} $err"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun togglePartnerStatus(id: String, userId: String?, isActive: Boolean): Result<Unit> {
+        return try {
+            val response = api.togglePartnerStatus(id, isActive)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else if (!userId.isNullOrEmpty()) {
+                val fallback = api.toggleUserStatus(userId, isActive)
+                if (fallback.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to update partner status"))
+            } else {
+                Result.failure(Exception("Failed to update partner status: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            if (!userId.isNullOrEmpty()) {
+                try {
+                    val fallback = api.toggleUserStatus(userId, isActive)
+                    if (fallback.isSuccessful) Result.success(Unit) else Result.failure(e)
+                } catch (ex: Exception) {
+                    Result.failure(e)
+                }
+            } else {
+                Result.failure(e)
+            }
+        }
+    }
+
     suspend fun getEngineers(): Result<List<EngineerResponse>> {
         return try {
             val response = api.getAdminEngineers()
@@ -120,6 +159,45 @@ class AdminRepository(private val api: BatteryMantraApi) {
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    suspend fun updateEngineer(id: String, request: com.battery.mantra.data.models.CreateEngineerRequest): Result<EngineerResponse> {
+        return try {
+            val response = api.updateAdminEngineer(id, request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to update engineer: ${response.code()} $err"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleEngineerStatus(id: String, userId: String?, isActive: Boolean): Result<Unit> {
+        return try {
+            val response = api.toggleEngineerStatus(id, isActive)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else if (!userId.isNullOrEmpty()) {
+                val fallback = api.toggleUserStatus(userId, isActive)
+                if (fallback.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to update engineer status"))
+            } else {
+                Result.failure(Exception("Failed to update engineer status: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            if (!userId.isNullOrEmpty()) {
+                try {
+                    val fallback = api.toggleUserStatus(userId, isActive)
+                    if (fallback.isSuccessful) Result.success(Unit) else Result.failure(e)
+                } catch (ex: Exception) {
+                    Result.failure(e)
+                }
+            } else {
+                Result.failure(e)
+            }
         }
     }
 

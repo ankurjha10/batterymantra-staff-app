@@ -23,6 +23,18 @@ sealed class AdminDataState<out T> {
 
 class AdminViewModel(private val repository: AdminRepository, private val tokenManager: TokenManager) : ViewModel() {
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    private val _pendingCallbacksCount = MutableStateFlow(0)
+    val pendingCallbacksCount: StateFlow<Int> = _pendingCallbacksCount.asStateFlow()
+
+    private val _pendingEnquiriesCount = MutableStateFlow(0)
+    val pendingEnquiriesCount: StateFlow<Int> = _pendingEnquiriesCount.asStateFlow()
+
+    private val _pendingLeavesCount = MutableStateFlow(0)
+    val pendingLeavesCount: StateFlow<Int> = _pendingLeavesCount.asStateFlow()
+
     private val _ordersState = MutableStateFlow<AdminDataState<List<OrderResponse>>>(AdminDataState.Idle)
     val ordersState: StateFlow<AdminDataState<List<OrderResponse>>> = _ordersState.asStateFlow()
 
@@ -104,6 +116,7 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
 
     init {
         fetchAllData()
+        fetchPendingCounts()
         updateFcmTokenFromFirebase()
         
         // Listen for real-time updates from Push Notifications
@@ -111,6 +124,36 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
             com.battery.mantra.util.AppEventBus.refreshEvents.collect {
                 fetchOrders()
                 fetchNotifications()
+                fetchPendingCounts()
+            }
+        }
+    }
+
+    fun refreshAllData() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            fetchOrders()
+            fetchPartners()
+            fetchEngineers()
+            fetchUsers()
+            fetchCities()
+            fetchNotifications()
+            fetchLeaveRequests()
+            fetchPendingCounts()
+            kotlinx.coroutines.delay(600)
+            _isRefreshing.value = false
+        }
+    }
+
+    fun fetchPendingCounts() {
+        viewModelScope.launch {
+            repository.getAllCallbacks().onSuccess { callbacks ->
+                _pendingCallbacksCount.value = callbacks.count { !it.status.equals("RESOLVED", ignoreCase = true) }
+            }
+        }
+        viewModelScope.launch {
+            repository.getAllEnquiries().onSuccess { enquiries ->
+                _pendingEnquiriesCount.value = enquiries.count { !it.status.equals("RESOLVED", ignoreCase = true) }
             }
         }
     }
@@ -228,6 +271,7 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
             repository.getAllLeaveRequests()
                 .onSuccess {
                     _leavesState.value = AdminDataState.Success(it)
+                    _pendingLeavesCount.value = it.count { leave -> leave.status.equals("PENDING", ignoreCase = true) }
                 }
                 .onFailure {
                     _leavesState.value = AdminDataState.Error(it.message ?: "Failed to load leave requests")
@@ -330,6 +374,32 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun updatePartner(id: String, request: com.battery.mantra.data.models.CreatePartnerRequest, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.updatePartner(id, request)
+            if (result.isSuccess) {
+                fetchPartners()
+                fetchUsers()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to update partner")
+            }
+        }
+    }
+
+    fun togglePartnerStatus(id: String, userId: String?, isActive: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.togglePartnerStatus(id, userId, isActive)
+            if (result.isSuccess) {
+                fetchPartners()
+                fetchUsers()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to update partner status")
+            }
+        }
+    }
+
     fun createEngineer(request: com.battery.mantra.data.models.CreateEngineerRequest, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = repository.createEngineer(request)
@@ -338,6 +408,32 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
                 onSuccess()
             } else {
                 onError(result.exceptionOrNull()?.message ?: "Failed to create engineer")
+            }
+        }
+    }
+
+    fun updateEngineer(id: String, request: com.battery.mantra.data.models.CreateEngineerRequest, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.updateEngineer(id, request)
+            if (result.isSuccess) {
+                fetchEngineers()
+                fetchUsers()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to update engineer")
+            }
+        }
+    }
+
+    fun toggleEngineerStatus(id: String, userId: String?, isActive: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.toggleEngineerStatus(id, userId, isActive)
+            if (result.isSuccess) {
+                fetchEngineers()
+                fetchUsers()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to update engineer status")
             }
         }
     }

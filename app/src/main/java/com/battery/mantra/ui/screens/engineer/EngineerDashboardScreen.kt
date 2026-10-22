@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +36,9 @@ fun EngineerDashboardScreen(
     attendance: List<com.battery.mantra.data.models.AttendanceResponse>,
     leaves: List<com.battery.mantra.data.models.LeaveRequestResponse>,
     selectedTabIndex: Int,
+    isRefreshing: Boolean = false,
+    unreadNotificationsCount: Int = 0,
+    onRefresh: () -> Unit = {},
     onTabSelected: (Int) -> Unit,
     onNavigateToJobExecution: (String) -> Unit = {},
     onCallClick: (String, String) -> Unit = { _, _ -> },
@@ -196,15 +200,27 @@ fun EngineerDashboardScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.Black)
+                            BadgedBox(
+                                badge = {
+                                    if (unreadNotificationsCount > 0) {
+                                        Badge(containerColor = Color.Red) {
+                                            Text(unreadNotificationsCount.toString(), color = Color.White)
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.Black)
+                            }
                         }
                     },
                     actions = {
                         IconButton(onClick = onNavigateToNotifications) {
                             BadgedBox(
                                 badge = {
-                                    Badge(containerColor = Color.Red) {
-                                        Text("2") // Example badge count
+                                    if (unreadNotificationsCount > 0) {
+                                        Badge(containerColor = Color.Red) {
+                                            Text(unreadNotificationsCount.toString(), color = Color.White)
+                                        }
                                     }
                                 }
                             ) {
@@ -342,66 +358,72 @@ fun EngineerDashboardScreen(
             },
             containerColor = Color(0xFFF8F9FA) // Light gray background
         ) { innerPadding ->
-            Column(
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                when (uiState) {
-                    is EngineerDashboardState.Loading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Color(0xFFD32F2F))
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    when (uiState) {
+                        is EngineerDashboardState.Loading -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = Color(0xFFD32F2F))
+                            }
                         }
-                    }
 
-                    is EngineerDashboardState.Error -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = (uiState as EngineerDashboardState.Error).message, color = Color.Red)
+                        is EngineerDashboardState.Error -> {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = (uiState as EngineerDashboardState.Error).message, color = Color.Red)
+                            }
                         }
-                    }
 
-                    is EngineerDashboardState.Success -> {
-                        val state = uiState as EngineerDashboardState.Success
-                        when (selectedTabIndex) {
-                            0 -> EngineerHomeTab(
-                                profile = profile,
-                                attendance = attendance,
-                                activeJobs = state.activeJobs,
-                                leaves = leaves,
-                                onCheckIn = onCheckIn,
-                                onCheckOut = onCheckOut,
-                                onTabSelected = onTabSelected
-                            )
-
-                            1 -> {
-                                val zoneId = java.time.ZoneId.of("Asia/Kolkata")
-                                val todayStr = java.time.LocalDate.now(zoneId).toString()
-                                val todayAttendance = attendance.firstOrNull { it.date == todayStr }
-                                val isDayCompleted = todayAttendance != null && todayAttendance.checkOutTime != null
-                                
-                                EngineerActiveJobsTab(
+                        is EngineerDashboardState.Success -> {
+                            val state = uiState as EngineerDashboardState.Success
+                            when (selectedTabIndex) {
+                                0 -> EngineerHomeTab(
+                                    profile = profile,
+                                    attendance = attendance,
                                     activeJobs = state.activeJobs,
-                                    isDayCompleted = isDayCompleted,
-                                    onNavigateToJobExecution = onNavigateToJobExecution,
-                                    onCallClick = onCallClick
+                                    leaves = leaves,
+                                    onCheckIn = onCheckIn,
+                                    onCheckOut = onCheckOut,
+                                    onTabSelected = onTabSelected
+                                )
+
+                                1 -> {
+                                    val zoneId = java.time.ZoneId.of("Asia/Kolkata")
+                                    val todayStr = java.time.LocalDate.now(zoneId).toString()
+                                    val todayAttendance = attendance.firstOrNull { it.date == todayStr }
+                                    val isDayCompleted = todayAttendance != null && todayAttendance.checkOutTime != null
+                                    
+                                    EngineerActiveJobsTab(
+                                        activeJobs = state.activeJobs,
+                                        isDayCompleted = isDayCompleted,
+                                        onNavigateToJobExecution = onNavigateToJobExecution,
+                                        onCallClick = onCallClick
+                                    )
+                                }
+
+                                2 -> EngineerHistoryTab(
+                                    historyJobs = state.historyJobs
+                                )
+
+                                3 -> LeaveManagementTab(
+                                    leaves = leaves,
+                                    onApplyLeaveClick = onApplyLeave
+                                )
+
+                                4 -> EngineerProfileTab(
+                                    profile = profile,
+                                    historyJobs = state.historyJobs,
+                                    onChangePasswordClick = { showChangePassword = true },
+                                    onChangeLanguageClick = { showLanguageSheet = true }
                                 )
                             }
-
-                            2 -> EngineerHistoryTab(
-                                historyJobs = state.historyJobs
-                            )
-
-                            3 -> LeaveManagementTab(
-                                leaves = leaves,
-                                onApplyLeaveClick = onApplyLeave
-                            )
-
-                            4 -> EngineerProfileTab(
-                                profile = profile,
-                                historyJobs = state.historyJobs,
-                                onChangePasswordClick = { showChangePassword = true },
-                                onChangeLanguageClick = { showLanguageSheet = true }
-                            )
                         }
                     }
                 }

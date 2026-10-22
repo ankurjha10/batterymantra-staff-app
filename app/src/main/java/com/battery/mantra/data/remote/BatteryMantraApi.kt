@@ -54,11 +54,35 @@ interface BatteryMantraApi {
     @POST("api/admin/partners")
     suspend fun createAdminPartner(@Body request: com.battery.mantra.data.models.CreatePartnerRequest): Response<PartnerResponse>
 
+    @PUT("api/admin/partners/{id}")
+    suspend fun updateAdminPartner(
+        @Path("id") id: String,
+        @Body request: com.battery.mantra.data.models.CreatePartnerRequest
+    ): Response<PartnerResponse>
+
+    @PATCH("api/admin/partners/{id}/status")
+    suspend fun togglePartnerStatus(
+        @Path("id") id: String,
+        @Query("isActive") isActive: Boolean
+    ): Response<Unit>
+
     @GET("api/admin/engineers")
     suspend fun getAdminEngineers(): Response<List<EngineerResponse>>
 
     @POST("api/admin/engineers")
     suspend fun createAdminEngineer(@Body request: com.battery.mantra.data.models.CreateEngineerRequest): Response<EngineerResponse>
+
+    @PUT("api/admin/engineers/{id}")
+    suspend fun updateAdminEngineer(
+        @Path("id") id: String,
+        @Body request: com.battery.mantra.data.models.CreateEngineerRequest
+    ): Response<EngineerResponse>
+
+    @PATCH("api/admin/engineers/{id}/status")
+    suspend fun toggleEngineerStatus(
+        @Path("id") id: String,
+        @Query("isActive") isActive: Boolean
+    ): Response<Unit>
 
     @GET("api/admin/users")
     suspend fun getAdminUsers(): Response<List<UserResponse>>

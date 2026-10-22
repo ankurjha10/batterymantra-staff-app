@@ -109,7 +109,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onLoginClick = { authViewModel.login(loginUiState.identifier, loginUiState.password) },
                 onLoginSuccess = { role ->
                     val route = when (role.uppercase()) {
-                        "ADMIN" -> Screen.AdminDashboard.route
+                        "ADMIN", "SUB_ADMIN", "SUBADMIN" -> Screen.AdminDashboard.route
                         "ENGINEER" -> Screen.EngineerDashboard.route
                         "PARTNER" -> Screen.PartnerDashboard.route
                         else -> Screen.Login.route
@@ -137,6 +137,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val targetFilter by adminViewModel.targetOrderFilter.collectAsState()
             val notificationsState by adminViewModel.notificationsState.collectAsState()
             val unreadNotificationsCount = (notificationsState as? com.battery.mantra.ui.screens.admin.AdminDataState.Success)?.data?.size ?: 0
+            val isRefreshing by adminViewModel.isRefreshing.collectAsState()
+            val pendingCallbacksCount by adminViewModel.pendingCallbacksCount.collectAsState()
+            val pendingEnquiriesCount by adminViewModel.pendingEnquiriesCount.collectAsState()
+            val pendingLeavesCount by adminViewModel.pendingLeavesCount.collectAsState()
             val context = androidx.compose.ui.platform.LocalContext.current
             val userPermissions by appContainer.tokenManager.userPermissions.collectAsState(initial = emptySet())
 
@@ -152,6 +156,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 targetSearchQuery = targetSearchQuery,
                 targetFilter = targetFilter,
                 unreadNotificationsCount = unreadNotificationsCount,
+                pendingCallbacksCount = pendingCallbacksCount,
+                pendingEnquiriesCount = pendingEnquiriesCount,
+                pendingLeavesCount = pendingLeavesCount,
+                isRefreshing = isRefreshing,
+                onRefresh = { adminViewModel.refreshAllData() },
                 onTargetConsumed = { adminViewModel.clearTargetOrderState() },
                 onTabSelected = { adminViewModel.onTabSelected(it) },
                 onNavigateToUsers = { /* Optional */ },
@@ -179,8 +188,20 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onCreatePartner = { request, onSuccess, onError ->
                     adminViewModel.createPartner(request, onSuccess, onError)
                 },
+                onUpdatePartner = { id, request, onSuccess, onError ->
+                    adminViewModel.updatePartner(id, request, onSuccess, onError)
+                },
+                onTogglePartnerStatus = { id, userId, isActive, onSuccess, onError ->
+                    adminViewModel.togglePartnerStatus(id, userId, isActive, onSuccess, onError)
+                },
                 onCreateEngineer = { request, onSuccess, onError ->
                     adminViewModel.createEngineer(request, onSuccess, onError)
+                },
+                onUpdateEngineer = { id, request, onSuccess, onError ->
+                    adminViewModel.updateEngineer(id, request, onSuccess, onError)
+                },
+                onToggleEngineerStatus = { id, userId, isActive, onSuccess, onError ->
+                    adminViewModel.toggleEngineerStatus(id, userId, isActive, onSuccess, onError)
                 },
                 onCreateOrderClick = { navController.navigate(Screen.AdminCreateOrder.route) },
                 onLogout = {
@@ -329,7 +350,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
             com.battery.mantra.ui.screens.admin.NotificationsScreen(
                 viewModel = viewModel,
-                onBackClick = { navController.navigateUp() }
+                onBackClick = { navController.navigateUp() },
+                onNavigateToCallbacks = { navController.navigate("admin_callbacks") },
+                onNavigateToEnquiries = { navController.navigate("admin_enquiries") },
+                onNavigateToLeaves = { navController.navigate(Screen.AdminLeaveRequests.route) },
+                onNavigateToProducts = { navController.navigate("admin_products") }
             )
         }
         composable(Screen.AdminLeaveRequests.route) { backStackEntry ->
@@ -378,12 +403,19 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 }
             }
 
+            val isRefreshing by engineerViewModel.isRefreshing.collectAsState()
+            val notificationsState by engineerViewModel.notificationsState.collectAsState()
+            val unreadNotificationsCount = (notificationsState as? EngineerViewModel.NotificationsState.Success)?.data?.size ?: 0
+
             EngineerDashboardScreen(
                 uiState = uiState,
                 profile = profileState,
                 attendance = attendance,
                 leaves = leaves,
                 selectedTabIndex = selectedTabIndex,
+                isRefreshing = isRefreshing,
+                unreadNotificationsCount = unreadNotificationsCount,
+                onRefresh = { engineerViewModel.refreshAll() },
                 onTabSelected = { engineerViewModel.onTabSelected(it) },
                 onNavigateToJobExecution = { jobId ->
                     navController.navigate(Screen.JobExecution.createRoute(jobId))
@@ -443,6 +475,14 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onBackClick = { navController.navigateUp() },
                 onNavigateToJobExecution = { jobId ->
                     navController.navigate(Screen.JobExecution.createRoute(jobId))
+                },
+                onNavigateToTasks = {
+                    viewModel.onTabSelected(1)
+                    navController.navigateUp()
+                },
+                onNavigateToLeaves = {
+                    viewModel.onTabSelected(3)
+                    navController.navigateUp()
                 }
             )
         }

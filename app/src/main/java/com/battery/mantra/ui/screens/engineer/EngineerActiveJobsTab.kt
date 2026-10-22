@@ -43,6 +43,7 @@ fun EngineerActiveJobsTab(
                     status = status,
                     paymentMethod = job.paymentMethod,
                     paymentStatus = job.paymentStatus,
+                    selectedCity = job.selectedCity,
                     actionText = if (isCompleted) "" else androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.execute_job),
                     onActionClick = { 
                         if (isDayCompleted) {

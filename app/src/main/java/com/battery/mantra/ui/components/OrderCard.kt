@@ -32,6 +32,7 @@ fun OrderCard(
     status: String,
     partnerName: String? = null,
     engineerName: String? = null,
+    selectedCity: String? = null,
     modifier: Modifier = Modifier,
     onActionClick: (() -> Unit)? = null,
     onStatusChange: ((String) -> Unit)? = null
@@ -91,6 +92,84 @@ fun OrderCard(
                     maxLines = 1,
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            if (address.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color(0xFF6B7280))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = address,
+                        fontSize = 12.sp,
+                        color = Color(0xFF4B5563),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // Website Selected City & Mismatch Chips
+            if (!selectedCity.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Globe chip: 🌐 {order.selectedCity}
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFEFF6FF),
+                        border = BorderStroke(1.dp, Color(0xFF93C5FD))
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Icon(
+                                Icons.Outlined.Public,
+                                contentDescription = "Website Selected City",
+                                modifier = Modifier.size(13.dp),
+                                tint = Color(0xFF1D4ED8)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = selectedCity,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1E40AF)
+                            )
+                        }
+                    }
+
+                    // Warning chip: ⚠️ Mismatch
+                    if (com.battery.mantra.util.checkCityMismatch(selectedCity, address)) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFFEF3C7),
+                            border = BorderStroke(1.dp, Color(0xFFF59E0B))
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Icon(
+                                    Icons.Outlined.WarningAmber,
+                                    contentDescription = "City Mismatch",
+                                    modifier = Modifier.size(13.dp),
+                                    tint = Color(0xFFD97706)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Mismatch",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB45309)
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))

@@ -282,11 +282,12 @@ fun AdminOrdersTab(
                     customerEmail = order.customerEmail ?: "No Email",
                     paymentMethod = order.paymentMethod ?: "COD",
                     deliveryMethod = order.deliveryMethod ?: "Standard Delivery",
-                    address = order.shippingAddress ?: "India",
+                    address = order.shippingAddress ?: "",
                     placedAt = order.placedAt ?: "2026-07-10T12:00:00",
                     status = order.orderStatus ?: "UNASSIGNED",
                     partnerName = order.assignedPartner?.businessName ?: order.assignedPartner?.contactPerson,
                     engineerName = order.assignedEngineer?.let { "${it.firstName ?: ""} ${it.lastName ?: ""}".trim() }?.takeIf { it.isNotEmpty() },
+                    selectedCity = order.selectedCity,
                     onActionClick = { selectedOrderForDetails = order }
                 )
                 Spacer(modifier = Modifier.height(12.dp))

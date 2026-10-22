@@ -36,6 +36,7 @@ fun EngineerHistoryTab(
                     price = "₹${job.totalAmount ?: 0.0}",
                     paymentMethod = job.paymentMethod,
                     paymentStatus = job.paymentStatus,
+                    selectedCity = job.selectedCity,
                     isActive = false,
                     onClick = {
                         selectedOrderForDetails = job

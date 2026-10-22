@@ -12,7 +12,10 @@ import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material.icons.outlined.Payments
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.*
+import com.battery.mantra.util.checkCityMismatch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +34,7 @@ fun EngineerTaskCard(
     status: String,
     paymentMethod: String? = null,
     paymentStatus: String? = null,
+    selectedCity: String? = null,
     actionText: String = "",
     isActive: Boolean = true,
     onActionClick: () -> Unit = {},
@@ -123,17 +127,81 @@ fun EngineerTaskCard(
                         .background(Color(0xFFF3F4F6), RoundedCornerShape(8.dp))
                         .padding(12.dp)
                 ) {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Outlined.LocationOn,
-                            contentDescription = "Location",
-                            tint = Color(0xFFD32F2F),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.delivery_address), color = Color(0xFF5F6368), fontSize = 12.sp)
-                            Text(text = address, color = Color.Black, fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp))
+                    Column {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Outlined.LocationOn,
+                                contentDescription = "Location",
+                                tint = Color(0xFFD32F2F),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(text = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.delivery_address), color = Color(0xFF5F6368), fontSize = 12.sp)
+                                Text(text = address, color = Color.Black, fontSize = 14.sp, modifier = Modifier.padding(top = 2.dp))
+                            }
+                        }
+
+                        if (!selectedCity.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Globe chip: 🌐 {selectedCity}
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color(0xFFEFF6FF),
+                                    border = BorderStroke(1.dp, Color(0xFF93C5FD))
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.Public,
+                                            contentDescription = "Website Selected City",
+                                            modifier = Modifier.size(13.dp),
+                                            tint = Color(0xFF1D4ED8)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = selectedCity,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF1E40AF)
+                                        )
+                                    }
+                                }
+
+                                // Warning chip: ⚠️ Mismatch
+                                if (checkCityMismatch(selectedCity, address)) {
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFFFEF3C7),
+                                        border = BorderStroke(1.dp, Color(0xFFF59E0B))
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Outlined.WarningAmber,
+                                                contentDescription = "City Mismatch",
+                                                modifier = Modifier.size(13.dp),
+                                                tint = Color(0xFFD97706)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Mismatch",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFB45309)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

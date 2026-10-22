@@ -1,5 +1,6 @@
 package com.battery.mantra.ui.screens.engineer
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,7 +14,10 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.*
+import com.battery.mantra.util.checkCityMismatch
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -173,6 +177,62 @@ fun JobExecutionScreen(
                                 Icon(androidx.compose.material.icons.Icons.Outlined.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(order.shippingAddress ?: androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.no_address_provided), fontSize = 13.sp, color = Color.Gray, lineHeight = 18.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Website Selected City
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Outlined.Public, contentDescription = null, tint = Color(0xFF2563EB), modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("Website Selected City", fontSize = 12.sp, color = Color.Gray)
+                                    Text(
+                                        text = order.selectedCity ?: "Not recorded / Prior Order",
+                                        fontSize = 13.sp,
+                                        color = if (order.selectedCity != null) Color(0xFF334155) else Color.Gray,
+                                        fontWeight = if (order.selectedCity != null) FontWeight.SemiBold else FontWeight.Normal
+                                    )
+                                }
+                            }
+
+                            // City Mismatch Warning Banner
+                            if (checkCityMismatch(order.selectedCity, order.shippingAddress)) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                                    border = BorderStroke(1.dp, Color(0xFFF59E0B))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.WarningAmber,
+                                            contentDescription = "Warning",
+                                            tint = Color(0xFFD97706),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text(
+                                                text = "City Mismatch Warning",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF92400E)
+                                            )
+                                            Spacer(modifier = Modifier.height(2.dp))
+                                            Text(
+                                                text = "Customer selected \"${order.selectedCity}\" on website, but the delivery address appears to be for a different city. Please confirm with the customer before processing.",
+                                                fontSize = 12.sp,
+                                                color = Color(0xFF78350F),
+                                                lineHeight = 16.sp
+                                            )
+                                        }
+                                    }
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))

@@ -2,6 +2,7 @@ package com.battery.mantra.ui.components
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.data.models.OrderResponse
+import com.battery.mantra.util.checkCityMismatch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,6 +180,13 @@ fun SharedOrderDetailsSheet(
                     }
                 }
 
+                // Top Warning Banner if City Mismatch is detected
+                if (checkCityMismatch(order.selectedCity, order.shippingAddress)) {
+                    item {
+                        CityMismatchBanner(selectedCity = order.selectedCity ?: "")
+                    }
+                }
+
                 // Order Items Card
                 item {
                     InfoCard(title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.order_items), icon = Icons.Outlined.Inventory2) {
@@ -273,13 +282,49 @@ fun SharedOrderDetailsSheet(
                 
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
-                // Customer Details Card
+                // Customer & Delivery Address Card
                 item {
-                    InfoCard(title = "Customer Details", icon = Icons.Outlined.Person) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    InfoCard(title = "Delivery & Customer Details", icon = Icons.Outlined.Person) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             DetailRow(icon = Icons.Outlined.Badge, text = order.customerName ?: "N/A")
                             DetailRow(icon = Icons.Outlined.Phone, text = order.customerPhone ?: "N/A")
                             DetailRow(icon = Icons.Outlined.LocationOn, text = order.shippingAddress ?: "N/A")
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            HorizontalDivider(color = Color(0xFFF1F5F9))
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            // Website Selected City
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(
+                                    Icons.Outlined.Public,
+                                    contentDescription = "Website Selected City",
+                                    tint = Color(0xFF2563EB),
+                                    modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = "Website Selected City",
+                                        fontSize = 12.sp,
+                                        color = Color.Gray,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = order.selectedCity ?: "Not recorded / Prior Order",
+                                        fontSize = 14.sp,
+                                        color = if (order.selectedCity != null) Color(0xFF1E293B) else Color.Gray,
+                                        fontWeight = if (order.selectedCity != null) FontWeight.SemiBold else FontWeight.Normal
+                                    )
+                                }
+                            }
+
+                            // City Mismatch Warning Banner in Address Section
+                            if (checkCityMismatch(order.selectedCity, order.shippingAddress)) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                CityMismatchBanner(selectedCity = order.selectedCity ?: "")
+                            }
                         }
                     }
                 }
@@ -456,3 +501,42 @@ fun DetailRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text: Strin
         Text(text = text, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
     }
 }
+
+@Composable
+fun CityMismatchBanner(selectedCity: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+        border = BorderStroke(1.dp, Color(0xFFF59E0B))
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Icon(
+                Icons.Outlined.WarningAmber,
+                contentDescription = "Warning",
+                tint = Color(0xFFD97706),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = "City Mismatch Warning",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF92400E)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Customer selected \"$selectedCity\" on website, but the delivery address appears to be for a different city. Please confirm with the customer before processing.",
+                    fontSize = 13.sp,
+                    color = Color(0xFF78350F),
+                    lineHeight = 18.sp
+                )
+            }
+        }
+    }
+}
+

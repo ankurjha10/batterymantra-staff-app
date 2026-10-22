@@ -21,7 +21,8 @@ data class OrderResponse(
     @SerializedName("assignedPartner") val assignedPartner: PartnerResponse?,
     @SerializedName("assignedEngineer") val assignedEngineer: EngineerResponse?,
     @SerializedName("latitude") val latitude: Double?,
-    @SerializedName("longitude") val longitude: Double?
+    @SerializedName("longitude") val longitude: Double?,
+    @SerializedName("selectedCity") val selectedCity: String? = null
 )
 
 data class OrderItemResponse(

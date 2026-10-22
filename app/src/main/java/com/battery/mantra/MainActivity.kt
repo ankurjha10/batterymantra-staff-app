@@ -67,15 +67,7 @@ class MainActivity : ComponentActivity() {
         
         askNotificationPermission()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = android.app.NotificationChannel(
-                "battery_mantra_high_importance",
-                "Battery Mantra High Importance",
-                android.app.NotificationManager.IMPORTANCE_HIGH
-            )
-            val manager = getSystemService(android.app.NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
+        BatteryMantraApp.createNotificationChannel(this)
 
         // Fetch current FCM token
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->

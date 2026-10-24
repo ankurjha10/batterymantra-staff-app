@@ -218,10 +218,10 @@ interface BatteryMantraApi {
     suspend fun createAdminOrder(@Body request: com.battery.mantra.data.models.AdminCreateOrderRequest): Response<OrderResponse>
 
     @POST("api/admin/sub-admins")
-    suspend fun createSubAdmin(@Body request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Response<UserResponse>
+    suspend fun createSubAdmin(@Body request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Response<okhttp3.ResponseBody>
 
     @PUT("api/admin/sub-admins/{userId}")
-    suspend fun updateSubAdmin(@Path("userId") userId: String, @Body request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Response<UserResponse>
+    suspend fun updateSubAdmin(@Path("userId") userId: String, @Body request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Response<okhttp3.ResponseBody>
 
     @DELETE("api/admin/users/{userId}")
     suspend fun deleteUser(@Path("userId") userId: String): Response<Unit>

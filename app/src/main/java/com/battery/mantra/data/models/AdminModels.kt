@@ -37,17 +37,17 @@ data class EngineerResponse(
 )
 
 data class UserResponse(
-    @SerializedName("userId") val userId: String,
-    @SerializedName("name") val name: String?,
-    @SerializedName("email") val email: String?,
-    @SerializedName("phoneNumber") val phone: String?,
-    @SerializedName("role") val role: String?,
-    @SerializedName("permissions") val permissions: List<String>?,
-    @SerializedName("active") val active: Boolean?,
-    @SerializedName("isActive") val isActive: Boolean?,
-    @SerializedName("createdAt") val createdAt: String?,
-    @SerializedName("totalJobsCompleted") val totalJobsCompleted: Int?,
-    @SerializedName("assignedPartnerName") val assignedPartnerName: String?
+    @SerializedName("userId") val userId: String = "",
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("email") val email: String? = null,
+    @SerializedName("phoneNumber") val phone: String? = null,
+    @SerializedName("role") val role: String? = null,
+    @SerializedName("permissions") val permissions: List<String>? = emptyList(),
+    @SerializedName("active") val active: Boolean? = true,
+    @SerializedName("isActive") val isActive: Boolean? = true,
+    @SerializedName("createdAt") val createdAt: String? = null,
+    @SerializedName("totalJobsCompleted") val totalJobsCompleted: Int? = null,
+    @SerializedName("assignedPartnerName") val assignedPartnerName: String? = null
 )
 
 data class CityResponse(

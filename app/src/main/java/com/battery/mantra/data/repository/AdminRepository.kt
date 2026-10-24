@@ -11,6 +11,7 @@ import com.battery.mantra.data.models.ProductDetailResponse
 import com.battery.mantra.data.models.UpdateProductRequest
 import com.battery.mantra.data.models.CategoryResponse
 import com.battery.mantra.data.remote.BatteryMantraApi
+import kotlin.coroutines.cancellation.CancellationException
 
 class AdminRepository(private val api: BatteryMantraApi) {
 
@@ -311,11 +312,11 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
-    suspend fun createSubAdmin(request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Result<UserResponse> {
+    suspend fun createSubAdmin(request: com.battery.mantra.data.models.AdminCreateSubAdminRequest): Result<Unit> {
         return try {
             val response = api.createSubAdmin(request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            if (response.isSuccessful) {
+                Result.success(Unit)
             } else {
                 val errStr = response.errorBody()?.string() ?: ""
                 var errMsg = "Failed to create sub-admin: ${response.code()}"
@@ -328,15 +329,16 @@ class AdminRepository(private val api: BatteryMantraApi) {
                 Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Result.failure(e)
         }
     }
 
-    suspend fun updateSubAdmin(userId: String, request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Result<com.battery.mantra.data.models.UserResponse> {
+    suspend fun updateSubAdmin(userId: String, request: com.battery.mantra.data.models.AdminUpdateSubAdminRequest): Result<Unit> {
         return try {
             val response = api.updateSubAdmin(userId, request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            if (response.isSuccessful) {
+                Result.success(Unit)
             } else {
                 val errStr = response.errorBody()?.string() ?: ""
                 var errMsg = "Failed to update sub-admin: ${response.code()}"
@@ -347,6 +349,7 @@ class AdminRepository(private val api: BatteryMantraApi) {
                 Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Result.failure(e)
         }
     }

@@ -1,6 +1,7 @@
 package com.battery.mantra.ui.screens.admin
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,11 +10,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,13 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.data.models.AdminCreateSubAdminRequest
 import com.battery.mantra.data.models.AdminUpdateSubAdminRequest
-import com.battery.mantra.ui.screens.admin.AdminDataState
 import com.battery.mantra.data.models.UserResponse
 
-private val BrandRed = Color(0xFFDE2027)
+private val BrandRed = Color(0xFFD32F2F)
 private val SurfaceBg = Color(0xFFF8F9FA)
 private val CardBg = Color.White
-private val TextPrimary = Color(0xFF111827)
+private val TextPrimary = Color.Black
 private val TextSecondary = Color(0xFF6B7280)
 private val BorderColor = Color(0xFFE5E7EB)
 
@@ -51,6 +55,7 @@ fun AdminSubAdminsScreen(
     var showFormSheet by remember { mutableStateOf(false) }
     var userToEdit by remember { mutableStateOf<UserResponse?>(null) }
     var userToDelete by remember { mutableStateOf<UserResponse?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     val subAdmins = remember(usersState) {
         if (usersState is AdminDataState.Success) {
@@ -60,11 +65,24 @@ fun AdminSubAdminsScreen(
         }
     }
 
+    val filteredSubAdmins = remember(subAdmins, searchQuery) {
+        if (searchQuery.isBlank()) {
+            subAdmins
+        } else {
+            val q = searchQuery.trim().lowercase()
+            subAdmins.filter {
+                (it.name?.lowercase()?.contains(q) == true) ||
+                (it.email?.lowercase()?.contains(q) == true) ||
+                (it.phone?.lowercase()?.contains(q) == true)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Manage Sub-Admins", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Manage Sub-Admins", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
@@ -91,51 +109,94 @@ fun AdminSubAdminsScreen(
         },
         containerColor = SurfaceBg
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (usersState) {
-                is AdminDataState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = BrandRed)
-                }
-                is AdminDataState.Error -> {
-                    Text(
-                        text = usersState.message,
-                        color = BrandRed,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                is AdminDataState.Success -> {
-                    if (subAdmins.isEmpty()) {
-                        Text(
-                            text = "No Sub-Admins found",
-                            color = TextSecondary,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search by name, phone or email...", color = TextSecondary, fontSize = 14.sp) },
+                leadingIcon = {
+                    Icon(Icons.Outlined.Search, contentDescription = "Search", tint = BrandRed)
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Outlined.Clear, contentDescription = "Clear", tint = Color.Gray)
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = BrandRed,
+                    unfocusedBorderColor = BorderColor,
+                    focusedContainerColor = CardBg,
+                    unfocusedContainerColor = CardBg,
+                    cursorColor = BrandRed,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                ),
+                singleLine = true
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (usersState) {
+                    is AdminDataState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = BrandRed)
+                    }
+                    is AdminDataState.Error -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center).padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            items(subAdmins) { subAdmin ->
-                                SubAdminCard(
-                                    subAdmin = subAdmin,
-                                    onEdit = {
-                                        userToEdit = subAdmin
-                                        showFormSheet = true
-                                    },
-                                    onDelete = { userToDelete = subAdmin },
-                                    onToggle = { isActive ->
-                                        onToggleStatus(subAdmin.userId, isActive, {
-                                            Toast.makeText(context, "Status updated!", Toast.LENGTH_SHORT).show()
-                                        }, { err ->
-                                            Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                        })
-                                    }
-                                )
+                            Text(
+                                text = usersState.message,
+                                color = BrandRed,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                    is AdminDataState.Success -> {
+                        if (filteredSubAdmins.isEmpty()) {
+                            Text(
+                                text = if (searchQuery.isNotBlank()) "No sub-admins match \"$searchQuery\"" else "No Sub-Admins found",
+                                color = TextSecondary,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else {
+                            LazyColumn(
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(filteredSubAdmins, key = { it.userId.ifEmpty { it.phone ?: it.email ?: it.hashCode().toString() } }) { subAdmin ->
+                                    SubAdminCard(
+                                        subAdmin = subAdmin,
+                                        onEdit = {
+                                            userToEdit = subAdmin
+                                            showFormSheet = true
+                                        },
+                                        onDelete = { userToDelete = subAdmin },
+                                        onToggle = { isActive ->
+                                            onToggleStatus(subAdmin.userId, isActive, {
+                                                Toast.makeText(context, if (isActive) "Sub-Admin activated" else "Sub-Admin suspended", Toast.LENGTH_SHORT).show()
+                                            }, { err ->
+                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                            })
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
+                    else -> {}
                 }
-                else -> {}
             }
         }
 
@@ -147,19 +208,23 @@ fun AdminSubAdminsScreen(
             ) {
                 SubAdminForm(
                     initialUser = userToEdit,
-                    onSubmitCreate = { request ->
+                    onSubmitCreate = { request, onResult ->
                         onCreateSubAdmin(request, {
+                            onResult(true)
                             showFormSheet = false
                             Toast.makeText(context, "Sub-Admin created successfully!", Toast.LENGTH_SHORT).show()
                         }, { err ->
+                            onResult(false)
                             Toast.makeText(context, err, Toast.LENGTH_LONG).show()
                         })
                     },
-                    onSubmitUpdate = { userId, request ->
+                    onSubmitUpdate = { userId, request, onResult ->
                         onUpdateSubAdmin(userId, request, {
+                            onResult(true)
                             showFormSheet = false
                             Toast.makeText(context, "Sub-Admin updated successfully!", Toast.LENGTH_SHORT).show()
                         }, { err ->
+                            onResult(false)
                             Toast.makeText(context, err, Toast.LENGTH_LONG).show()
                         })
                     },
@@ -171,10 +236,10 @@ fun AdminSubAdminsScreen(
         userToDelete?.let { user ->
             AlertDialog(
                 onDismissRequest = { userToDelete = null },
-                title = { Text("Delete Sub-Admin") },
-                text = { Text("Are you sure you want to delete ${user.name}? This action cannot be undone.") },
+                title = { Text("Delete Sub-Admin", fontWeight = FontWeight.Bold, color = Color.Black) },
+                text = { Text("Are you sure you want to delete ${user.name ?: "this sub-admin"}? This action cannot be undone.", color = Color.Black) },
                 confirmButton = {
-                    TextButton(
+                    Button(
                         onClick = {
                             onDeleteSubAdmin(user.userId, {
                                 Toast.makeText(context, "Sub-Admin deleted", Toast.LENGTH_SHORT).show()
@@ -183,21 +248,24 @@ fun AdminSubAdminsScreen(
                                 Toast.makeText(context, err, Toast.LENGTH_LONG).show()
                                 userToDelete = null
                             })
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
                     ) {
-                        Text("Delete", color = BrandRed)
+                        Text("Delete", color = Color.White)
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { userToDelete = null }) {
-                        Text("Cancel", color = TextPrimary)
+                    OutlinedButton(onClick = { userToDelete = null }) {
+                        Text("Cancel", color = Color.Black)
                     }
-                }
+                },
+                containerColor = CardBg
             )
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SubAdminCard(
     subAdmin: UserResponse,
@@ -205,38 +273,131 @@ private fun SubAdminCard(
     onDelete: () -> Unit,
     onToggle: (Boolean) -> Unit
 ) {
-    val isActive = subAdmin.isActive ?: true
+    val isActive = (subAdmin.isActive == true) || (subAdmin.active == true)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.Person, contentDescription = null, tint = if(isActive) BrandRed else Color.Gray, modifier = Modifier.size(40.dp))
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(subAdmin.name ?: "Unknown", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = if(isActive) TextPrimary else Color.Gray)
-                Text(subAdmin.email ?: subAdmin.phone ?: subAdmin.userId, fontSize = 14.sp, color = TextSecondary)
-                if (!isActive) {
-                    Text("Blocked", fontSize = 12.sp, color = BrandRed, fontWeight = FontWeight.Bold)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(if (isActive) BrandRed.copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(22.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = if (isActive) BrandRed else Color.Gray,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = subAdmin.name?.ifBlank { "Sub-Admin" } ?: "Sub-Admin",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = if (isActive) Color.Black else Color.Gray
+                    )
+                    
+                    if (!subAdmin.phone.isNullOrBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
+                            Icon(Icons.Outlined.Phone, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(13.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(subAdmin.phone, fontSize = 13.sp, color = Color(0xFF374151))
+                        }
+                    }
+
+                    if (!subAdmin.email.isNullOrBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
+                            Icon(Icons.Outlined.Email, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(13.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(subAdmin.email, fontSize = 13.sp, color = TextSecondary)
+                        }
+                    }
+                }
+
+                // Action buttons
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF1976D2))
+                    }
+                    IconButton(onClick = { onToggle(!isActive) }) {
+                        if (isActive) {
+                            Icon(Icons.Default.Block, contentDescription = "Suspend", tint = Color(0xFFE65100))
+                        } else {
+                            Icon(Icons.Default.CheckCircle, contentDescription = "Activate", tint = Color(0xFF2E7D32))
+                        }
+                    }
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = BrandRed)
+                    }
                 }
             }
-            IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = TextSecondary)
-            }
-            IconButton(onClick = { onToggle(!isActive) }) {
-                if (isActive) {
-                    Icon(Icons.Default.Block, contentDescription = "Block", tint = Color(0xFFE65100))
-                } else {
-                    Icon(Icons.Default.CheckCircle, contentDescription = "Unblock", tint = Color(0xFF2E7D32))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Status Badge & Permissions Chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Status Pill
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (isActive) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+                ) {
+                    Text(
+                        text = if (isActive) "ACTIVE" else "SUSPENDED",
+                        color = if (isActive) Color(0xFF2E7D32) else BrandRed,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+
+                val perms = subAdmin.permissions ?: emptyList()
+                if (perms.isNotEmpty()) {
+                    Text(
+                        text = "${perms.size} permissions assigned",
+                        fontSize = 12.sp,
+                        color = TextSecondary,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = BrandRed)
+
+            // Show permission chips if any
+            val perms = subAdmin.permissions ?: emptyList()
+            if (perms.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    perms.forEach { perm ->
+                        val label = perm.removePrefix("MANAGE_").replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFF3F4F6)
+                        ) {
+                            Text(
+                                text = label,
+                                fontSize = 11.sp,
+                                color = Color(0xFF374151),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -245,8 +406,8 @@ private fun SubAdminCard(
 @Composable
 private fun SubAdminForm(
     initialUser: UserResponse?,
-    onSubmitCreate: (AdminCreateSubAdminRequest) -> Unit,
-    onSubmitUpdate: (String, AdminUpdateSubAdminRequest) -> Unit,
+    onSubmitCreate: (AdminCreateSubAdminRequest, (Boolean) -> Unit) -> Unit,
+    onSubmitUpdate: (String, AdminUpdateSubAdminRequest, (Boolean) -> Unit) -> Unit,
     onCancel: () -> Unit
 ) {
     val isEdit = initialUser != null
@@ -277,8 +438,8 @@ private fun SubAdminForm(
         focusedLabelColor = BrandRed,
         unfocusedLabelColor = TextSecondary,
         cursorColor = BrandRed,
-        focusedTextColor = TextPrimary,
-        unfocusedTextColor = TextPrimary
+        focusedTextColor = Color.Black,
+        unfocusedTextColor = Color.Black
     )
 
     LazyColumn(
@@ -287,7 +448,12 @@ private fun SubAdminForm(
             .padding(16.dp)
     ) {
         item {
-            Text(if (isEdit) "Edit Sub-Admin" else "Add New Sub-Admin", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
+            Text(
+                if (isEdit) "Edit Sub-Admin" else "Add New Sub-Admin",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.Black
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -303,7 +469,7 @@ private fun SubAdminForm(
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },
-                label = { Text("Phone") },
+                label = { Text("Phone Number") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 singleLine = true,
@@ -315,7 +481,7 @@ private fun SubAdminForm(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text("Email Address") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true,
@@ -334,23 +500,27 @@ private fun SubAdminForm(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             } else {
-                Text("Email and Password cannot be changed from here.", fontSize = 12.sp, color = TextSecondary)
+                Text(
+                    "Email and Password cannot be changed from this screen.",
+                    fontSize = 12.sp,
+                    color = TextSecondary
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Text("Permissions", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextPrimary)
+            Text("Module Permissions", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.Black)
             Spacer(modifier = Modifier.height(8.dp))
             
             // Permissions Checklist
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 PermissionCheckbox("Manage Orders", canManageOrders) { canManageOrders = it }
-                PermissionCheckbox("Manage Products", canManageProducts) { canManageProducts = it }
+                PermissionCheckbox("Manage Products & Inventory", canManageProducts) { canManageProducts = it }
                 PermissionCheckbox("Manage Engineers", canManageEngineers) { canManageEngineers = it }
                 PermissionCheckbox("Manage Partners", canManagePartners) { canManagePartners = it }
-                PermissionCheckbox("Manage Enquiries", canManageEnquiries) { canManageEnquiries = it }
-                PermissionCheckbox("Manage Users", canManageUsers) { canManageUsers = it }
+                PermissionCheckbox("Manage Customer Enquiries", canManageEnquiries) { canManageEnquiries = it }
+                PermissionCheckbox("Manage Users & Customers", canManageUsers) { canManageUsers = it }
                 PermissionCheckbox("Manage Sub-Admins", canManageSubAdmins) { canManageSubAdmins = it }
-                PermissionCheckbox("Manage Coupons", canManageCoupons) { canManageCoupons = it }
+                PermissionCheckbox("Manage Coupons & Offers", canManageCoupons) { canManageCoupons = it }
                 PermissionCheckbox("Manage Leave Requests", canManageLeaves) { canManageLeaves = it }
                 PermissionCheckbox("Manage Callbacks", canManageCallbacks) { canManageCallbacks = it }
             }
@@ -358,10 +528,13 @@ private fun SubAdminForm(
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onCancel) {
-                    Text("Cancel", color = TextPrimary)
+                OutlinedButton(
+                    onClick = onCancel,
+                    enabled = !isSubmitting
+                ) {
+                    Text("Cancel", color = Color.Black)
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Button(
                     onClick = {
                         isSubmitting = true
@@ -380,21 +553,32 @@ private fun SubAdminForm(
                         if (isEdit) {
                             onSubmitUpdate(
                                 initialUser!!.userId,
-                                AdminUpdateSubAdminRequest(name, phone, permissions)
-                            )
+                                AdminUpdateSubAdminRequest(name.trim(), phone.trim(), permissions)
+                            ) { success ->
+                                if (!success) isSubmitting = false
+                            }
                         } else {
                             onSubmitCreate(
-                                AdminCreateSubAdminRequest(name, phone, email, password, "SUB_ADMIN", permissions)
-                            )
+                                AdminCreateSubAdminRequest(
+                                    name = name.trim(),
+                                    phone = phone.trim(),
+                                    email = email.trim(),
+                                    password = password,
+                                    role = "SUB_ADMIN",
+                                    permissions = permissions
+                                )
+                            ) { success ->
+                                if (!success) isSubmitting = false
+                            }
                         }
                     },
-                    enabled = !isSubmitting && name.isNotBlank() && phone.isNotBlank() && (isEdit || (email.isNotBlank() && password.isNotBlank())),
+                    enabled = !isSubmitting && name.isNotBlank() && phone.trim().length >= 10 && (isEdit || (email.isNotBlank() && email.contains("@") && password.isNotBlank())),
                     colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
                 ) {
                     if (isSubmitting) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                     } else {
-                        Text(if (isEdit) "Update" else "Create")
+                        Text(if (isEdit) "Update Sub-Admin" else "Create Sub-Admin")
                     }
                 }
             }
@@ -414,6 +598,6 @@ private fun PermissionCheckbox(label: String, isChecked: Boolean, onCheckedChang
             onCheckedChange = onCheckedChange,
             colors = CheckboxDefaults.colors(checkedColor = BrandRed)
         )
-        Text(text = label, fontSize = 14.sp, color = TextPrimary)
+        Text(text = label, fontSize = 14.sp, color = Color.Black)
     }
 }

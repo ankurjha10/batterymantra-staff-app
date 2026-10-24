@@ -27,8 +27,8 @@ object ApiClient {
             }
             var response = chain.proceed(requestBuilder.build())
             
-            if ((response.code == 401 || response.code == 403) && !chain.request().url.encodedPath.contains("auth/refresh")) {
-                android.util.Log.w("AuthInterceptor", "Received HTTP ${response.code} for ${chain.request().method} ${chain.request().url}")
+            if (response.code == 401 && !chain.request().url.encodedPath.contains("auth/refresh")) {
+                android.util.Log.w("AuthInterceptor", "Received HTTP 401 for ${chain.request().method} ${chain.request().url}")
                 val refreshToken = tokenManager.getCachedRefresh()
                 android.util.Log.d("AuthInterceptor", "Refresh token present: ${!refreshToken.isNullOrEmpty()}")
                 if (!refreshToken.isNullOrEmpty()) {

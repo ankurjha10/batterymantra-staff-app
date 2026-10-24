@@ -23,10 +23,10 @@ class TokenManager(private val context: Context) {
         private val LANGUAGE_KEY = stringPreferencesKey("app_language")
     }
 
-    private var cachedJwt: String? = null
-    private var cachedRefresh: String? = null
-    private var cachedRole: String? = null
-    private var cachedPermissions: Set<String>? = null
+    @Volatile private var cachedJwt: String? = null
+    @Volatile private var cachedRefresh: String? = null
+    @Volatile private var cachedRole: String? = null
+    @Volatile private var cachedPermissions: Set<String>? = null
 
     val jwtToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[JWT_TOKEN_KEY].also { cachedJwt = it }
@@ -45,26 +45,34 @@ class TokenManager(private val context: Context) {
     }
 
     fun getCachedJwt(): String? {
-        return cachedJwt ?: runBlocking {
-            context.dataStore.data.first()[JWT_TOKEN_KEY]
+        val memoryToken = cachedJwt
+        if (!memoryToken.isNullOrEmpty()) return memoryToken
+        return runBlocking {
+            context.dataStore.data.first()[JWT_TOKEN_KEY].also { cachedJwt = it }
         }
     }
 
     fun getCachedRefresh(): String? {
-        return cachedRefresh ?: runBlocking {
-            context.dataStore.data.first()[REFRESH_TOKEN_KEY]
+        val memoryRefresh = cachedRefresh
+        if (!memoryRefresh.isNullOrEmpty()) return memoryRefresh
+        return runBlocking {
+            context.dataStore.data.first()[REFRESH_TOKEN_KEY].also { cachedRefresh = it }
         }
     }
 
     fun getCachedRole(): String? {
-        return cachedRole ?: runBlocking {
-            context.dataStore.data.first()[ROLE_KEY]
+        val memoryRole = cachedRole
+        if (!memoryRole.isNullOrEmpty()) return memoryRole
+        return runBlocking {
+            context.dataStore.data.first()[ROLE_KEY].also { cachedRole = it }
         }
     }
 
     fun getCachedPermissions(): Set<String> {
-        return cachedPermissions ?: runBlocking {
-            context.dataStore.data.first()[PERMISSIONS_KEY] ?: emptySet()
+        val memoryPerms = cachedPermissions
+        if (memoryPerms != null) return memoryPerms
+        return runBlocking {
+            (context.dataStore.data.first()[PERMISSIONS_KEY] ?: emptySet()).also { cachedPermissions = it }
         }
     }
 

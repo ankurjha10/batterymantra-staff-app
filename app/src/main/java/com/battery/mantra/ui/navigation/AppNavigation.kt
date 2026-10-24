@@ -245,6 +245,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 factory = AdminViewModel.provideFactory(appContainer.adminRepository, appContainer.tokenManager)
             )
             val usersState by adminViewModel.usersState.collectAsState()
+
+            LaunchedEffect(Unit) {
+                adminViewModel.fetchUsers()
+            }
             
             com.battery.mantra.ui.screens.admin.AdminSubAdminsScreen(
                 usersState = usersState,
@@ -260,6 +264,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onToggleStatus = { userId, isActive, onSuccess, onError ->
                     adminViewModel.toggleUserStatus(userId, isActive, onSuccess, onError)
                 },
+                onRefresh = { adminViewModel.fetchUsers() },
                 onNavigateBack = { navController.navigateUp() }
             )
         }

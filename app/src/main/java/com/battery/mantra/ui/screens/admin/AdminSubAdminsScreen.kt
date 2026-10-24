@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Phone
@@ -49,6 +50,7 @@ fun AdminSubAdminsScreen(
     onUpdateSubAdmin: (String, AdminUpdateSubAdminRequest, () -> Unit, (String) -> Unit) -> Unit,
     onDeleteSubAdmin: (String, () -> Unit, (String) -> Unit) -> Unit,
     onToggleStatus: (String, Boolean, () -> Unit, (String) -> Unit) -> Unit,
+    onRefresh: () -> Unit = {},
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -87,6 +89,11 @@ fun AdminSubAdminsScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onRefresh) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = Color.Black)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -152,15 +159,42 @@ fun AdminSubAdminsScreen(
                     }
                     is AdminDataState.Error -> {
                         Column(
-                            modifier = Modifier.align(Alignment.Center).padding(24.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Center)
+                                .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            Icon(
+                                Icons.Filled.Refresh,
+                                contentDescription = null,
+                                tint = BrandRed,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Unable to Load Sub-Admins",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = usersState.message,
-                                color = BrandRed,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
+                                color = TextSecondary,
+                                fontSize = 14.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = onRefresh,
+                                colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Retry", color = Color.White)
+                            }
                         }
                     }
                     is AdminDataState.Success -> {

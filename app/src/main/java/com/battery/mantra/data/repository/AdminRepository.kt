@@ -305,10 +305,14 @@ class AdminRepository(private val api: BatteryMantraApi) {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Failed to fetch admin users: ${response.code()}"))
+                val errStr = response.errorBody()?.string() ?: ""
+                val errMsg = parseUserFriendlyError(response.code(), errStr, "Fetch users")
+                Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            if (e is CancellationException) throw e
+            val friendly = if (e is java.io.IOException) "Unable to connect to server. Please check your internet connection." else (e.message ?: "Failed to fetch users")
+            Result.failure(Exception(friendly))
         }
     }
 
@@ -381,14 +385,21 @@ class AdminRepository(private val api: BatteryMantraApi) {
     }
 
     private fun parseUserFriendlyError(responseCode: Int, errorBodyString: String?, defaultAction: String): String {
-        if (errorBodyString.isNullOrBlank()) {
+        val lower = errorBodyString?.lowercase() ?: ""
+
+        if (responseCode == 502 || responseCode == 503 || responseCode == 504 || lower.contains("bad gateway") || lower.contains("gateway timeout")) {
+            return "Server is currently updating or restarting. Please try again in a few moments."
+        }
+
+        if (errorBodyString.isNullOrBlank() || errorBodyString.contains("<!DOCTYPE html", ignoreCase = true)) {
             return when (responseCode) {
                 400 -> "Invalid request. Please verify the entered details."
-                401, 403 -> "You don't have permission to perform this action."
+                401 -> "Session expired. Please log in again."
+                403 -> "You do not have permission to perform this action."
                 404 -> "The requested record was not found."
-                409 -> "A conflicting record already exists with these details."
+                409 -> "A record already exists with these details."
                 in 500..599 -> "Server is temporarily unavailable. Please try again shortly."
-                else -> "$defaultAction failed (Error $responseCode)."
+                else -> "Unable to complete $defaultAction. Please try again."
             }
         }
 
@@ -409,31 +420,31 @@ class AdminRepository(private val api: BatteryMantraApi) {
         } catch (_: Exception) {}
 
         val raw = if (message.isNotBlank()) message else errorBodyString
-        val lower = raw.lowercase()
+        val rawLower = raw.lowercase()
 
         return when {
-            lower.contains("users_role_check") || lower.contains("sub_admin is not permitted") ->
-                "The SUB_ADMIN role is restricted by database check constraint. Please update 'users_role_check' in PostgreSQL."
-            lower.contains("email is already taken") || (lower.contains("email") && (lower.contains("already") || lower.contains("unique") || lower.contains("duplicate"))) ->
+            rawLower.contains("users_role_check") || rawLower.contains("sub_admin is not permitted") ->
+                "The SUB_ADMIN role is restricted by database check constraint. Please update or drop 'users_role_check' in PostgreSQL."
+            rawLower.contains("email is already taken") || (rawLower.contains("email") && (rawLower.contains("already") || rawLower.contains("unique") || rawLower.contains("duplicate"))) ->
                 "This email address is already registered. Please use a different email."
-            lower.contains("phone number is already taken") || lower.contains("phone number is already in use") || (lower.contains("phone") && (lower.contains("already") || lower.contains("unique") || lower.contains("duplicate"))) ->
+            rawLower.contains("phone number is already taken") || rawLower.contains("phone number is already in use") || (rawLower.contains("phone") && (rawLower.contains("already") || rawLower.contains("unique") || rawLower.contains("duplicate"))) ->
                 "This phone number is already registered. Please use a different phone number."
-            lower.contains("name/username is already") || lower.contains("username is already taken") || (lower.contains("username") && (lower.contains("already") || lower.contains("unique") || lower.contains("duplicate"))) ->
+            rawLower.contains("name/username is already") || rawLower.contains("username is already taken") || (rawLower.contains("username") && (rawLower.contains("already") || rawLower.contains("unique") || rawLower.contains("duplicate"))) ->
                 "This name/username is already in use. Please enter a different name."
-            lower.contains("cannot be modified or deleted because it is linked") ->
+            rawLower.contains("cannot be modified or deleted because it is linked") ->
                 "This record is linked to other data (orders/tasks) and cannot be altered or removed."
-            lower.contains("text you entered is too long") ->
+            rawLower.contains("text you entered is too long") ->
                 "The text you entered is too long for one of the fields. Please shorten it."
-            lower.contains("required field is missing") ->
+            rawLower.contains("required field is missing") ->
                 "Please fill in all mandatory fields before submitting."
-            lower.contains("invalid email") ->
+            rawLower.contains("invalid email") ->
                 "Please enter a valid email address."
-            message.isNotBlank() ->
+            message.isNotBlank() && !message.contains("<!DOCTYPE html", ignoreCase = true) ->
                 message
             responseCode in 500..599 ->
-                "Server error occurred. Please try again later."
+                "Server is temporarily unavailable. Please try again shortly."
             else ->
-                "$defaultAction failed (Error $responseCode)."
+                "Unable to complete $defaultAction. Please try again."
         }
     }
 

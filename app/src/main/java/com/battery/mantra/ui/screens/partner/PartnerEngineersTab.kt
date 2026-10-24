@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +17,8 @@ import com.battery.mantra.ui.theme.BrandRed
 
 @Composable
 fun PartnerEngineersTab() {
+    var showAddDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
     val engineers = listOf(
         mapOf("name" to "Vikram Singh", "phone" to "+91 9876543210", "status" to "ON_DUTY"),
         mapOf("name" to "Suresh Kumar", "phone" to "+91 8765432109", "status" to "OFF_DUTY")
@@ -24,11 +26,15 @@ fun PartnerEngineersTab() {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Button(
-            onClick = { /* Show AddEngineerDialog */ },
+            onClick = { showAddDialog = true },
             modifier = Modifier.padding(16.dp).align(Alignment.End),
             colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
         ) {
             Text("+ Add Engineer")
+        }
+
+        if (showAddDialog) {
+            AddEngineerDialog(onDismiss = { showAddDialog = false })
         }
 
         LazyColumn(

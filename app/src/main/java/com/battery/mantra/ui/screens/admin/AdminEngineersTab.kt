@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,11 +43,11 @@ fun AdminEngineersTab(
     partnersState: AdminDataState<List<PartnerResponse>>,
     onCreateEngineer: (CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit,
     onUpdateEngineer: (String, CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
-    onToggleEngineerStatus: (String, String?, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> }
+    onToggleEngineerStatus: (EngineerResponse, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> }
 ) {
     var showAddEditDialog by remember { mutableStateOf(false) }
     var editingEngineer by remember { mutableStateOf<EngineerResponse?>(null) }
-    var selectedPartnerId by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     val partnersList = (partnersState as? AdminDataState.Success)?.data ?: emptyList()
@@ -56,40 +57,36 @@ fun AdminEngineersTab(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Partner Filter Pills Section
-            if (partnersList.isNotEmpty()) {
-                androidx.compose.foundation.lazy.LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    item {
-                        FilterChip(
-                            selected = selectedPartnerId == null,
-                            onClick = { selectedPartnerId = null },
-                            label = { Text("All Engineers") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFD32F2F).copy(alpha = 0.1f),
-                                selectedLabelColor = Color(0xFFD32F2F)
-                            ),
-                            shape = RoundedCornerShape(percent = 50)
-                        )
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search engineers by name, phone, city...", color = Color(0xFF757575), fontSize = 14.sp) },
+                leadingIcon = {
+                    Icon(Icons.Outlined.Search, contentDescription = "Search", tint = Color(0xFFD32F2F))
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = Color(0xFF757575))
+                        }
                     }
-                    items(partnersList, key = { it.id }) { partner ->
-                        FilterChip(
-                            selected = selectedPartnerId == partner.id,
-                            onClick = { selectedPartnerId = partner.id },
-                            label = { Text(partner.businessName ?: partner.contactPerson ?: "Unknown") },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFD32F2F).copy(alpha = 0.1f),
-                                selectedLabelColor = Color(0xFFD32F2F)
-                            ),
-                            shape = RoundedCornerShape(percent = 50)
-                        )
-                    }
-                }
-            }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    cursorColor = Color(0xFFD32F2F)
+                )
+            )
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -103,16 +100,20 @@ fun AdminEngineersTab(
                         }
                     }
                 } else if (engineersState is AdminDataState.Success) {
-                    val filteredEngineers = if (selectedPartnerId == null) {
-                        engineersState.data
-                    } else {
-                        engineersState.data.filter { it.partnerId == selectedPartnerId }
+                    val query = searchQuery.trim().lowercase()
+                    val filteredEngineers = engineersState.data.filter { eng ->
+                        if (query.isEmpty()) return@filter true
+                        val name = "${eng.firstName ?: ""} ${eng.lastName ?: ""}".lowercase()
+                        val email = (eng.email ?: "").lowercase()
+                        val phone = (eng.phoneNumber ?: "").lowercase()
+                        val city = (eng.city ?: "").lowercase()
+                        name.contains(query) || email.contains(query) || phone.contains(query) || city.contains(query)
                     }
 
                     if (filteredEngineers.isEmpty()) {
                         item {
                             Text(
-                                "No engineers found", 
+                                if (searchQuery.isNotEmpty()) "No engineers matching \"$searchQuery\"" else "No engineers found", 
                                 modifier = Modifier.fillMaxWidth().padding(32.dp),
                                 color = Color.Gray,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -120,7 +121,7 @@ fun AdminEngineersTab(
                         }
                     } else {
                         items(filteredEngineers, key = { it.id }) { engineer ->
-                            val assignedPartnerName = engineer.partnerId?.let { partnerMap[it] }
+                            val assignedPartnerName = engineer.partnerId?.let { partnerMap[it] } ?: engineer.partnerBusinessName
                             EngineerCard(
                                 engineer = engineer,
                                 partnerName = assignedPartnerName,
@@ -130,11 +131,10 @@ fun AdminEngineersTab(
                                 },
                                 onToggleStatusClick = { newStatus ->
                                     onToggleEngineerStatus(
-                                        engineer.id,
-                                        engineer.userId,
+                                        engineer,
                                         newStatus,
                                         {
-                                            val msg = if (newStatus) "Engineer activated" else "Engineer suspended"
+                                            val msg = if (newStatus) "Engineer activated successfully" else "Engineer suspended successfully"
                                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                                         },
                                         { err ->
@@ -236,7 +236,7 @@ fun EngineerCard(
                         color = Color(0xFF1E293B)
                     )
                     Text(
-                        text = if (!partnerName.isNullOrBlank()) "Partner: $partnerName" else "Independent",
+                        text = if (!partnerName.isNullOrBlank()) "Partner: $partnerName" else "Direct Company Engineer",
                         fontSize = 13.sp,
                         color = Color(0xFF64748B)
                     )
@@ -435,16 +435,23 @@ fun AddEditEngineerDialog(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                val textFieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    unfocusedLabelColor = Color(0xFF616161),
+                    cursorColor = Color(0xFFD32F2F)
+                )
+
                 OutlinedTextField(
                     value = firstName,
                     onValueChange = { firstName = it },
                     label = { Text("First Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -454,10 +461,7 @@ fun AddEditEngineerDialog(
                     label = { Text("Last Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -467,10 +471,7 @@ fun AddEditEngineerDialog(
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -480,10 +481,7 @@ fun AddEditEngineerDialog(
                     label = { Text("Phone Number") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -493,60 +491,18 @@ fun AddEditEngineerDialog(
                     label = { Text("Alternate Phone (Optional)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Assigned Partner Selection
-                ExposedDropdownMenuBox(
-                    expanded = partnerDropdownExpanded,
-                    onExpandedChange = { partnerDropdownExpanded = !partnerDropdownExpanded }
-                ) {
-                    val partnerNameText = partners.find { it.id == selectedPartnerId }?.let {
-                        it.businessName ?: it.contactPerson ?: "Partner"
-                    } ?: "Independent (No Partner)"
-
-                    OutlinedTextField(
-                        value = partnerNameText,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Assigned Partner") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = partnerDropdownExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFD32F2F),
-                            focusedLabelColor = Color(0xFFD32F2F)
-                        )
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = partnerDropdownExpanded,
-                        onDismissRequest = { partnerDropdownExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Independent (No Partner)") },
-                            onClick = {
-                                selectedPartnerId = null
-                                partnerDropdownExpanded = false
-                            }
-                        )
-                        partners.forEach { partner ->
-                            DropdownMenuItem(
-                                text = { Text(partner.businessName ?: partner.contactPerson ?: "Partner") },
-                                onClick = {
-                                    selectedPartnerId = partner.id
-                                    partnerDropdownExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
+                OutlinedTextField(
+                    value = city,
+                    onValueChange = { city = it },
+                    label = { Text("City (Optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = textFieldColors
+                )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedTextField(
@@ -555,10 +511,7 @@ fun AddEditEngineerDialog(
                     label = { Text(if (isEditing) "Password (leave blank to keep current)" else "Password") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 

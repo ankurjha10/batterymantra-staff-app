@@ -110,28 +110,76 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
-    suspend fun togglePartnerStatus(id: String, userId: String?, isActive: Boolean): Result<Unit> {
+    suspend fun togglePartnerStatus(partner: PartnerResponse, isActive: Boolean): Result<Unit> {
         return try {
-            val response = api.togglePartnerStatus(id, isActive)
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else if (!userId.isNullOrEmpty()) {
-                val fallback = api.toggleUserStatus(userId, isActive)
-                if (fallback.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to update partner status"))
-            } else {
-                Result.failure(Exception("Failed to update partner status: ${response.code()}"))
+            var updated = false
+            try {
+                val req = com.battery.mantra.data.models.CreatePartnerRequest(
+                    businessName = partner.businessName ?: "",
+                    contactPerson = partner.contactPerson ?: "",
+                    email = partner.email ?: "",
+                    phoneNumber = partner.phoneNumber ?: "",
+                    alternatePhone = partner.alternatePhone,
+                    address = partner.address,
+                    operatingCityIds = partner.operatingCities?.map { it.cityId } ?: emptyList(),
+                    isActive = isActive
+                )
+                val putRes = api.updateAdminPartner(partner.id, req)
+                if (putRes.isSuccessful) updated = true
+            } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
             }
-        } catch (e: Exception) {
+
+            val userId = partner.userId
             if (!userId.isNullOrEmpty()) {
                 try {
-                    val fallback = api.toggleUserStatus(userId, isActive)
-                    if (fallback.isSuccessful) Result.success(Unit) else Result.failure(e)
-                } catch (ex: Exception) {
-                    Result.failure(e)
+                    val userRes = api.toggleUserStatus(userId, isActive)
+                    if (userRes.isSuccessful) updated = true
+                } catch (e: Exception) {
+                    if (e is kotlin.coroutines.cancellation.CancellationException) throw e
                 }
-            } else {
-                Result.failure(e)
             }
+
+            try {
+                val patchRes = api.togglePartnerStatus(partner.id, isActive)
+                if (patchRes.isSuccessful) updated = true
+            } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            }
+
+            if (updated) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to update partner status"))
+            }
+        } catch (e: Exception) {
+            if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            Result.failure(e)
+        }
+    }
+
+    suspend fun togglePartnerStatus(id: String, userId: String?, isActive: Boolean): Result<Unit> {
+        return try {
+            var updated = false
+            if (!userId.isNullOrEmpty()) {
+                try {
+                    val userRes = api.toggleUserStatus(userId, isActive)
+                    if (userRes.isSuccessful) updated = true
+                } catch (e: Exception) {
+                    if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+                }
+            }
+            try {
+                val patchRes = api.togglePartnerStatus(id, isActive)
+                if (patchRes.isSuccessful) updated = true
+            } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            }
+
+            if (updated) Result.success(Unit) else Result.failure(Exception("Failed to update partner status"))
+        } catch (e: Exception) {
+            if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            Result.failure(e)
         }
     }
 
@@ -176,28 +224,77 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
-    suspend fun toggleEngineerStatus(id: String, userId: String?, isActive: Boolean): Result<Unit> {
+    suspend fun toggleEngineerStatus(engineer: EngineerResponse, isActive: Boolean): Result<Unit> {
         return try {
-            val response = api.toggleEngineerStatus(id, isActive)
-            if (response.isSuccessful) {
-                Result.success(Unit)
-            } else if (!userId.isNullOrEmpty()) {
-                val fallback = api.toggleUserStatus(userId, isActive)
-                if (fallback.isSuccessful) Result.success(Unit) else Result.failure(Exception("Failed to update engineer status"))
-            } else {
-                Result.failure(Exception("Failed to update engineer status: ${response.code()}"))
+            var updated = false
+            try {
+                val req = com.battery.mantra.data.models.CreateEngineerRequest(
+                    firstName = engineer.firstName ?: "",
+                    lastName = engineer.lastName ?: "",
+                    email = engineer.email ?: "",
+                    phoneNumber = engineer.phoneNumber ?: "",
+                    alternatePhone = engineer.alternatePhone,
+                    address = engineer.address,
+                    city = engineer.city,
+                    partnerId = engineer.partnerId,
+                    isActive = isActive
+                )
+                val putRes = api.updateAdminEngineer(engineer.id, req)
+                if (putRes.isSuccessful) updated = true
+            } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
             }
-        } catch (e: Exception) {
+
+            val userId = engineer.userId
             if (!userId.isNullOrEmpty()) {
                 try {
-                    val fallback = api.toggleUserStatus(userId, isActive)
-                    if (fallback.isSuccessful) Result.success(Unit) else Result.failure(e)
-                } catch (ex: Exception) {
-                    Result.failure(e)
+                    val userRes = api.toggleUserStatus(userId, isActive)
+                    if (userRes.isSuccessful) updated = true
+                } catch (e: Exception) {
+                    if (e is kotlin.coroutines.cancellation.CancellationException) throw e
                 }
-            } else {
-                Result.failure(e)
             }
+
+            try {
+                val patchRes = api.toggleEngineerStatus(engineer.id, isActive)
+                if (patchRes.isSuccessful) updated = true
+            } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            }
+
+            if (updated) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to update engineer status"))
+            }
+        } catch (e: Exception) {
+            if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleEngineerStatus(id: String, userId: String?, isActive: Boolean): Result<Unit> {
+        return try {
+            var updated = false
+            if (!userId.isNullOrEmpty()) {
+                try {
+                    val userRes = api.toggleUserStatus(userId, isActive)
+                    if (userRes.isSuccessful) updated = true
+                } catch (e: Exception) {
+                    if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+                }
+            }
+            try {
+                val patchRes = api.toggleEngineerStatus(id, isActive)
+                if (patchRes.isSuccessful) updated = true
+            } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            }
+
+            if (updated) Result.success(Unit) else Result.failure(Exception("Failed to update engineer status"))
+        } catch (e: Exception) {
+            if (e is kotlin.coroutines.cancellation.CancellationException) throw e
+            Result.failure(e)
         }
     }
 

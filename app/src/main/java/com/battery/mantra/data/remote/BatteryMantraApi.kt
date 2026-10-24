@@ -235,4 +235,17 @@ interface BatteryMantraApi {
 
     @GET("api/payments/razorpay/status/{orderId}")
     suspend fun checkQrPaymentStatus(@Path("orderId") orderId: String): Response<com.battery.mantra.data.models.PaymentStatusResponse>
+
+    // --- Partner Dashboard Endpoints ---
+    @GET("api/partner/orders")
+    suspend fun getPartnerOrders(): Response<List<OrderResponse>>
+
+    @GET("api/partner/engineers")
+    suspend fun getPartnerEngineers(): Response<List<EngineerResponse>>
+
+    @POST("api/partner/engineers")
+    suspend fun createPartnerEngineer(@Body request: com.battery.mantra.data.models.CreateEngineerRequest): Response<EngineerResponse>
+
+    @PUT("api/partner/engineers/{id}")
+    suspend fun updatePartnerEngineer(@Path("id") id: String, @Body request: com.battery.mantra.data.models.CreateEngineerRequest): Response<EngineerResponse>
 }

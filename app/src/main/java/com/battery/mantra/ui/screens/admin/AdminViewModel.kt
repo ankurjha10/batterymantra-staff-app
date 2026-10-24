@@ -387,6 +387,19 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun togglePartnerStatus(partner: PartnerResponse, isActive: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.togglePartnerStatus(partner, isActive)
+            if (result.isSuccess) {
+                fetchPartners()
+                fetchUsers()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to update partner status")
+            }
+        }
+    }
+
     fun togglePartnerStatus(id: String, userId: String?, isActive: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val result = repository.togglePartnerStatus(id, userId, isActive)
@@ -421,6 +434,19 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
                 onSuccess()
             } else {
                 onError(result.exceptionOrNull()?.message ?: "Failed to update engineer")
+            }
+        }
+    }
+
+    fun toggleEngineerStatus(engineer: EngineerResponse, isActive: Boolean, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.toggleEngineerStatus(engineer, isActive)
+            if (result.isSuccess) {
+                fetchEngineers()
+                fetchUsers()
+                onSuccess()
+            } else {
+                onError(result.exceptionOrNull()?.message ?: "Failed to update engineer status")
             }
         }
     }

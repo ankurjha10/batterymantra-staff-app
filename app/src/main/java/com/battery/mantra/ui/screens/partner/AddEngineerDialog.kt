@@ -25,11 +25,22 @@ fun AddEngineerDialog(
                 Text(text = "Add New Engineer", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
                 
+                val textFieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    unfocusedTextColor = androidx.compose.ui.graphics.Color.Black,
+                    focusedBorderColor = BrandRed,
+                    unfocusedBorderColor = androidx.compose.ui.graphics.Color(0xFFE0E0E0),
+                    focusedLabelColor = BrandRed,
+                    unfocusedLabelColor = androidx.compose.ui.graphics.Color(0xFF616161),
+                    cursorColor = BrandRed
+                )
+
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Engineer Name") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = textFieldColors
                 )
                 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -38,7 +49,8 @@ fun AddEngineerDialog(
                     value = phone,
                     onValueChange = { phone = it },
                     label = { Text("Phone Number") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = textFieldColors
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))

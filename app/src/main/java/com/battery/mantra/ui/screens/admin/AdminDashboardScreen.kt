@@ -68,10 +68,10 @@ fun AdminDashboardScreen(
     onUpdateStatus: (String, String) -> Unit = { _, _ -> },
     onCreatePartner: (com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onUpdatePartner: (String, com.battery.mantra.data.models.CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
-    onTogglePartnerStatus: (String, String?, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
+    onTogglePartnerStatus: (com.battery.mantra.data.models.PartnerResponse, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onUpdateEngineer: (String, com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
-    onToggleEngineerStatus: (String, String?, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> },
+    onToggleEngineerStatus: (com.battery.mantra.data.models.EngineerResponse, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onCreateOrderClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {

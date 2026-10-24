@@ -28,4 +28,8 @@ class AppContainer(private val context: Context) {
     val adminRepository: AdminRepository by lazy {
         AdminRepository(batteryMantraApi)
     }
+
+    val partnerRepository: com.battery.mantra.data.repository.PartnerRepository by lazy {
+        com.battery.mantra.data.repository.PartnerRepository(batteryMantraApi)
+    }
 }

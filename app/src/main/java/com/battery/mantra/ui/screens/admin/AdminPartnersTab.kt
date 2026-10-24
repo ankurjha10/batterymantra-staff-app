@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,57 +43,101 @@ fun AdminPartnersTab(
     citiesState: AdminDataState<List<com.battery.mantra.data.models.CityResponse>>,
     onCreatePartner: (CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit,
     onUpdatePartner: (String, CreatePartnerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
-    onTogglePartnerStatus: (String, String?, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _, _ -> }
+    onTogglePartnerStatus: (PartnerResponse, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> }
 ) {
     var showAddEditDialog by remember { mutableStateOf(false) }
     var editingPartner by remember { mutableStateOf<PartnerResponse?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            if (partnersState is AdminDataState.Loading) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFFD32F2F))
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search partners by name, phone, city...", color = Color(0xFF757575), fontSize = 14.sp) },
+                leadingIcon = {
+                    Icon(Icons.Outlined.Search, contentDescription = "Search", tint = Color(0xFFD32F2F))
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = Color(0xFF757575))
+                        }
                     }
-                }
-            } else if (partnersState is AdminDataState.Success) {
-                if (partnersState.data.isEmpty()) {
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    cursorColor = Color(0xFFD32F2F)
+                )
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                if (partnersState is AdminDataState.Loading) {
                     item {
-                        Text(
-                            "No partners found", 
-                            modifier = Modifier.fillMaxWidth().padding(32.dp),
-                            color = Color.Gray,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
+                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Color(0xFFD32F2F))
+                        }
                     }
-                } else {
-                    items(partnersState.data, key = { it.id }) { partner ->
-                        PartnerCard(
-                            partner = partner,
-                            onEditClick = {
-                                editingPartner = partner
-                                showAddEditDialog = true
-                            },
-                            onToggleStatusClick = { newStatus ->
-                                onTogglePartnerStatus(
-                                    partner.id,
-                                    partner.userId,
-                                    newStatus,
-                                    {
-                                        val msg = if (newStatus) "Partner activated" else "Partner suspended"
-                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                    },
-                                    { err ->
-                                        Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                    }
-                                )
-                            }
-                        )
+                } else if (partnersState is AdminDataState.Success) {
+                    val query = searchQuery.trim().lowercase()
+                    val filteredPartners = partnersState.data.filter { p ->
+                        if (query.isEmpty()) return@filter true
+                        val bName = (p.businessName ?: "").lowercase()
+                        val cPerson = (p.contactPerson ?: "").lowercase()
+                        val email = (p.email ?: "").lowercase()
+                        val phone = (p.phoneNumber ?: "").lowercase()
+                        val address = (p.address ?: "").lowercase()
+                        bName.contains(query) || cPerson.contains(query) || email.contains(query) || phone.contains(query) || address.contains(query)
+                    }
+
+                    if (filteredPartners.isEmpty()) {
+                        item {
+                            Text(
+                                if (searchQuery.isNotEmpty()) "No partners matching \"$searchQuery\"" else "No partners found", 
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                color = Color.Gray,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    } else {
+                        items(filteredPartners, key = { it.id }) { partner ->
+                            PartnerCard(
+                                partner = partner,
+                                onEditClick = {
+                                    editingPartner = partner
+                                    showAddEditDialog = true
+                                },
+                                onToggleStatusClick = { newStatus ->
+                                    onTogglePartnerStatus(
+                                        partner,
+                                        newStatus,
+                                        {
+                                            val msg = if (newStatus) "Partner activated successfully" else "Partner suspended successfully"
+                                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                        },
+                                        { err ->
+                                            Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                        }
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -384,18 +429,23 @@ fun AddEditPartnerDialog(
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(16.dp))
-                
+                val textFieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    focusedBorderColor = Color(0xFFD32F2F),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedLabelColor = Color(0xFFD32F2F),
+                    unfocusedLabelColor = Color(0xFF616161),
+                    cursorColor = Color(0xFFD32F2F)
+                )
+
                 OutlinedTextField(
                     value = businessName,
                     onValueChange = { businessName = it },
                     label = { Text("Business Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -405,10 +455,7 @@ fun AddEditPartnerDialog(
                     label = { Text("Contact Person") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -418,10 +465,7 @@ fun AddEditPartnerDialog(
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -431,10 +475,7 @@ fun AddEditPartnerDialog(
                     label = { Text("Phone Number") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -444,10 +485,7 @@ fun AddEditPartnerDialog(
                     label = { Text("Alternate Phone (Optional)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -456,10 +494,7 @@ fun AddEditPartnerDialog(
                     onValueChange = { address = it },
                     label = { Text("Business Address (Optional)") },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -469,10 +504,7 @@ fun AddEditPartnerDialog(
                     label = { Text(if (isEditing) "Password (leave blank to keep current)" else "Password") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFD32F2F),
-                        focusedLabelColor = Color(0xFFD32F2F)
-                    )
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 

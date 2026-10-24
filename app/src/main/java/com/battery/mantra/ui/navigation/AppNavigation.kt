@@ -191,8 +191,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onUpdatePartner = { id, request, onSuccess, onError ->
                     adminViewModel.updatePartner(id, request, onSuccess, onError)
                 },
-                onTogglePartnerStatus = { id, userId, isActive, onSuccess, onError ->
-                    adminViewModel.togglePartnerStatus(id, userId, isActive, onSuccess, onError)
+                onTogglePartnerStatus = { partner, isActive, onSuccess, onError ->
+                    adminViewModel.togglePartnerStatus(partner, isActive, onSuccess, onError)
                 },
                 onCreateEngineer = { request, onSuccess, onError ->
                     adminViewModel.createEngineer(request, onSuccess, onError)
@@ -200,8 +200,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onUpdateEngineer = { id, request, onSuccess, onError ->
                     adminViewModel.updateEngineer(id, request, onSuccess, onError)
                 },
-                onToggleEngineerStatus = { id, userId, isActive, onSuccess, onError ->
-                    adminViewModel.toggleEngineerStatus(id, userId, isActive, onSuccess, onError)
+                onToggleEngineerStatus = { engineer, isActive, onSuccess, onError ->
+                    adminViewModel.toggleEngineerStatus(engineer, isActive, onSuccess, onError)
                 },
                 onCreateOrderClick = { navController.navigate(Screen.AdminCreateOrder.route) },
                 onLogout = {

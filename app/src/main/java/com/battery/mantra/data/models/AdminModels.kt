@@ -9,6 +9,9 @@ data class PartnerResponse(
     @SerializedName("contactPerson") val contactPerson: String?,
     @SerializedName("email") val email: String?,
     @SerializedName("phoneNumber") val phoneNumber: String?,
+    @SerializedName("alternatePhone") val alternatePhone: String? = null,
+    @SerializedName("address") val address: String? = null,
+    @SerializedName("operatingCities") val operatingCities: List<CityResponse>? = null,
     @SerializedName("active") val active: Boolean?,
     @SerializedName("isActive") val isActive: Boolean?
 )
@@ -24,7 +27,11 @@ data class EngineerResponse(
     @SerializedName("lastName") val lastName: String?,
     @SerializedName("email") val email: String?,
     @SerializedName("phoneNumber") val phoneNumber: String?,
+    @SerializedName("alternatePhone") val alternatePhone: String? = null,
+    @SerializedName("address") val address: String? = null,
+    @SerializedName("city") val city: String? = null,
     @SerializedName("partnerId") val partnerId: String?,
+    @SerializedName("partnerBusinessName") val partnerBusinessName: String? = null,
     @SerializedName("active") val active: Boolean?,
     @SerializedName("isActive") val isActive: Boolean?
 )

@@ -512,6 +512,8 @@ fun FormTextField(
                 focusedBorderColor = BrandRed,
                 unfocusedBorderColor = Color(0xFFDDDDDD),
                 focusedLabelColor = BrandRed,
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
                 cursorColor = BrandRed
             ),
             textStyle = LocalTextStyle.current.copy(fontSize = 14.sp, color = Color.Black)

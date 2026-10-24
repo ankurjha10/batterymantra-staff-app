@@ -319,18 +319,13 @@ class AdminRepository(private val api: BatteryMantraApi) {
                 Result.success(Unit)
             } else {
                 val errStr = response.errorBody()?.string() ?: ""
-                var errMsg = "Failed to create sub-admin: ${response.code()}"
-                try {
-                    val json = org.json.JSONObject(errStr)
-                    if (json.has("message")) {
-                        errMsg = json.getString("message")
-                    }
-                } catch (e: Exception) {}
+                val errMsg = parseUserFriendlyError(response.code(), errStr, "Create Sub-Admin")
                 Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            Result.failure(e)
+            val friendly = if (e is java.io.IOException) "Unable to connect to server. Please check your internet connection." else (e.message ?: "Failed to create sub-admin")
+            Result.failure(Exception(friendly))
         }
     }
 
@@ -341,16 +336,13 @@ class AdminRepository(private val api: BatteryMantraApi) {
                 Result.success(Unit)
             } else {
                 val errStr = response.errorBody()?.string() ?: ""
-                var errMsg = "Failed to update sub-admin: ${response.code()}"
-                try {
-                    val json = org.json.JSONObject(errStr)
-                    if (json.has("message")) errMsg = json.getString("message")
-                } catch (e: Exception) {}
+                val errMsg = parseUserFriendlyError(response.code(), errStr, "Update Sub-Admin")
                 Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            Result.failure(e)
+            val friendly = if (e is java.io.IOException) "Unable to connect to server. Please check your internet connection." else (e.message ?: "Failed to update sub-admin")
+            Result.failure(Exception(friendly))
         }
     }
 
@@ -361,15 +353,13 @@ class AdminRepository(private val api: BatteryMantraApi) {
                 Result.success(Unit)
             } else {
                 val errStr = response.errorBody()?.string() ?: ""
-                var errMsg = "Failed to delete user: ${response.code()}"
-                try {
-                    val json = org.json.JSONObject(errStr)
-                    if (json.has("message")) errMsg = json.getString("message")
-                } catch (e: Exception) {}
+                val errMsg = parseUserFriendlyError(response.code(), errStr, "Delete user")
                 Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            if (e is CancellationException) throw e
+            val friendly = if (e is java.io.IOException) "Unable to connect to server. Please check your internet connection." else (e.message ?: "Failed to delete user")
+            Result.failure(Exception(friendly))
         }
     }
 
@@ -380,15 +370,70 @@ class AdminRepository(private val api: BatteryMantraApi) {
                 Result.success(Unit)
             } else {
                 val errStr = response.errorBody()?.string() ?: ""
-                var errMsg = "Failed to update status: ${response.code()}"
-                try {
-                    val json = org.json.JSONObject(errStr)
-                    if (json.has("message")) errMsg = json.getString("message")
-                } catch (e: Exception) {}
+                val errMsg = parseUserFriendlyError(response.code(), errStr, "Update status")
                 Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            if (e is CancellationException) throw e
+            val friendly = if (e is java.io.IOException) "Unable to connect to server. Please check your internet connection." else (e.message ?: "Failed to update user status")
+            Result.failure(Exception(friendly))
+        }
+    }
+
+    private fun parseUserFriendlyError(responseCode: Int, errorBodyString: String?, defaultAction: String): String {
+        if (errorBodyString.isNullOrBlank()) {
+            return when (responseCode) {
+                400 -> "Invalid request. Please verify the entered details."
+                401, 403 -> "You don't have permission to perform this action."
+                404 -> "The requested record was not found."
+                409 -> "A conflicting record already exists with these details."
+                in 500..599 -> "Server is temporarily unavailable. Please try again shortly."
+                else -> "$defaultAction failed (Error $responseCode)."
+            }
+        }
+
+        var message = ""
+        try {
+            val json = org.json.JSONObject(errorBodyString)
+            if (json.has("message") && !json.isNull("message")) {
+                message = json.getString("message")
+            } else if (json.has("error") && !json.isNull("error")) {
+                message = json.getString("error")
+            } else if (json.has("errors") && !json.isNull("errors")) {
+                val errorsArray = json.optJSONArray("errors")
+                if (errorsArray != null && errorsArray.length() > 0) {
+                    val first = errorsArray.optJSONObject(0)
+                    message = first?.optString("defaultMessage") ?: errorsArray.getString(0)
+                }
+            }
+        } catch (_: Exception) {}
+
+        val raw = if (message.isNotBlank()) message else errorBodyString
+        val lower = raw.lowercase()
+
+        return when {
+            lower.contains("users_role_check") || lower.contains("sub_admin is not permitted") ->
+                "The SUB_ADMIN role is restricted by database check constraint. Please update 'users_role_check' in PostgreSQL."
+            lower.contains("email is already taken") || (lower.contains("email") && (lower.contains("already") || lower.contains("unique") || lower.contains("duplicate"))) ->
+                "This email address is already registered. Please use a different email."
+            lower.contains("phone number is already taken") || lower.contains("phone number is already in use") || (lower.contains("phone") && (lower.contains("already") || lower.contains("unique") || lower.contains("duplicate"))) ->
+                "This phone number is already registered. Please use a different phone number."
+            lower.contains("name/username is already") || lower.contains("username is already taken") || (lower.contains("username") && (lower.contains("already") || lower.contains("unique") || lower.contains("duplicate"))) ->
+                "This name/username is already in use. Please enter a different name."
+            lower.contains("cannot be modified or deleted because it is linked") ->
+                "This record is linked to other data (orders/tasks) and cannot be altered or removed."
+            lower.contains("text you entered is too long") ->
+                "The text you entered is too long for one of the fields. Please shorten it."
+            lower.contains("required field is missing") ->
+                "Please fill in all mandatory fields before submitting."
+            lower.contains("invalid email") ->
+                "Please enter a valid email address."
+            message.isNotBlank() ->
+                message
+            responseCode in 500..599 ->
+                "Server error occurred. Please try again later."
+            else ->
+                "$defaultAction failed (Error $responseCode)."
         }
     }
 

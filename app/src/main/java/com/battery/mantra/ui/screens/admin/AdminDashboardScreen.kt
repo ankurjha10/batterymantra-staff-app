@@ -26,9 +26,10 @@ import com.battery.mantra.ui.screens.admin.AdminViewModel
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Engineering
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.PhoneCallback
 import androidx.compose.material.icons.outlined.Inventory
-import androidx.compose.material.icons.outlined.ExitToApp
-import androidx.compose.material.icons.outlined.PhoneCallback
 import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -131,7 +132,7 @@ fun AdminDashboardScreen(
 
                 if (hasCallbacksPerm) {
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.PhoneCallback, contentDescription = null) },
+                        icon = { Icon(Icons.AutoMirrored.Outlined.PhoneCallback, contentDescription = null) },
                         label = { Text("Callbacks") },
                         badge = {
                             if (pendingCallbacksCount > 0) {
@@ -270,7 +271,7 @@ fun AdminDashboardScreen(
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Outlined.ExitToApp, contentDescription = null) },
+                    icon = { Icon(Icons.AutoMirrored.Outlined.ExitToApp, contentDescription = null) },
                     label = { Text("Logout") },
                     selected = false,
                     onClick = { 
@@ -371,10 +372,10 @@ fun AdminDashboardScreen(
                             } else 0
                             if (pendingOrders > 0) {
                                 BadgedBox(badge = { Badge { Text(pendingOrders.toString()) } }) {
-                                    Icon(Icons.Default.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
+                                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
                                 }
                             } else {
-                                Icon(Icons.Default.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
+                                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Orders", modifier = Modifier.size(24.dp))
                             }
                         },
                         label = { Text("Orders", fontWeight = if (selectedTabIndex == 1) FontWeight.Bold else FontWeight.Normal) },

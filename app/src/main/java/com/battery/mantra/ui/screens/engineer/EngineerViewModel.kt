@@ -58,6 +58,14 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
         fetchAttendance()
         fetchLeaves()
         updateFcmTokenFromFirebase()
+
+        // Real-time UI Auto-Refresh via AppEventBus push notifications
+        viewModelScope.launch {
+            com.battery.mantra.util.AppEventBus.refreshEvents.collect {
+                fetchJobs()
+                fetchNotifications()
+            }
+        }
     }
 
     private fun updateFcmTokenFromFirebase() {
@@ -100,6 +108,10 @@ class EngineerViewModel(private val repository: EngineerRepository) : ViewModel(
                 )
             }
         }
+    }
+
+    fun fetchAssignedOrders() {
+        fetchJobs()
     }
 
     fun logCall(orderId: String) {

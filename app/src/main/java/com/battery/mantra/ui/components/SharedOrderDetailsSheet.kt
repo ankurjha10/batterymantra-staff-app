@@ -441,12 +441,28 @@ fun SharedOrderDetailsSheet(
                         tint = Color(0xFF10B981)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text("Assigned To", fontSize = 12.sp, color = Color.Gray)
                         Text(assignedName ?: "Unknown", fontWeight = FontWeight.Bold, color = Color(0xFF10B981), fontSize = 16.sp)
                     }
+                    if (isAdmin && order.orderStatus !in listOf("DELIVERED", "COMPLETED", "CANCELLED", "INSTALLED")) {
+                        OutlinedButton(
+                            onClick = {
+                                onDismiss()
+                                onAssignEngineer(order.orderId ?: "")
+                            },
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
+                            border = BorderStroke(1.dp, Color(0xFFD32F2F)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Outlined.Edit, contentDescription = "Change", modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Change", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
-            } else if (isAdmin && (order.orderStatus == "PENDING" || order.orderStatus == "CONFIRMED")) {
+            } else if (isAdmin && order.orderStatus !in listOf("DELIVERED", "COMPLETED", "CANCELLED", "INSTALLED")) {
                 Button(
                     onClick = { 
                         onDismiss()

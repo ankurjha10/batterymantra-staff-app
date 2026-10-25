@@ -1,5 +1,6 @@
 package com.battery.mantra.ui.screens.admin
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,17 +33,15 @@ fun AssignOrderSheet(
     onAssignEngineer: (orderId: String, engineerId: String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
+    val isReassign = order.assignedPartner != null || order.assignedEngineer != null
+    val currentAssignedName = order.assignedEngineer?.let {
+        "Engineer: ${it.firstName ?: ""} ${it.lastName ?: ""}".trim()
+    } ?: order.assignedPartner?.let {
+        "Partner: ${it.businessName ?: it.contactPerson ?: ""}".trim()
+    }
 
-
-    val canAssignPartner = order.assignedEngineer == null
-    val canAssignEngineer = order.assignedPartner == null
-    
-    // Automatically switch to the only available tab if one is disabled
-    LaunchedEffect(Unit) {
-        if (!canAssignPartner && canAssignEngineer) {
-            selectedTab = 1
-        }
+    var selectedTab by remember {
+        mutableIntStateOf(if (order.assignedEngineer != null && order.assignedPartner == null) 1 else 0)
     }
 
     ModalBottomSheet(
@@ -59,60 +58,58 @@ fun AssignOrderSheet(
             // Header
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(
-                    text = "Assign Order",
+                    text = if (isReassign) "Reassign Order" else "Assign Order",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1E293B)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Order #${order.orderId?.take(8)?.uppercase() ?: "Unknown"}",
+                    text = "Order #${order.orderId.take(8).uppercase()}",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
+                if (isReassign && !currentAssignedName.isNullOrEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Current: ",
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = currentAssignedName,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF10B981)
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Tabs
-            if (canAssignPartner && canAssignEngineer) {
-                TabRow(
-                    selectedTabIndex = selectedTab,
-                    containerColor = Color.Transparent,
-                    contentColor = Color(0xFFD32F2F),
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                            color = Color(0xFFD32F2F)
-                        )
-                    }
-                ) {
-                    Tab(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        text = { Text("Partners", color = if (selectedTab == 0) Color(0xFFD32F2F) else Color.Gray, fontWeight = FontWeight.SemiBold) }
-                    )
-                    Tab(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        text = { Text("Engineers", color = if (selectedTab == 1) Color(0xFFD32F2F) else Color.Gray, fontWeight = FontWeight.SemiBold) }
+            // Tabs - Admin can always toggle between Partners and Engineers
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = Color.Transparent,
+                contentColor = Color(0xFFD32F2F),
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = Color(0xFFD32F2F)
                     )
                 }
-            } else if (canAssignPartner) {
-                Text(
-                    "Assign Partner",
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                    color = Color(0xFFD32F2F)
+            ) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Partners", color = if (selectedTab == 0) Color(0xFFD32F2F) else Color.Gray, fontWeight = FontWeight.SemiBold) }
                 )
-                selectedTab = 0
-            } else if (canAssignEngineer) {
-                Text(
-                    "Assign Engineer",
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                    color = Color(0xFFD32F2F)
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Engineers", color = if (selectedTab == 1) Color(0xFFD32F2F) else Color.Gray, fontWeight = FontWeight.SemiBold) }
                 )
-                selectedTab = 1
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -129,12 +126,14 @@ fun AssignOrderSheet(
                             is AdminDataState.Success -> {
                                 LazyColumn(contentPadding = PaddingValues(horizontal = 24.dp)) {
                                     items(state.data, key = { it.id }) { partner ->
+                                        val isCurrentlyAssigned = order.assignedPartner?.id == partner.id
                                         PartnerItem(
                                             name = partner.businessName ?: partner.contactPerson ?: "Unknown",
                                             detail = partner.phoneNumber ?: "No Phone",
+                                            isCurrentlyAssigned = isCurrentlyAssigned,
                                             onAssign = {
                                                 onAssignPartner(
-                                                    order.orderId ?: "",
+                                                    order.orderId,
                                                     partner.id,
                                                     onDismiss,
                                                     { /* Handle error */ }
@@ -159,12 +158,14 @@ fun AssignOrderSheet(
                                 } else {
                                     LazyColumn(contentPadding = PaddingValues(horizontal = 24.dp)) {
                                         items(directEngineers, key = { it.id }) { engineer ->
+                                            val isCurrentlyAssigned = order.assignedEngineer?.id == engineer.id
                                             EngineerItem(
                                                 name = "${engineer.firstName ?: ""} ${engineer.lastName ?: ""}".trim(),
                                                 phone = engineer.phoneNumber ?: "No phone",
+                                                isCurrentlyAssigned = isCurrentlyAssigned,
                                                 onAssign = {
                                                     onAssignEngineer(
-                                                        order.orderId ?: "",
+                                                        order.orderId,
                                                         engineer.id,
                                                         onDismiss,
                                                         { /* Handle error */ }
@@ -185,14 +186,22 @@ fun AssignOrderSheet(
 }
 
 @Composable
-private fun PartnerItem(name: String, detail: String, onAssign: () -> Unit) {
+private fun PartnerItem(
+    name: String,
+    detail: String,
+    isCurrentlyAssigned: Boolean = false,
+    onAssign: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentlyAssigned) Color(0xFFECFDF5) else Color.White
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        border = if (isCurrentlyAssigned) BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.4f)) else null
     ) {
         Row(
             modifier = Modifier
@@ -201,7 +210,10 @@ private fun PartnerItem(name: String, detail: String, onAssign: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -217,27 +229,61 @@ private fun PartnerItem(name: String, detail: String, onAssign: () -> Unit) {
                 }
             }
             
-            IconButton(
-                onClick = onAssign,
-                modifier = Modifier
-                    .background(Color(0xFF10B981).copy(alpha = 0.1f), CircleShape)
-                    .size(36.dp)
-            ) {
-                Icon(Icons.Outlined.CheckCircle, contentDescription = "Assign", tint = Color(0xFF10B981), modifier = Modifier.size(20.dp))
+            if (isCurrentlyAssigned) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFF10B981).copy(alpha = 0.15f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Outlined.CheckCircle,
+                            contentDescription = "Currently Assigned",
+                            tint = Color(0xFF10B981),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Currently Assigned",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF059669)
+                        )
+                    }
+                }
+            } else {
+                IconButton(
+                    onClick = onAssign,
+                    modifier = Modifier
+                        .background(Color(0xFF10B981).copy(alpha = 0.1f), CircleShape)
+                        .size(36.dp)
+                ) {
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = "Assign", tint = Color(0xFF10B981), modifier = Modifier.size(20.dp))
+                }
             }
         }
     }
 }
 
 @Composable
-private fun EngineerItem(name: String, phone: String, onAssign: () -> Unit) {
+private fun EngineerItem(
+    name: String,
+    phone: String,
+    isCurrentlyAssigned: Boolean = false,
+    onAssign: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentlyAssigned) Color(0xFFECFDF5) else Color.White
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        border = if (isCurrentlyAssigned) BorderStroke(1.dp, Color(0xFF10B981).copy(alpha = 0.4f)) else null
     ) {
         Row(
             modifier = Modifier
@@ -246,7 +292,10 @@ private fun EngineerItem(name: String, phone: String, onAssign: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -262,13 +311,39 @@ private fun EngineerItem(name: String, phone: String, onAssign: () -> Unit) {
                 }
             }
             
-            IconButton(
-                onClick = onAssign,
-                modifier = Modifier
-                    .background(Color(0xFF10B981).copy(alpha = 0.1f), CircleShape)
-                    .size(36.dp)
-            ) {
-                Icon(Icons.Outlined.CheckCircle, contentDescription = "Assign", tint = Color(0xFF10B981), modifier = Modifier.size(20.dp))
+            if (isCurrentlyAssigned) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFF10B981).copy(alpha = 0.15f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Outlined.CheckCircle,
+                            contentDescription = "Currently Assigned",
+                            tint = Color(0xFF10B981),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Currently Assigned",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF059669)
+                        )
+                    }
+                }
+            } else {
+                IconButton(
+                    onClick = onAssign,
+                    modifier = Modifier
+                        .background(Color(0xFF10B981).copy(alpha = 0.1f), CircleShape)
+                        .size(36.dp)
+                ) {
+                    Icon(Icons.Outlined.CheckCircle, contentDescription = "Assign", tint = Color(0xFF10B981), modifier = Modifier.size(20.dp))
+                }
             }
         }
     }

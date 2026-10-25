@@ -479,6 +479,22 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
         }
     }
 
+    fun updateCustomer(
+        userId: String,
+        request: com.battery.mantra.data.models.AdminUpdateCustomerRequest,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            repository.updateCustomer(userId, request)
+                .onSuccess {
+                    fetchUsers()
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to update customer") }
+        }
+    }
+
     fun createAdminOrder(
         request: com.battery.mantra.data.models.AdminCreateOrderRequest,
         onSuccess: () -> Unit,
@@ -493,6 +509,23 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
                 .onFailure { onError(it.message ?: "Failed to create order") }
         }
     }
+
+    fun updateOrder(
+        orderId: String,
+        request: com.battery.mantra.data.models.AdminUpdateOrderRequest,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            repository.updateOrder(orderId, request)
+                .onSuccess {
+                    fetchOrders()
+                    onSuccess()
+                }
+                .onFailure { onError(it.message ?: "Failed to update order") }
+        }
+    }
+
 
     fun createSubAdmin(
         request: com.battery.mantra.data.models.AdminCreateSubAdminRequest,

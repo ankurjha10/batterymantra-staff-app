@@ -37,6 +37,7 @@ fun SharedOrderDetailsSheet(
     isAdmin: Boolean = false,
     onDismiss: () -> Unit,
     onAssignEngineer: (String) -> Unit = {},
+    onEditOrder: (OrderResponse) -> Unit = {},
     onUpdateStatus: (String, String) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
@@ -83,16 +84,36 @@ fun SharedOrderDetailsSheet(
                     )
                 }
                 
-                Surface(
-                    shape = CircleShape,
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Outlined.Close, contentDescription = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.close_button), tint = Color.Gray)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isAdmin && order.orderStatus !in listOf("DELIVERED", "COMPLETED", "CANCELLED", "INSTALLED")) {
+                        OutlinedButton(
+                            onClick = {
+                                onDismiss()
+                                onEditOrder(order)
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDE2027)),
+                            border = BorderStroke(1.dp, Color(0xFFDE2027)),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Icon(Icons.Outlined.Edit, contentDescription = "Edit Order", modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Edit Order", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.White,
+                        shadowElevation = 2.dp
+                    ) {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Outlined.Close, contentDescription = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.close_button), tint = Color.Gray)
+                        }
                     }
                 }
             }
+
 
             Spacer(modifier = Modifier.height(24.dp))
 

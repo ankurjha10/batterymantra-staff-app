@@ -72,9 +72,14 @@ fun AdminDashboardScreen(
     onCreateEngineer: (com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _ -> },
     onUpdateEngineer: (String, com.battery.mantra.data.models.CreateEngineerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onToggleEngineerStatus: (com.battery.mantra.data.models.EngineerResponse, Boolean, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
+    productSearchResults: AdminDataState<List<com.battery.mantra.data.models.ProductResponse>> = AdminDataState.Idle,
+    onSearchProducts: (String) -> Unit = {},
+    onUpdateCustomer: (String, com.battery.mantra.data.models.AdminUpdateCustomerRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
+    onUpdateOrder: (String, com.battery.mantra.data.models.AdminUpdateOrderRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onCreateOrderClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     
@@ -457,11 +462,14 @@ fun AdminDashboardScreen(
                         ordersState = ordersState, 
                         partnersState = partnersState,
                         engineersState = engineersState,
+                        productSearchResults = productSearchResults,
                         targetSearchQuery = targetSearchQuery,
                         targetFilter = targetFilter,
                         onTargetConsumed = onTargetConsumed,
+                        onSearchProducts = onSearchProducts,
                         onAssignPartner = onAssignPartner,
                         onAssignEngineer = onAssignEngineer,
+                        onUpdateOrder = onUpdateOrder,
                         onUpdateStatus = onUpdateStatus
                      )
                 2 -> AdminPartnersTab(
@@ -478,7 +486,10 @@ fun AdminDashboardScreen(
                     onUpdateEngineer = onUpdateEngineer,
                     onToggleEngineerStatus = onToggleEngineerStatus
                 )
-                4 -> AdminUsersTab(usersState = usersState)
+                4 -> AdminUsersTab(
+                    usersState = usersState,
+                    onUpdateCustomer = onUpdateCustomer
+                )
             }
         }
     }

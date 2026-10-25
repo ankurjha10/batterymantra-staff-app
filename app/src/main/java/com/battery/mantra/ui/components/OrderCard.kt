@@ -35,6 +35,7 @@ fun OrderCard(
     selectedCity: String? = null,
     modifier: Modifier = Modifier,
     onActionClick: (() -> Unit)? = null,
+    onEditClick: (() -> Unit)? = null,
     onStatusChange: ((String) -> Unit)? = null
 ) {
     val cardModifier = if (onActionClick != null) {
@@ -63,8 +64,26 @@ fun OrderCard(
                     fontSize = 16.sp,
                     color = Color(0xFF111827)
                 )
-                StatusBadge(status = status)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (onEditClick != null) {
+                        OutlinedButton(
+                            onClick = onEditClick,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDE2027)),
+                            border = BorderStroke(1.dp, Color(0xFFDE2027)),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            modifier = Modifier.height(28.dp)
+                        ) {
+                            Icon(Icons.Outlined.Edit, contentDescription = "Edit Order", modifier = Modifier.size(12.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Edit", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    StatusBadge(status = status)
+                }
             }
+
 
             Spacer(modifier = Modifier.height(12.dp))
 

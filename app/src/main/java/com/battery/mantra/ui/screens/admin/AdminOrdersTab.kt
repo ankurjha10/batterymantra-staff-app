@@ -32,17 +32,22 @@ fun AdminOrdersTab(
     ordersState: AdminDataState<List<OrderResponse>>,
     partnersState: AdminDataState<List<com.battery.mantra.data.models.PartnerResponse>>,
     engineersState: AdminDataState<List<com.battery.mantra.data.models.EngineerResponse>>,
+    productSearchResults: AdminDataState<List<com.battery.mantra.data.models.ProductResponse>> = AdminDataState.Idle,
     targetSearchQuery: String? = null,
     targetFilter: String? = null,
     onTargetConsumed: () -> Unit = {},
+    onSearchProducts: (String) -> Unit = {},
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit,
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit,
+    onUpdateOrder: (String, com.battery.mantra.data.models.AdminUpdateOrderRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onUpdateStatus: (String, String) -> Unit = { _, _ -> }
 ) {
     var selectedFilter by remember { mutableStateOf("All Orders") }
     var searchQuery by remember { mutableStateOf("") }
     var selectedOrderForDetails by remember { mutableStateOf<OrderResponse?>(null) }
     var selectedOrderIdToAssign by remember { mutableStateOf<String?>(null) }
+    var selectedOrderForEdit by remember { mutableStateOf<OrderResponse?>(null) }
+
     
     // Consume deep link arguments
     LaunchedEffect(targetSearchQuery, targetFilter, ordersState) {
@@ -288,7 +293,10 @@ fun AdminOrdersTab(
                     partnerName = order.assignedPartner?.businessName ?: order.assignedPartner?.contactPerson,
                     engineerName = order.assignedEngineer?.let { "${it.firstName ?: ""} ${it.lastName ?: ""}".trim() }?.takeIf { it.isNotEmpty() },
                     selectedCity = order.selectedCity,
-                    onActionClick = { selectedOrderForDetails = order }
+                    onActionClick = { selectedOrderForDetails = order },
+                    onEditClick = if (order.orderStatus !in listOf("DELIVERED", "COMPLETED", "CANCELLED", "INSTALLED")) {
+                        { selectedOrderForEdit = order }
+                    } else null
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -304,6 +312,10 @@ fun AdminOrdersTab(
             onDismiss = { selectedOrderForDetails = null },
             onAssignEngineer = { orderId ->
                 selectedOrderIdToAssign = orderId
+            },
+            onEditOrder = { order ->
+                selectedOrderForDetails = null
+                selectedOrderForEdit = order
             },
             onUpdateStatus = onUpdateStatus
         )
@@ -322,4 +334,15 @@ fun AdminOrdersTab(
             )
         }
     }
+
+    if (selectedOrderForEdit != null) {
+        EditOrderBottomSheet(
+            order = selectedOrderForEdit!!,
+            productSearchResults = productSearchResults,
+            onSearchProducts = onSearchProducts,
+            onDismiss = { selectedOrderForEdit = null },
+            onUpdateOrder = onUpdateOrder
+        )
+    }
 }
+

@@ -729,6 +729,23 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
+    suspend fun updateCustomer(
+        userId: String,
+        request: com.battery.mantra.data.models.AdminUpdateCustomerRequest
+    ): Result<com.battery.mantra.data.models.UserResponse> {
+        return try {
+            val response = api.updateCustomer(userId, request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to update customer: ${response.code()} $err".trim()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun createAdminOrder(request: com.battery.mantra.data.models.AdminCreateOrderRequest): Result<com.battery.mantra.data.models.OrderResponse> {
         return try {
             val response = api.createAdminOrder(request)
@@ -741,5 +758,23 @@ class AdminRepository(private val api: BatteryMantraApi) {
             Result.failure(e)
         }
     }
+
+    suspend fun updateOrder(
+        orderId: String,
+        request: com.battery.mantra.data.models.AdminUpdateOrderRequest
+    ): Result<com.battery.mantra.data.models.OrderResponse> {
+        return try {
+            val response = api.updateOrder(orderId, request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val err = response.errorBody()?.string() ?: ""
+                Result.failure(Exception("Failed to update order: ${response.code()} $err".trim()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
+
 

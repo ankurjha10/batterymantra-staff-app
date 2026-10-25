@@ -47,7 +47,12 @@ data class UserResponse(
     @SerializedName("isActive") val isActive: Boolean? = true,
     @SerializedName("createdAt") val createdAt: String? = null,
     @SerializedName("totalJobsCompleted") val totalJobsCompleted: Int? = null,
-    @SerializedName("assignedPartnerName") val assignedPartnerName: String? = null
+    @SerializedName("assignedPartnerName") val assignedPartnerName: String? = null,
+    @SerializedName("addressLine1") val addressLine1: String? = null,
+    @SerializedName("addressLine2") val addressLine2: String? = null,
+    @SerializedName("city") val city: String? = null,
+    @SerializedName("state") val state: String? = null,
+    @SerializedName("pincode") val pincode: String? = null
 )
 
 data class CityResponse(
@@ -77,6 +82,17 @@ data class AdminCreateCustomerRequest(
     val pincode: String
 )
 
+data class AdminUpdateCustomerRequest(
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("phone") val phone: String? = null,
+    @SerializedName("email") val email: String? = null,
+    @SerializedName("addressLine1") val addressLine1: String? = null,
+    @SerializedName("addressLine2") val addressLine2: String? = null,
+    @SerializedName("city") val city: String? = null,
+    @SerializedName("state") val state: String? = null,
+    @SerializedName("pincode") val pincode: String? = null
+)
+
 data class AdminCreateOrderRequest(
     val customerId: String,
     val items: List<AdminOrderItemRequest>,
@@ -87,9 +103,27 @@ data class AdminCreateOrderRequest(
 )
 
 data class AdminOrderItemRequest(
-    val productId: String,
-    val quantity: Int = 1,
-    val exchangeOldBattery: Boolean = false
+    @SerializedName("productId") val productId: String,
+    @SerializedName("quantity") val quantity: Int = 1,
+    @SerializedName("exchangeOldBattery") val exchangeOldBattery: Boolean = false
+)
+
+data class AdminUpdateOrderRequest(
+    @SerializedName("recipientName") val recipientName: String? = null,
+    @SerializedName("recipientPhone") val recipientPhone: String? = null,
+    @SerializedName("addressLine1") val addressLine1: String? = null,
+    @SerializedName("addressLine2") val addressLine2: String? = null,
+    @SerializedName("city") val city: String? = null,
+    @SerializedName("state") val state: String? = null,
+    @SerializedName("pincode") val pincode: String? = null,
+    @SerializedName("items") val items: List<AdminOrderItemRequest>? = null,
+    @SerializedName("manualDiscount") val manualDiscount: Double? = null,
+    @SerializedName("totalAmount") val totalAmount: Double? = null,
+    @SerializedName("deliveryMethod") val deliveryMethod: String? = null,
+    @SerializedName("installationDate") val installationDate: String? = null,
+    @SerializedName("paymentMethod") val paymentMethod: String? = null,
+    @SerializedName("paymentStatus") val paymentStatus: String? = null,
+    @SerializedName("engineerNotes") val engineerNotes: String? = null
 )
 
 data class AdminCreateSubAdminRequest(
@@ -106,3 +140,4 @@ data class AdminUpdateSubAdminRequest(
     val phone: String,
     val permissions: List<String> = emptyList()
 )
+

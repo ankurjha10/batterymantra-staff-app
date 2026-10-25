@@ -148,6 +148,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val pendingCallbacksCount by adminViewModel.pendingCallbacksCount.collectAsState()
             val pendingEnquiriesCount by adminViewModel.pendingEnquiriesCount.collectAsState()
             val pendingLeavesCount by adminViewModel.pendingLeavesCount.collectAsState()
+            val productSearchResults by adminViewModel.productSearchResults.collectAsState()
             val context = androidx.compose.ui.platform.LocalContext.current
             val userPermissions by appContainer.tokenManager.userPermissions.collectAsState(initial = emptySet())
 
@@ -159,6 +160,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 engineersState = engineersState,
                 usersState = usersState,
                 citiesState = citiesState,
+                productSearchResults = productSearchResults,
                 selectedTabIndex = selectedTabIndex,
                 targetSearchQuery = targetSearchQuery,
                 targetFilter = targetFilter,
@@ -169,6 +171,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 isRefreshing = isRefreshing,
                 onRefresh = { adminViewModel.refreshAllData() },
                 onTargetConsumed = { adminViewModel.clearTargetOrderState() },
+                onSearchProducts = { adminViewModel.searchProducts(it) },
                 onTabSelected = { adminViewModel.onTabSelected(it) },
                 onNavigateToUsers = { /* Optional */ },
                 onNavigateToProducts = { navController.navigate("admin_products") },
@@ -183,6 +186,12 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 },
                 onAssignEngineer = { orderId, engineerId, onSuccess, onError ->
                     adminViewModel.assignEngineer(orderId, engineerId, onSuccess, onError)
+                },
+                onUpdateOrder = { orderId, request, onSuccess, onError ->
+                    adminViewModel.updateOrder(orderId, request, onSuccess, onError)
+                },
+                onUpdateCustomer = { userId, request, onSuccess, onError ->
+                    adminViewModel.updateCustomer(userId, request, onSuccess, onError)
                 },
                 onUpdateStatus = { orderId, status ->
                     adminViewModel.updateOrderStatus(
@@ -211,6 +220,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                     adminViewModel.toggleEngineerStatus(engineer, isActive, onSuccess, onError)
                 },
                 onCreateOrderClick = { navController.navigate(Screen.AdminCreateOrder.route) },
+
                 onLogout = {
                     scope.launch {
                         appContainer.tokenManager.clearTokens()

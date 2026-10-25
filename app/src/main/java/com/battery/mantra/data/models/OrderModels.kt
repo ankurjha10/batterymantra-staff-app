@@ -22,8 +22,15 @@ data class OrderResponse(
     @SerializedName("assignedEngineer") val assignedEngineer: EngineerResponse?,
     @SerializedName("latitude") val latitude: Double?,
     @SerializedName("longitude") val longitude: Double?,
-    @SerializedName("selectedCity") val selectedCity: String? = null
+    @SerializedName("selectedCity") val selectedCity: String? = null,
+    @SerializedName("addressLine1") val addressLine1: String? = null,
+    @SerializedName("addressLine2") val addressLine2: String? = null,
+    @SerializedName("city") val city: String? = null,
+    @SerializedName("state") val state: String? = null,
+    @SerializedName("postalCode") val postalCode: String? = null,
+    @SerializedName("paymentMode") val paymentMode: String? = null
 )
+
 
 data class OrderItemResponse(
     @SerializedName("productId") val productId: String,

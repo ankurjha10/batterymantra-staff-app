@@ -64,22 +64,17 @@ fun parseOrderShippingAddress(rawAddress: String?, selectedCity: String?): Parse
     }
 
     val addr = rawAddress.trim()
-    val parts = addr.split(",").map { it.trim() }
+    val parts = addr.split(",").map { it.trim() }.filter { !it.equals("india", ignoreCase = true) && it.isNotEmpty() }
     val pinMatch = Regex("\\b\\d{6}\\b").find(addr)?.value ?: ""
     val city = selectedCity?.takeIf { it.isNotBlank() }
         ?: if (parts.size >= 2) parts[parts.size - 2] else ""
-    val state = if (parts.size >= 3) {
-        parts[parts.size - 1].replace(Regex("\\b\\d{6}\\b"), "").trim()
-    } else ""
-    val addressLine1 = if (parts.isNotEmpty()) parts[0] else ""
-    val endIdx = maxOf(1, parts.size - 2)
-    val addressLine2 = if (parts.size > 1 && endIdx > 1) {
-        parts.subList(1, endIdx).joinToString(", ")
-    } else ""
+    val state = if (parts.isNotEmpty()) parts.last().replace(Regex("\\b\\d{6}\\b"), "").trim() else ""
+    val line1 = if (parts.isNotEmpty()) parts.first() else ""
+    val line2 = if (parts.size > 2) parts.subList(1, parts.size - 2).joinToString(", ") else ""
 
     return ParsedAddress(
-        addressLine1 = addressLine1,
-        addressLine2 = addressLine2,
+        addressLine1 = line1,
+        addressLine2 = line2,
         city = city,
         state = state,
         pincode = pinMatch
@@ -102,9 +97,27 @@ fun EditOrderBottomSheet(
     // Active Tab: 0 = Customer & Address, 1 = Items, 2 = Billing & Notes
     var selectedTab by remember { mutableIntStateOf(0) }
 
-    // Parse structured address exactly like the website dashboard
-    val initialAddress = remember(order.shippingAddress, order.selectedCity) {
-        parseOrderShippingAddress(order.shippingAddress, order.selectedCity)
+    // Use direct structured address fields from OrderResponse if available, otherwise fallback string parsing
+    val initialAddress = remember(order) {
+        if (!order.addressLine1.isNullOrBlank() || !order.city.isNullOrBlank()) {
+            ParsedAddress(
+                addressLine1 = order.addressLine1 ?: "",
+                addressLine2 = order.addressLine2 ?: "",
+                city = order.city ?: order.selectedCity ?: "",
+                state = order.state ?: "",
+                pincode = order.postalCode ?: ""
+            )
+        } else {
+            // Fallback string parsing: filter out "india" to avoid corrupting state
+            val raw = order.shippingAddress ?: ""
+            val parts = raw.split(",").map { it.trim() }.filter { !it.equals("india", ignoreCase = true) }
+            val pinMatch = Regex("\\b\\d{6}\\b").find(raw)?.value ?: ""
+            val city = order.selectedCity?.takeIf { it.isNotBlank() } ?: if (parts.size >= 2) parts[parts.size - 2] else ""
+            val state = if (parts.isNotEmpty()) parts.last().replace(Regex("\\b\\d{6}\\b"), "").trim() else ""
+            val line1 = if (parts.isNotEmpty()) parts.first() else ""
+            val line2 = if (parts.size > 2) parts.subList(1, parts.size - 2).joinToString(", ") else ""
+            ParsedAddress(line1, line2, city, state, pinMatch)
+        }
     }
 
     // Recipient & Address States
@@ -122,6 +135,7 @@ fun EditOrderBottomSheet(
     var installationDate by remember { mutableStateOf(order.installationDate ?: "") }
     var paymentMethod by remember { mutableStateOf(order.paymentMethod ?: "COD") }
     var paymentStatus by remember { mutableStateOf(order.paymentStatus ?: "PENDING") }
+    var paymentMode by remember { mutableStateOf(order.paymentMode ?: "UPI") }
     var manualDiscountText by remember {
         mutableStateOf(order.exchangeDiscount?.let { if (it > 0) it.toString() else "" } ?: "")
     }
@@ -640,7 +654,7 @@ fun EditOrderBottomSheet(
 
                             Text("Payment Method", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary)
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("COD", "ONLINE", "UPI").forEach { method ->
+                                listOf("COD", "ONLINE").forEach { method ->
                                     val isSelected = paymentMethod == method
                                     Surface(
                                         onClick = { paymentMethod = method },
@@ -649,11 +663,63 @@ fun EditOrderBottomSheet(
                                         border = BorderStroke(1.dp, if (isSelected) BrandRed else BorderColor),
                                         modifier = Modifier.weight(1f)
                                     ) {
+                                        Row(
+                                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            RadioButton(
+                                                selected = isSelected,
+                                                onClick = { paymentMethod = method },
+                                                colors = RadioButtonDefaults.colors(selectedColor = BrandRed),
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = method,
+                                                fontSize = 12.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (isSelected) BrandRed else TextSecondary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Text("Payment Status", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary)
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                listOf("PENDING", "PAID", "FAILED", "REFUNDED").forEach { status ->
+                                    val isSelected = paymentStatus == status
+                                    val chipBg = when {
+                                        isSelected && status == "PAID" -> Color(0xFFD1FAE5)
+                                        isSelected && status == "PENDING" -> Color(0xFFFEF3C7)
+                                        isSelected -> Color(0xFFFEE2E2)
+                                        else -> Color(0xFFF9FAFB)
+                                    }
+                                    val chipBorder = when {
+                                        isSelected && status == "PAID" -> Color(0xFF10B981)
+                                        isSelected && status == "PENDING" -> Color(0xFFF59E0B)
+                                        isSelected -> Color(0xFFEF4444)
+                                        else -> BorderColor
+                                    }
+                                    val chipText = when {
+                                        isSelected && status == "PAID" -> Color(0xFF047857)
+                                        isSelected && status == "PENDING" -> Color(0xFFB45309)
+                                        isSelected -> Color(0xFFDC2626)
+                                        else -> TextSecondary
+                                    }
+                                    Surface(
+                                        onClick = { paymentStatus = status },
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = chipBg,
+                                        border = BorderStroke(1.dp, chipBorder),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
                                         Text(
-                                            text = method,
-                                            fontSize = 12.sp,
+                                            text = status,
+                                            fontSize = 11.sp,
                                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isSelected) BrandRed else TextSecondary,
+                                            color = chipText,
                                             modifier = Modifier.padding(vertical = 10.dp),
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                         )
@@ -661,25 +727,30 @@ fun EditOrderBottomSheet(
                                 }
                             }
 
-                            Text("Payment Status", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary)
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("PENDING", "PAID", "FAILED").forEach { status ->
-                                    val isSelected = paymentStatus == status
-                                    Surface(
-                                        onClick = { paymentStatus = status },
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = if (isSelected) Color(0xFFD1FAE5) else Color(0xFFF9FAFB),
-                                        border = BorderStroke(1.dp, if (isSelected) Color(0xFF10B981) else BorderColor),
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text(
-                                            text = status,
-                                            fontSize = 12.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isSelected) Color(0xFF047857) else TextSecondary,
-                                            modifier = Modifier.padding(vertical = 10.dp),
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                        )
+                            if (paymentMethod == "ONLINE") {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("Payment Mode", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextSecondary)
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        listOf("UPI", "CARD", "NET_BANKING", "WALLET", "CASH").forEach { mode ->
+                                            val isSelected = paymentMode == mode
+                                            Surface(
+                                                onClick = { paymentMode = mode },
+                                                shape = RoundedCornerShape(8.dp),
+                                                color = if (isSelected) BrandRedLight else Color(0xFFF9FAFB),
+                                                border = BorderStroke(1.dp, if (isSelected) BrandRed else BorderColor),
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Text(
+                                                    text = mode.replace("_", " "),
+                                                    fontSize = 10.sp,
+                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isSelected) BrandRed else TextSecondary,
+                                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 2.dp),
+                                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                                    maxLines = 1
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -783,6 +854,7 @@ fun EditOrderBottomSheet(
                             installationDate = installationDate.trim().ifBlank { null },
                             paymentMethod = paymentMethod,
                             paymentStatus = paymentStatus,
+                            paymentMode = if (paymentMethod == "ONLINE") paymentMode else null,
                             engineerNotes = engineerNotes.trim().ifBlank { null }
                         )
 

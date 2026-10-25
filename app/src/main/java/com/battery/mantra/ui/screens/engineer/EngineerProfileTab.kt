@@ -35,7 +35,6 @@ import java.time.ZonedDateTime
 fun EngineerProfileTab(
     profile: UserResponse?,
     historyJobs: List<OrderResponse>,
-    onChangePasswordClick: () -> Unit,
     onChangeLanguageClick: () -> Unit
 ) {
     if (profile == null) {
@@ -166,8 +165,6 @@ fun EngineerProfileTab(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.settings), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.padding(bottom = 8.dp, start = 8.dp))
                 
-                SettingsRow(icon = Icons.Default.Lock, title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.change_password), onClick = onChangePasswordClick)
-                HorizontalDivider(color = Color(0xFFF1F5F9))
                 SettingsRow(icon = Icons.Default.Language, title = androidx.compose.ui.res.stringResource(com.battery.mantra.R.string.app_language), onClick = onChangeLanguageClick)
             }
         }

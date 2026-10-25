@@ -107,6 +107,13 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onPasswordChange = { authViewModel.updatePassword(it) },
                 onTogglePasswordVisibility = { authViewModel.togglePasswordVisibility() },
                 onLoginClick = { authViewModel.login(loginUiState.identifier, loginUiState.password) },
+                onPhoneNumberChange = { authViewModel.updatePhoneNumber(it) },
+                onOtpChange = { authViewModel.updateOtp(it) },
+                onSendOtpClick = { authViewModel.sendEngineerOtp() },
+                onResendOtpClick = { authViewModel.resendEngineerOtp() },
+                onVerifyOtpClick = { authViewModel.verifyEngineerOtp() },
+                onResetOtpState = { authViewModel.resetOtpState() },
+                onLoginModeChange = { authViewModel.setLoginMode(it) },
                 onLoginSuccess = { role ->
                     val route = when (role.uppercase()) {
                         "ADMIN", "SUB_ADMIN", "SUBADMIN" -> Screen.AdminDashboard.route

@@ -20,3 +20,12 @@ data class PasswordChangeRequest(
     @SerializedName("currentPassword") val currentPassword: String,
     @SerializedName("newPassword") val newPassword: String
 )
+
+data class SendOtpRequest(
+    @SerializedName("phoneNumber") val phoneNumber: String
+)
+
+data class VerifyOtpRequest(
+    @SerializedName("phoneNumber") val phoneNumber: String,
+    @SerializedName("otp") val otp: String
+)

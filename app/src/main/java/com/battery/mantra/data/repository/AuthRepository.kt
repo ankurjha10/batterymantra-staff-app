@@ -24,6 +24,46 @@ class AuthRepository(
         }
     }
 
+    suspend fun sendEngineerOtp(phoneNumber: String): Result<Unit> {
+        return try {
+            val response = api.sendEngineerOtp(com.battery.mantra.data.models.SendOtpRequest(phoneNumber))
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                val rawError = response.errorBody()?.string() ?: ""
+                val errorMsg = try {
+                    org.json.JSONObject(rawError).optString("message", rawError)
+                } catch (e: Exception) {
+                    rawError
+                }
+                Result.failure(Exception(if (errorMsg.isNotBlank()) errorMsg else "Failed to send OTP"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun verifyEngineerOtp(phoneNumber: String, otp: String): Result<LoginResponse> {
+        return try {
+            val response = api.verifyEngineerOtp(com.battery.mantra.data.models.VerifyOtpRequest(phoneNumber, otp))
+            if (response.isSuccessful && response.body() != null) {
+                val loginResponse = response.body()!!
+                tokenManager.saveTokens(loginResponse.token, loginResponse.refreshToken, loginResponse.role, loginResponse.permissions)
+                Result.success(loginResponse)
+            } else {
+                val rawError = response.errorBody()?.string() ?: ""
+                val errorMsg = try {
+                    org.json.JSONObject(rawError).optString("message", rawError)
+                } catch (e: Exception) {
+                    rawError
+                }
+                Result.failure(Exception(if (errorMsg.isNotBlank()) errorMsg else "Invalid OTP"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun changePassword(request: com.battery.mantra.data.models.PasswordChangeRequest): Result<Unit> {
         return try {
             val response = api.changePassword(request)

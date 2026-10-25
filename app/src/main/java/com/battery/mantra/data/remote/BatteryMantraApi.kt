@@ -26,6 +26,12 @@ interface BatteryMantraApi {
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
+    @POST("api/auth/engineer/send-otp")
+    suspend fun sendEngineerOtp(@Body request: com.battery.mantra.data.models.SendOtpRequest): Response<okhttp3.ResponseBody>
+
+    @POST("api/auth/engineer/verify-otp")
+    suspend fun verifyEngineerOtp(@Body request: com.battery.mantra.data.models.VerifyOtpRequest): Response<LoginResponse>
+
     @PUT("api/user/password")
     suspend fun changePassword(@Body request: com.battery.mantra.data.models.PasswordChangeRequest): Response<Unit>
 

@@ -123,8 +123,10 @@ data class AdminUpdateOrderRequest(
     @SerializedName("installationDate") val installationDate: String? = null,
     @SerializedName("paymentMethod") val paymentMethod: String? = null,
     @SerializedName("paymentStatus") val paymentStatus: String? = null,
-    @SerializedName("engineerNotes") val engineerNotes: String? = null
+    @SerializedName("engineerNotes") val engineerNotes: String? = null,
+    @SerializedName("selectedCity") val selectedCity: String? = null
 )
+
 
 data class AdminCreateSubAdminRequest(
     val name: String,

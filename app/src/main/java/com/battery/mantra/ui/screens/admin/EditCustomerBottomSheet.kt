@@ -34,17 +34,32 @@ fun EditCustomerBottomSheet(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    val initialCustomerAddress = remember(customer.addressLine1, customer.addressLine2, customer.city, customer.state, customer.pincode) {
+        if (!customer.addressLine1.isNullOrBlank() && customer.addressLine1.contains(",") && (customer.city.isNullOrBlank() || customer.pincode.isNullOrBlank())) {
+            parseOrderShippingAddress(customer.addressLine1, customer.city)
+        } else {
+            ParsedAddress(
+                addressLine1 = customer.addressLine1 ?: "",
+                addressLine2 = customer.addressLine2 ?: "",
+                city = customer.city ?: "",
+                state = customer.state ?: "",
+                pincode = customer.pincode ?: ""
+            )
+        }
+    }
+
     var name by remember { mutableStateOf(customer.name ?: "") }
     var phone by remember { mutableStateOf(customer.phone ?: "") }
     var email by remember { mutableStateOf(customer.email ?: "") }
-    var addressLine1 by remember { mutableStateOf(customer.addressLine1 ?: "") }
-    var addressLine2 by remember { mutableStateOf(customer.addressLine2 ?: "") }
-    var city by remember { mutableStateOf(customer.city ?: "") }
-    var state by remember { mutableStateOf(customer.state ?: "") }
-    var pincode by remember { mutableStateOf(customer.pincode ?: "") }
+    var addressLine1 by remember { mutableStateOf(initialCustomerAddress.addressLine1) }
+    var addressLine2 by remember { mutableStateOf(initialCustomerAddress.addressLine2) }
+    var city by remember { mutableStateOf(initialCustomerAddress.city) }
+    var state by remember { mutableStateOf(initialCustomerAddress.state) }
+    var pincode by remember { mutableStateOf(initialCustomerAddress.pincode) }
     var isLoading by remember { mutableStateOf(false) }
 
     val isFormValid = name.isNotBlank() && phone.isNotBlank()
+
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

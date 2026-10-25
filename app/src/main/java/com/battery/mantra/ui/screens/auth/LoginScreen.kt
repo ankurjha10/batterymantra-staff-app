@@ -1,27 +1,21 @@
 package com.battery.mantra.ui.screens.auth
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Login
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
@@ -33,6 +27,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -41,8 +36,13 @@ import com.battery.mantra.R
 import kotlinx.coroutines.launch
 
 /**
- * Custom Organic Wave Shape for the Top Header.
- * Recreates the fluid organic wave from the reimagined design.
+ * Mathematically precise organic wave shape directly matching the reference screenshot.
+ *
+ * Characteristics:
+ * - Left edge starts midway (~62% height)
+ * - Curves down into a deep, round trough directly under the word "Sign" (~33% width, 96% height)
+ * - Rises smoothly across the center to a shoulder (~70% width, 74% height)
+ * - Swoops steeply upwards on the far right to ~38% height
  */
 class OrganicWaveHeaderShape : Shape {
     override fun createOutline(
@@ -53,48 +53,30 @@ class OrganicWaveHeaderShape : Shape {
         val path = Path().apply {
             moveTo(0f, 0f)
             lineTo(size.width, 0f)
-            lineTo(size.width, size.height * 0.42f)
-            // Swoop down towards right-center
+            // Right edge: high cut at 38%
+            lineTo(size.width, size.height * 0.38f)
+
+            // Segment 1: Right edge (1.0, 0.38) down to shoulder (0.70, 0.74)
             cubicTo(
-                size.width * 0.90f, size.height * 0.80f,
-                size.width * 0.65f, size.height * 0.72f,
-                size.width * 0.48f, size.height * 0.92f
+                size.width * 0.94f, size.height * 0.54f,
+                size.width * 0.84f, size.height * 0.70f,
+                size.width * 0.70f, size.height * 0.74f
             )
-            // Smooth dip lobe on left-center rising towards top-left
+
+            // Segment 2: Shoulder (0.70, 0.74) down to deep trough under "Sign" (0.33, 0.96)
             cubicTo(
-                size.width * 0.32f, size.height * 1.05f,
-                size.width * 0.12f, size.height * 0.82f,
+                size.width * 0.56f, size.height * 0.78f,
+                size.width * 0.44f, size.height * 0.96f,
+                size.width * 0.33f, size.height * 0.96f
+            )
+
+            // Segment 3: Trough (0.33, 0.96) up to left edge (0.0, 0.62)
+            cubicTo(
+                size.width * 0.20f, size.height * 0.96f,
+                size.width * 0.10f, size.height * 0.74f,
                 0f, size.height * 0.62f
             )
-            close()
-        }
-        return Outline.Generic(path)
-    }
-}
 
-/**
- * Secondary subtle wave shape behind the main wave to add depth and elevation
- */
-class OrganicWaveAccentShape : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val path = Path().apply {
-            moveTo(0f, 0f)
-            lineTo(size.width, 0f)
-            lineTo(size.width, size.height * 0.46f)
-            cubicTo(
-                size.width * 0.92f, size.height * 0.84f,
-                size.width * 0.67f, size.height * 0.76f,
-                size.width * 0.48f, size.height * 0.96f
-            )
-            cubicTo(
-                size.width * 0.32f, size.height * 1.09f,
-                size.width * 0.12f, size.height * 0.86f,
-                0f, size.height * 0.66f
-            )
             close()
         }
         return Outline.Generic(path)
@@ -138,7 +120,7 @@ fun LoginScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.Transparent
     ) { innerPadding ->
-        // Rich Red Gradient Background (Replacing the Black in the reference)
+        // Rich Battery Mantra Red Gradient Background
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -148,13 +130,12 @@ fun LoginScreen(
                             Color(0xFFE53935), // Vibrant Red
                             Color(0xFFD32F2F), // Brand Red
                             Color(0xFFB71C1C), // Deep Crimson
-                            Color(0xFF7F1D1D)  // Rich Dark Burgundy
+                            Color(0xFF7F1D1D)  // Dark Burgundy
                         )
                     )
                 )
                 .padding(innerPadding)
         ) {
-            // Scrollable Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -162,134 +143,99 @@ fun LoginScreen(
                     .imePadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Top Organic White Wave Section
+                // Precise Organic White Wave Header
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(310.dp)
+                        .height(280.dp)
+                        .clip(OrganicWaveHeaderShape())
+                        .background(Color.White)
                 ) {
-                    // Accent wave shadow layer for depth
-                    Box(
+                    Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(OrganicWaveAccentShape())
-                            .background(Color.White.copy(alpha = 0.22f))
-                    )
-
-                    // Main crisp white wave
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(OrganicWaveHeaderShape())
-                            .background(Color.White)
                             .statusBarsPadding()
-                            .padding(horizontal = 24.dp, vertical = 20.dp)
+                            .padding(horizontal = 24.dp, vertical = 16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
+                        // Top Row: Logo on Left (Clean & without Sign Up button)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Top Row: Battery Mantra Logo (No Sign Up on right)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.logo),
-                                    contentDescription = "Battery Mantra",
-                                    modifier = Modifier
-                                        .height(38.dp)
-                                        .width(150.dp),
-                                    contentScale = ContentScale.Fit,
-                                    alignment = Alignment.CenterStart
-                                )
-
-                                Surface(
-                                    shape = CircleShape,
-                                    color = Color(0xFFD32F2F).copy(alpha = 0.10f)
-                                ) {
-                                    Text(
-                                        text = "PORTAL",
-                                        color = Color(0xFFD32F2F),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = 1.sp,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(28.dp))
-
-                            // Large Bold "Sign In" Headline (Matches reference)
-                            Text(
-                                text = "Sign In",
-                                fontSize = 42.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color(0xFF1E293B),
-                                letterSpacing = (-1.5).sp,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            )
-
-                            Text(
-                                text = "Internal Partner & Engineer Access",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF64748B),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            Image(
+                                painter = painterResource(id = R.drawable.logo),
+                                contentDescription = "Battery Mantra",
+                                modifier = Modifier
+                                    .height(34.dp)
+                                    .width(135.dp),
+                                contentScale = ContentScale.Fit,
+                                alignment = Alignment.CenterStart
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        // Big Bold "Sign In" Headline centered inside the white bulb
+                        Text(
+                            text = "Sign In",
+                            fontSize = 44.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1E293B),
+                            letterSpacing = (-1.5).sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Input Fields Section (Pill-shaped, sleek dark-crimson inputs matching reference layout)
+                // Centered Form Fields (Matching exact screenshot styling)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 28.dp)
+                        .padding(horizontal = 28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Label: Email / Phone
+                    // Centered Label: Email
                     Text(
-                        text = "Phone Number or Email",
-                        color = Color.White.copy(alpha = 0.90f),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                        text = "Email",
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    // Phone/Email Pill Input
+                    // Centered Email Pill Input
                     OutlinedTextField(
                         value = loginUiState.identifier,
                         onValueChange = onIdentifierChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .shadow(4.dp, CircleShape),
+                            .height(56.dp),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            fontSize = 15.sp,
+                            color = Color.White
+                        ),
                         placeholder = {
                             Text(
                                 text = "Enter phone or email",
-                                color = Color.White.copy(alpha = 0.45f),
-                                fontSize = 14.sp
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Person,
-                                contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.70f),
-                                modifier = Modifier.size(20.dp)
+                                color = Color.White.copy(alpha = 0.40f),
+                                fontSize = 15.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         },
                         shape = CircleShape,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color.Black.copy(alpha = 0.35f),
+                            focusedContainerColor = Color.Black.copy(alpha = 0.32f),
                             unfocusedContainerColor = Color.Black.copy(alpha = 0.28f),
-                            focusedBorderColor = Color.White.copy(alpha = 0.85f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.20f),
+                            focusedBorderColor = Color.White.copy(alpha = 0.80f),
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
                             cursorColor = Color.White
                         ),
                         singleLine = true,
@@ -301,36 +247,35 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Label: Password
+                    // Centered Label: Password
                     Text(
                         text = "Password",
-                        color = Color.White.copy(alpha = 0.90f),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    // Password Pill Input
+                    // Centered Password Pill Input
                     OutlinedTextField(
                         value = loginUiState.password,
                         onValueChange = onPasswordChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .shadow(4.dp, CircleShape),
+                            .height(56.dp),
+                        textStyle = LocalTextStyle.current.copy(
+                            textAlign = TextAlign.Center,
+                            fontSize = 15.sp,
+                            color = Color.White
+                        ),
                         placeholder = {
                             Text(
-                                text = "Enter your password",
-                                color = Color.White.copy(alpha = 0.45f),
-                                fontSize = 14.sp
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Lock,
-                                contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.70f),
-                                modifier = Modifier.size(20.dp)
+                                text = "••••••••••••",
+                                color = Color.White.copy(alpha = 0.40f),
+                                fontSize = 15.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         },
                         shape = CircleShape,
@@ -358,18 +303,18 @@ fun LoginScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
-                            focusedContainerColor = Color.Black.copy(alpha = 0.35f),
+                            focusedContainerColor = Color.Black.copy(alpha = 0.32f),
                             unfocusedContainerColor = Color.Black.copy(alpha = 0.28f),
-                            focusedBorderColor = Color.White.copy(alpha = 0.85f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.20f),
+                            focusedBorderColor = Color.White.copy(alpha = 0.80f),
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
                             cursorColor = Color.White
                         ),
                         singleLine = true
                     )
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
 
-                    // Sign In Pill Button (Clean, high-contrast, modern action button)
+                    // Centered Pill "Sign In" Button with Glowing Gradient Border (Matching Screenshot)
                     Button(
                         onClick = {
                             focusManager.clearFocus()
@@ -377,18 +322,27 @@ fun LoginScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .shadow(8.dp, CircleShape),
+                            .height(56.dp),
                         shape = CircleShape,
+                        border = BorderStroke(
+                            width = 1.5.dp,
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.9f),
+                                    Color(0xFFFFCDD2),
+                                    Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+                        ),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color(0xFFD32F2F)
+                            containerColor = Color.Black.copy(alpha = 0.32f),
+                            contentColor = Color.White
                         ),
                         enabled = authState !is AuthState.Loading
                     ) {
                         if (authState is AuthState.Loading) {
                             CircularProgressIndicator(
-                                color = Color(0xFFD32F2F),
+                                color = Color.White,
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.5.dp
                             )
@@ -400,34 +354,33 @@ fun LoginScreen(
                                 Icon(
                                     Icons.AutoMirrored.Outlined.Login,
                                     contentDescription = "Sign In",
-                                    tint = Color(0xFFD32F2F),
+                                    tint = Color.White,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "Sign In",
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFD32F2F)
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // Forgot Password / Support Footer
+                    // Centered "Forgot Password?" Link (No Social Logins)
                     TextButton(
                         onClick = {
                             scope.launch {
                                 snackbarHostState.showSnackbar("Please contact your Battery Mantra administrator to reset your password.")
                             }
-                        },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        }
                     ) {
                         Text(
                             text = stringResource(id = R.string.forgot_password),
-                            color = Color.White.copy(alpha = 0.85f),
+                            color = Color.White.copy(alpha = 0.80f),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )

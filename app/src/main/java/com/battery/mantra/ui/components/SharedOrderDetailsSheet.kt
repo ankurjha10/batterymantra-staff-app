@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package com.battery.mantra.ui.components
 
 import android.content.Intent
@@ -11,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -164,7 +167,7 @@ fun SharedOrderDetailsSheet(
                                         onClick = {
                                             statusExpanded = false
                                             if (newStatus != order.orderStatus) {
-                                                onUpdateStatus(order.orderId ?: "", newStatus)
+                                                onUpdateStatus(order.orderId, newStatus)
                                                 onDismiss()
                                             }
                                         },
@@ -414,7 +417,7 @@ fun SharedOrderDetailsSheet(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Outlined.Chat, contentDescription = "WhatsApp", modifier = Modifier.size(20.dp))
+                        Icon(Icons.AutoMirrored.Outlined.Chat, contentDescription = "WhatsApp", modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("WhatsApp", fontWeight = FontWeight.SemiBold)
                     }
@@ -449,7 +452,7 @@ fun SharedOrderDetailsSheet(
                         OutlinedButton(
                             onClick = {
                                 onDismiss()
-                                onAssignEngineer(order.orderId ?: "")
+                                onAssignEngineer(order.orderId)
                             },
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
                             border = BorderStroke(1.dp, Color(0xFFD32F2F)),
@@ -466,7 +469,7 @@ fun SharedOrderDetailsSheet(
                 Button(
                     onClick = { 
                         onDismiss()
-                        onAssignEngineer(order.orderId ?: "")
+                        onAssignEngineer(order.orderId)
                     },
                     modifier = Modifier
                         .fillMaxWidth()

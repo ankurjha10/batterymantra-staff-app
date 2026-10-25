@@ -1,8 +1,9 @@
+@file:Suppress("FunctionName")
+
 package com.battery.mantra.ui.screens.admin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +15,6 @@ import androidx.compose.material.icons.outlined.Engineering
 import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -89,16 +89,10 @@ fun AssignOrderSheet(
             }
 
             // Tabs - Admin can always toggle between Partners and Engineers
-            TabRow(
+            SecondaryTabRow(
                 selectedTabIndex = selectedTab,
                 containerColor = Color.Transparent,
-                contentColor = Color(0xFFD32F2F),
-                indicator = { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = Color(0xFFD32F2F)
-                    )
-                }
+                contentColor = Color(0xFFD32F2F)
             ) {
                 Tab(
                     selected = selectedTab == 0,
@@ -120,12 +114,12 @@ fun AssignOrderSheet(
                 .fillMaxHeight(0.6f)) {
                 when (selectedTab) {
                     0 -> {
-                        when (val state = partnersState) {
+                        when (partnersState) {
                             is AdminDataState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                             is AdminDataState.Error -> Text("Error loading partners", modifier = Modifier.align(Alignment.Center))
                             is AdminDataState.Success -> {
                                 LazyColumn(contentPadding = PaddingValues(horizontal = 24.dp)) {
-                                    items(state.data, key = { it.id }) { partner ->
+                                    items(partnersState.data, key = { it.id }) { partner ->
                                         val isCurrentlyAssigned = order.assignedPartner?.id == partner.id
                                         PartnerItem(
                                             name = partner.businessName ?: partner.contactPerson ?: "Unknown",
@@ -135,9 +129,8 @@ fun AssignOrderSheet(
                                                 onAssignPartner(
                                                     order.orderId,
                                                     partner.id,
-                                                    onDismiss,
-                                                    { /* Handle error */ }
-                                                )
+                                                    onDismiss
+                                                ) { /* Handle error */ }
                                             }
                                         )
                                     }
@@ -147,12 +140,12 @@ fun AssignOrderSheet(
                         }
                     }
                     1 -> {
-                        when (val state = engineersState) {
+                        when (engineersState) {
                             is AdminDataState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                             is AdminDataState.Error -> Text("Error loading engineers", modifier = Modifier.align(Alignment.Center))
                             is AdminDataState.Success -> {
                                 // ONLY SHOW DIRECT ADMIN ENGINEERS
-                                val directEngineers = state.data.filter { it.partnerId == null }
+                                val directEngineers = engineersState.data.filter { it.partnerId == null }
                                 if (directEngineers.isEmpty()) {
                                     Text("No direct admin engineers available", color = Color.Gray, modifier = Modifier.align(Alignment.Center))
                                 } else {
@@ -167,9 +160,8 @@ fun AssignOrderSheet(
                                                     onAssignEngineer(
                                                         order.orderId,
                                                         engineer.id,
-                                                        onDismiss,
-                                                        { /* Handle error */ }
-                                                    )
+                                                        onDismiss
+                                                    ) { /* Handle error */ }
                                                 }
                                             )
                                         }

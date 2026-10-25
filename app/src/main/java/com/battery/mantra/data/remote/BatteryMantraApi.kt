@@ -133,7 +133,8 @@ interface BatteryMantraApi {
         @Query("brandId") brandId: String?,
         @Query("keyword") keyword: String?,
         @Query("sortBy") sortBy: String? = "productName",
-        @Query("sortDir") sortDir: String? = "asc"
+        @Query("sortDir") sortDir: String? = "asc",
+        @Query("cityId") cityId: String? = null
     ): Response<PaginatedResponse<ProductResponse>>
 
     @GET("api/brands")

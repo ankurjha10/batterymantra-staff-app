@@ -13,6 +13,7 @@ data class OrderResponse(
     @SerializedName("paymentStatus") val paymentStatus: String?,
     @SerializedName("installationDate") val installationDate: String?,
     @SerializedName("exchangeDiscount") val exchangeDiscount: Double?,
+    @SerializedName("discountAmount") val discountAmount: Double? = null,
     @SerializedName("customerName") val customerName: String?,
     @SerializedName("customerEmail") val customerEmail: String?,
     @SerializedName("customerPhone") val customerPhone: String?,
@@ -37,5 +38,8 @@ data class OrderItemResponse(
     @SerializedName("productName") val productName: String?,
     @SerializedName("productImage") val productImage: String?,
     @SerializedName("quantity") val quantity: Int,
-    @SerializedName("exchangeOldBattery") val exchangeOldBattery: Boolean
+    @SerializedName("exchangeOldBattery") val exchangeOldBattery: Boolean,
+    @SerializedName("priceAtPurchase") val priceAtPurchase: Double? = null,
+    @SerializedName("exchangeDiscount") val exchangeDiscount: Double? = null,
+    @SerializedName("subtotal") val subtotal: Double? = null
 )

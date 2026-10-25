@@ -32,11 +32,12 @@ fun AdminOrdersTab(
     ordersState: AdminDataState<List<OrderResponse>>,
     partnersState: AdminDataState<List<com.battery.mantra.data.models.PartnerResponse>>,
     engineersState: AdminDataState<List<com.battery.mantra.data.models.EngineerResponse>>,
+    citiesState: AdminDataState<List<com.battery.mantra.data.models.CityResponse>> = AdminDataState.Idle,
     productSearchResults: AdminDataState<List<com.battery.mantra.data.models.ProductResponse>> = AdminDataState.Idle,
     targetSearchQuery: String? = null,
     targetFilter: String? = null,
     onTargetConsumed: () -> Unit = {},
-    onSearchProducts: (String) -> Unit = {},
+    onSearchProducts: (String, String?) -> Unit = { _, _ -> },
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit,
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit,
     onUpdateOrder: (String, com.battery.mantra.data.models.AdminUpdateOrderRequest, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
@@ -338,6 +339,7 @@ fun AdminOrdersTab(
     if (selectedOrderForEdit != null) {
         EditOrderBottomSheet(
             order = selectedOrderForEdit!!,
+            citiesState = citiesState,
             productSearchResults = productSearchResults,
             onSearchProducts = onSearchProducts,
             onDismiss = { selectedOrderForEdit = null },

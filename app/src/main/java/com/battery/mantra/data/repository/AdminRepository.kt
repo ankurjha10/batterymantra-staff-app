@@ -516,9 +516,9 @@ class AdminRepository(private val api: BatteryMantraApi) {
         }
     }
 
-    suspend fun getProducts(page: Int, size: Int, brandId: String?, keyword: String?): Result<PaginatedResponse<ProductResponse>> {
+    suspend fun getProducts(page: Int, size: Int, brandId: String?, keyword: String?, cityId: String? = null): Result<PaginatedResponse<ProductResponse>> {
         return try {
-            val response = api.getAdminProducts(page, size, brandId, keyword)
+            val response = api.getAdminProducts(page, size, brandId, keyword, cityId = cityId)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {

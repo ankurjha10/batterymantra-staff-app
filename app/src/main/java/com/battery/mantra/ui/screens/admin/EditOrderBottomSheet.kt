@@ -1,6 +1,7 @@
 package com.battery.mantra.ui.screens.admin
 
 import android.widget.Toast
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,8 +41,10 @@ data class EditableOrderItem(
     val productId: String,
     val productName: String,
     val productImage: String?,
-    var quantity: Int,
-    var exchangeOldBattery: Boolean
+    val unitPrice: Double = 0.0,
+    val exchangeDiscount: Double = 0.0,
+    val quantity: Int = 1,
+    val exchangeOldBattery: Boolean = false
 )
 
 data class ParsedAddress(
@@ -85,8 +88,9 @@ fun parseOrderShippingAddress(rawAddress: String?, selectedCity: String?): Parse
 @Composable
 fun EditOrderBottomSheet(
     order: OrderResponse,
+    citiesState: AdminDataState<List<CityResponse>> = AdminDataState.Idle,
     productSearchResults: AdminDataState<List<ProductResponse>>,
-    onSearchProducts: (String) -> Unit,
+    onSearchProducts: (String, String?) -> Unit,
     onDismiss: () -> Unit,
     onUpdateOrder: (String, AdminUpdateOrderRequest, () -> Unit, (String) -> Unit) -> Unit
 ) {
@@ -130,6 +134,26 @@ fun EditOrderBottomSheet(
     var pincode by remember { mutableStateOf(initialAddress.pincode) }
     var selectedBranchCity by remember { mutableStateOf(order.selectedCity ?: initialAddress.city) }
 
+    // Resolve public cities for city-wise pricing and exchange discounts
+    val publicCities = remember(citiesState) {
+        (citiesState as? AdminDataState.Success)?.data ?: emptyList()
+    }
+
+    val resolvedCityId = remember(publicCities, selectedBranchCity, city, order) {
+        val targetCity = (selectedBranchCity.ifBlank { city }.ifBlank { order.selectedCity ?: order.city ?: "" }).trim().lowercase()
+        if (targetCity.isBlank() || publicCities.isEmpty()) null
+        else {
+            publicCities.firstOrNull { c ->
+                val cName = c.cityName.trim().lowercase()
+                cName == targetCity || targetCity.contains(cName) || cName.contains(targetCity)
+            }?.cityId
+        }
+    }
+
+    val matchedCityName = remember(publicCities, resolvedCityId) {
+        publicCities.firstOrNull { it.cityId == resolvedCityId }?.cityName
+    }
+
     // Fulfillment & Payment States
     var deliveryMethod by remember { mutableStateOf(order.deliveryMethod ?: "HOME_INSTALLATION") }
     var installationDate by remember { mutableStateOf(order.installationDate ?: "") }
@@ -137,7 +161,7 @@ fun EditOrderBottomSheet(
     var paymentStatus by remember { mutableStateOf(order.paymentStatus ?: "PENDING") }
     var paymentMode by remember { mutableStateOf(order.paymentMode ?: "UPI") }
     var manualDiscountText by remember {
-        mutableStateOf(order.exchangeDiscount?.let { if (it > 0) it.toString() else "" } ?: "")
+        mutableStateOf(order.discountAmount?.let { if (it > 0) it.toString() else "" } ?: "")
     }
     var totalAmountText by remember {
         mutableStateOf(order.totalAmount?.let { it.toString() } ?: "")
@@ -148,11 +172,16 @@ fun EditOrderBottomSheet(
     val editableItems = remember {
         mutableStateListOf<EditableOrderItem>().apply {
             order.orderItems?.forEach { item ->
+                val unitPrice = item.priceAtPurchase
+                    ?: (if (item.quantity > 0 && item.subtotal != null) item.subtotal / item.quantity else 0.0)
+                val exDiscount = item.exchangeDiscount ?: 0.0
                 add(
                     EditableOrderItem(
                         productId = item.productId,
                         productName = item.productName ?: "Battery",
                         productImage = item.productImage,
+                        unitPrice = unitPrice,
+                        exchangeDiscount = exDiscount,
                         quantity = item.quantity.coerceAtLeast(1),
                         exchangeOldBattery = item.exchangeOldBattery
                     )
@@ -161,18 +190,41 @@ fun EditOrderBottomSheet(
         }
     }
 
+    // Dynamic Calculations
+    val calculatedSubtotal by remember {
+        derivedStateOf {
+            editableItems.sumOf { it.unitPrice * it.quantity }
+        }
+    }
+
+    val calculatedScrapDiscount by remember {
+        derivedStateOf {
+            editableItems
+                .filter { it.exchangeOldBattery }
+                .sumOf { it.exchangeDiscount * it.quantity }
+        }
+    }
+
+    val manualDiscountValue = manualDiscountText.toDoubleOrNull() ?: 0.0
+
+    val calculatedTotal by remember {
+        derivedStateOf {
+            maxOf(0.0, calculatedSubtotal - calculatedScrapDiscount - manualDiscountValue)
+        }
+    }
+
     // Product search state
     var productSearchQuery by remember { mutableStateOf("") }
     var showProductSearch by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
 
-    // Debounced product search
-    LaunchedEffect(productSearchQuery) {
+    // Debounced product search passing cityId for city-wise pricing
+    LaunchedEffect(productSearchQuery, resolvedCityId) {
         if (productSearchQuery.length >= 2) {
             delay(400)
-            onSearchProducts(productSearchQuery)
+            onSearchProducts(productSearchQuery, resolvedCityId)
         } else {
-            onSearchProducts("")
+            onSearchProducts("", resolvedCityId)
         }
     }
 
@@ -423,6 +475,14 @@ fun EditOrderBottomSheet(
                                                         maxLines = 2,
                                                         overflow = TextOverflow.Ellipsis
                                                     )
+                                                    if (item.unitPrice > 0) {
+                                                        Spacer(modifier = Modifier.height(2.dp))
+                                                        Text(
+                                                            text = "₹${item.unitPrice.toInt()} each" + if (item.exchangeOldBattery && item.exchangeDiscount > 0) " • Scrap Disc: -₹${(item.exchangeDiscount * item.quantity).toInt()}" else if (item.exchangeDiscount > 0) " • Scrap Value: ₹${item.exchangeDiscount.toInt()}" else "",
+                                                            fontSize = 11.sp,
+                                                            color = if (item.exchangeOldBattery && item.exchangeDiscount > 0) Color(0xFF059669) else TextSecondary
+                                                        )
+                                                    }
                                                 }
 
                                                 IconButton(
@@ -500,7 +560,11 @@ fun EditOrderBottomSheet(
                                                         modifier = Modifier.size(24.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text("Exchange Old Battery", fontSize = 12.sp, color = TextPrimary)
+                                                    Text(
+                                                        if (item.exchangeDiscount > 0) "Exchange Old Battery (-₹${item.exchangeDiscount.toInt()}/pc)" else "Exchange Old Battery",
+                                                        fontSize = 12.sp,
+                                                        color = TextPrimary
+                                                    )
                                                 }
                                             }
                                         }
@@ -527,17 +591,36 @@ fun EditOrderBottomSheet(
                                         .fillMaxWidth()
                                         .background(Color(0xFFF1F5F9), RoundedCornerShape(10.dp))
                                         .padding(12.dp)
+                                        .animateContentSize()
                                 ) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("Search Product Catalog", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text("Search Product Catalog", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                            if (matchedCityName != null) {
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Surface(
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    color = Color(0xFFEFF6FF),
+                                                    border = BorderStroke(1.dp, Color(0xFFBFDBFE))
+                                                ) {
+                                                    Text(
+                                                        text = "City: $matchedCityName",
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color(0xFF1D4ED8),
+                                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
                                         IconButton(onClick = {
                                             showProductSearch = false
                                             productSearchQuery = ""
-                                            onSearchProducts("")
+                                            onSearchProducts("", resolvedCityId)
                                         }, modifier = Modifier.size(24.dp)) {
                                             Icon(Icons.Outlined.Close, contentDescription = "Close search", tint = Color.Gray, modifier = Modifier.size(16.dp))
                                         }
@@ -585,7 +668,11 @@ fun EditOrderBottomSheet(
                                                             ) {
                                                                 Column(modifier = Modifier.weight(1f)) {
                                                                     Text(product.name, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                                                    Text("${product.brand} • ₹${product.price}", fontSize = 11.sp, color = TextSecondary)
+                                                                    Text(
+                                                                        "${product.brand} • ₹${product.price.toInt()}" + if ((product.exchangeDiscount ?: 0.0) > 0) " • Scrap: -₹${product.exchangeDiscount?.toInt()}" else "",
+                                                                        fontSize = 11.sp,
+                                                                        color = TextSecondary
+                                                                    )
                                                                 }
                                                                 Button(
                                                                     onClick = {
@@ -594,6 +681,8 @@ fun EditOrderBottomSheet(
                                                                                 productId = product.id.toString(),
                                                                                 productName = product.name,
                                                                                 productImage = product.imageUrl,
+                                                                                unitPrice = product.price,
+                                                                                exchangeDiscount = product.exchangeDiscount ?: 0.0,
                                                                                 quantity = 1,
                                                                                 exchangeOldBattery = false
                                                                             )
@@ -755,21 +844,62 @@ fun EditOrderBottomSheet(
                                 }
                             }
 
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                OrderFormField(
-                                    value = manualDiscountText,
-                                    onValueChange = { manualDiscountText = it },
-                                    label = "Manual Discount (₹)",
-                                    keyboardType = KeyboardType.Number,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                OrderFormField(
-                                    value = totalAmountText,
-                                    onValueChange = { totalAmountText = it },
-                                    label = "Total Amount (₹) *",
-                                    keyboardType = KeyboardType.Number,
-                                    modifier = Modifier.weight(1f)
-                                )
+                            OrderFormField(
+                                value = manualDiscountText,
+                                onValueChange = { manualDiscountText = it },
+                                label = "Manual Discount (₹)",
+                                keyboardType = KeyboardType.Number
+                            )
+
+                            // Dynamic Live Price Breakdown (Matching Website Modal)
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                                border = BorderStroke(1.dp, BorderColor)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text("Order Pricing Breakdown", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextPrimary)
+                                    HorizontalDivider(color = BorderColor.copy(alpha = 0.6f))
+
+                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Text("Items Subtotal (${editableItems.sumOf { it.quantity }} items):", fontSize = 12.sp, color = TextSecondary)
+                                        Text("₹${calculatedSubtotal.toInt()}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                                    }
+
+                                    if (calculatedScrapDiscount > 0) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Text("Total Scrap Exchange Discount:", fontSize = 12.sp, color = Color(0xFF059669))
+                                            Text("- ₹${calculatedScrapDiscount.toInt()}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF059669))
+                                        }
+                                    }
+
+                                    if (manualDiscountValue > 0) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Text("Manual Discount:", fontSize = 12.sp, color = BrandRed)
+                                            Text("- ₹${manualDiscountValue.toInt()}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BrandRed)
+                                        }
+                                    }
+
+                                    HorizontalDivider(color = BorderColor.copy(alpha = 0.8f))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("Final Calculated Total:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                                        Text(
+                                            "₹${calculatedTotal.toInt()}",
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = BrandRed
+                                        )
+                                    }
+                                }
                             }
 
                             OrderFormField(
@@ -832,6 +962,7 @@ fun EditOrderBottomSheet(
                         }
 
                         isSubmitting = true
+                        val finalTotal = if (calculatedTotal > 0.0 || editableItems.isNotEmpty()) calculatedTotal else (totalAmountText.toDoubleOrNull() ?: 0.0)
                         val request = AdminUpdateOrderRequest(
                             recipientName = recipientName.trim(),
                             recipientPhone = recipientPhone.trim(),
@@ -848,8 +979,8 @@ fun EditOrderBottomSheet(
                                     exchangeOldBattery = it.exchangeOldBattery
                                 )
                             },
-                            manualDiscount = manualDiscountText.toDoubleOrNull(),
-                            totalAmount = totalAmountText.toDoubleOrNull(),
+                            manualDiscount = manualDiscountValue,
+                            totalAmount = finalTotal,
                             deliveryMethod = deliveryMethod,
                             installationDate = installationDate.trim().ifBlank { null },
                             paymentMethod = paymentMethod,

@@ -75,14 +75,14 @@ class AdminViewModel(private val repository: AdminRepository, private val tokenM
     private val _productSearchResults = MutableStateFlow<AdminDataState<List<com.battery.mantra.data.models.ProductResponse>>>(AdminDataState.Idle)
     val productSearchResults: StateFlow<AdminDataState<List<com.battery.mantra.data.models.ProductResponse>>> = _productSearchResults.asStateFlow()
 
-    fun searchProducts(keyword: String) {
+    fun searchProducts(keyword: String, cityId: String? = null) {
         if (keyword.isBlank()) {
             _productSearchResults.value = AdminDataState.Idle
             return
         }
         viewModelScope.launch {
             _productSearchResults.value = AdminDataState.Loading
-            repository.getProducts(page = 0, size = 50, brandId = null, keyword = keyword)
+            repository.getProducts(page = 0, size = 50, brandId = null, keyword = keyword, cityId = cityId)
                 .onSuccess {
                     _productSearchResults.value = AdminDataState.Success(it.content)
                 }

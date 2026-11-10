@@ -1,6 +1,7 @@
 package com.battery.mantra.ui.screens.partner
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,14 +9,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
@@ -43,6 +50,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.battery.mantra.data.models.CreateEngineerRequest
 import com.battery.mantra.data.models.EngineerResponse
 import com.battery.mantra.ui.theme.BrandRed
+import java.util.UUID
 
 @Composable
 fun AddEngineerDialog(
@@ -58,7 +66,6 @@ fun AddEngineerDialog(
     var alternatePhone by remember { mutableStateOf(engineerToEdit?.alternatePhone ?: "") }
     var city by remember { mutableStateOf(engineerToEdit?.city ?: "") }
     var address by remember { mutableStateOf(engineerToEdit?.address ?: "") }
-    var password by remember { mutableStateOf("") }
     var isActive by remember {
         mutableStateOf(engineerToEdit?.let { it.isActive == true || it.active == true } ?: true)
     }
@@ -108,6 +115,33 @@ fun AddEngineerDialog(
                     }
                 }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF)),
+                    border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Outlined.Info,
+                            contentDescription = null,
+                            tint = Color(0xFF1D4ED8),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Engineer logs in via Phone Number + OTP. No password setup required.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF1E3A8A)
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedTextField(
@@ -131,10 +165,10 @@ fun AddEngineerDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email (Login Username) *") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Phone Number (OTP Login) *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = textFieldColors
@@ -142,10 +176,10 @@ fun AddEngineerDialog(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = { Text("Phone Number *") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = textFieldColors
@@ -181,18 +215,6 @@ fun AddEngineerDialog(
                     maxLines = 2,
                     colors = textFieldColors
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = {
-                        Text(if (isEditing) "New Password (optional)" else "Password *")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    colors = textFieldColors
-                )
 
                 if (isEditing) {
                     Spacer(modifier = Modifier.height(10.dp))
@@ -214,10 +236,6 @@ fun AddEngineerDialog(
                             Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-                        if (!isEditing && password.isBlank()) {
-                            Toast.makeText(context, "Password is required for new engineer", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
 
                         isSaving = true
                         val request = CreateEngineerRequest(
@@ -228,7 +246,9 @@ fun AddEngineerDialog(
                             alternatePhone = alternatePhone.trim().ifEmpty { null },
                             address = address.trim().ifEmpty { null },
                             city = city.trim().ifEmpty { null },
-                            password = password.trim().ifEmpty { null },
+                            // Backend EngineerService requires non-blank password on POST create;
+                            // engineers sign in via Phone OTP so we generate a random placeholder on create.
+                            password = if (isEditing) null else UUID.randomUUID().toString(),
                             isActive = isActive
                         )
                         onSave(

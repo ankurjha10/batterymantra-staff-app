@@ -35,15 +35,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -80,11 +74,9 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.battery.mantra.data.models.BrandResponse
-import com.battery.mantra.data.models.CategoryResponse
 import com.battery.mantra.data.models.CityPricingRequestDto
 import com.battery.mantra.data.models.CityPricingRequestResponse
 import com.battery.mantra.data.models.PartnerCityPricingUpdateDto
-import com.battery.mantra.data.models.PartnerCreateProductRequest
 import com.battery.mantra.data.models.PartnerInventoryItemResponse
 import com.battery.mantra.data.models.PartnerResponse
 import com.battery.mantra.ui.theme.BrandRed
@@ -96,13 +88,12 @@ fun PartnerProductsPricingTab(
     inventoryState: PartnerDataState<List<PartnerInventoryItemResponse>>,
     pendingRequestsState: PartnerDataState<List<CityPricingRequestResponse>>,
     brands: List<BrandResponse>,
-    categories: List<CategoryResponse>,
     onSelectCity: (String) -> Unit,
     onRetryInventory: () -> Unit,
     onRetryPendingRequests: () -> Unit,
     onSubmitPricingRequest: (productId: String, CityPricingRequestDto, () -> Unit, (String) -> Unit) -> Unit,
     onUpdateDirectPricing: (productId: String, PartnerCityPricingUpdateDto, () -> Unit, (String) -> Unit) -> Unit,
-    onRequestNewProduct: (PartnerCreateProductRequest, () -> Unit, (String) -> Unit) -> Unit
+    onNavigateToProposeProduct: () -> Unit
 ) {
     val context = LocalContext.current
     val cities = (profileState as? PartnerDataState.Success)?.data?.operatingCities.orEmpty()
@@ -112,7 +103,6 @@ fun PartnerProductsPricingTab(
     var searchQuery by remember { mutableStateOf("") }
     var selectedBrand by remember { mutableStateOf<String?>(null) }
     var selectedItemForPricing by remember { mutableStateOf<PartnerInventoryItemResponse?>(null) }
-    var showNewProductDialog by remember { mutableStateOf(false) }
 
     val items = (inventoryState as? PartnerDataState.Success)?.data.orEmpty()
     val brandNames = remember(items, brands) {
@@ -362,11 +352,11 @@ fun PartnerProductsPricingTab(
 
         if (subTabIndex == 0) {
             ExtendedFloatingActionButton(
-                onClick = { showNewProductDialog = true },
+                onClick = onNavigateToProposeProduct,
                 containerColor = BrandRed,
                 contentColor = Color.White,
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Request Product", fontWeight = FontWeight.Bold) },
+                text = { Text("Propose Product", fontWeight = FontWeight.Bold) },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
@@ -387,17 +377,6 @@ fun PartnerProductsPricingTab(
             },
             onDirectUpdate = { dto, onSuccess, onError ->
                 onUpdateDirectPricing(item.productId, dto, onSuccess, onError)
-            }
-        )
-    }
-
-    if (showNewProductDialog) {
-        RequestNewProductDialog(
-            brands = brands,
-            categories = categories,
-            onDismiss = { showNewProductDialog = false },
-            onSubmit = { request, onSuccess, onError ->
-                onRequestNewProduct(request, onSuccess, onError)
             }
         )
     }
@@ -764,268 +743,6 @@ private fun CityPricingChangeDialog(
                 ) {
                     Text(
                         text = if (isSaving) "Submitting..." else if (useApprovalFlow) "Submit for Approval" else "Update Pricing",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RequestNewProductDialog(
-    brands: List<BrandResponse>,
-    categories: List<CategoryResponse>,
-    onDismiss: () -> Unit,
-    onSubmit: (PartnerCreateProductRequest, () -> Unit, (String) -> Unit) -> Unit
-) {
-    val context = LocalContext.current
-    var name by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
-    var priceText by remember { mutableStateOf("") }
-    var originalPriceText by remember { mutableStateOf("") }
-    var exchangeDiscountText by remember { mutableStateOf("") }
-    var stockText by remember { mutableStateOf("0") }
-    var capacity by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var selectedBrand by remember { mutableStateOf(brands.firstOrNull()) }
-    var selectedCategory by remember { mutableStateOf(categories.firstOrNull()) }
-    var brandExpanded by remember { mutableStateOf(false) }
-    var categoryExpanded by remember { mutableStateOf(false) }
-    var isSaving by remember { mutableStateOf(false) }
-
-    val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = BrandRed,
-        focusedLabelColor = BrandRed,
-        focusedTextColor = Color.Black,
-        unfocusedTextColor = Color.Black
-    )
-
-    Dialog(
-        onDismissRequest = { if (!isSaving) onDismiss() },
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.92f)
-                .wrapContentHeight(),
-            shape = MaterialTheme.shapes.large,
-            color = Color.White
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Request New Product", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
-                        Text("New products require admin approval before going live.", fontSize = 12.sp, color = Color.Gray)
-                    }
-                    IconButton(onClick = onDismiss, enabled = !isSaving) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = brandExpanded,
-                    onExpandedChange = { brandExpanded = !brandExpanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedBrand?.brandName ?: "Select Brand *",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Brand *") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = brandExpanded) },
-                        modifier = Modifier
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                            .fillMaxWidth(),
-                        colors = textFieldColors
-                    )
-                    ExposedDropdownMenu(
-                        expanded = brandExpanded,
-                        onDismissRequest = { brandExpanded = false }
-                    ) {
-                        brands.forEach { brand ->
-                            DropdownMenuItem(
-                                text = { Text(brand.brandName) },
-                                onClick = {
-                                    selectedBrand = brand
-                                    brandExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ExposedDropdownMenuBox(
-                    expanded = categoryExpanded,
-                    onExpandedChange = { categoryExpanded = !categoryExpanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedCategory?.categoryName ?: "Select Category *",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Category *") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                        modifier = Modifier
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                            .fillMaxWidth(),
-                        colors = textFieldColors
-                    )
-                    ExposedDropdownMenu(
-                        expanded = categoryExpanded,
-                        onDismissRequest = { categoryExpanded = false }
-                    ) {
-                        categories.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category.categoryName) },
-                                onClick = {
-                                    selectedCategory = category
-                                    categoryExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Product Name *") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = imageUrl,
-                    onValueChange = { imageUrl = it },
-                    label = { Text("Product Image URL *") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedTextField(
-                        value = priceText,
-                        onValueChange = { priceText = it },
-                        label = { Text("Price (₹) *") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        colors = textFieldColors
-                    )
-                    OutlinedTextField(
-                        value = stockText,
-                        onValueChange = { stockText = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("Stock *") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        colors = textFieldColors
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedTextField(
-                        value = originalPriceText,
-                        onValueChange = { originalPriceText = it },
-                        label = { Text("MRP (Optional)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        colors = textFieldColors
-                    )
-                    OutlinedTextField(
-                        value = exchangeDiscountText,
-                        onValueChange = { exchangeDiscountText = it },
-                        label = { Text("Exch. Disc (Optional)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        colors = textFieldColors
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = capacity,
-                    onValueChange = { capacity = it },
-                    label = { Text("Capacity e.g. 45Ah (Optional)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description (Optional)") },
-                    maxLines = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = textFieldColors
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Button(
-                    onClick = {
-                        val brand = selectedBrand
-                        val category = selectedCategory
-                        val price = priceText.toDoubleOrNull()
-                        val stock = stockText.toIntOrNull()
-                        if (brand == null || category == null || name.isBlank() || imageUrl.isBlank() || price == null || stock == null) {
-                            Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-
-                        isSaving = true
-                        onSubmit(
-                            PartnerCreateProductRequest(
-                                categoryId = category.categoryId.toString(),
-                                brandId = brand.brandId.toString(),
-                                productName = name.trim(),
-                                productImage = imageUrl.trim(),
-                                productStock = stock,
-                                productPrice = price,
-                                originalPrice = originalPriceText.toDoubleOrNull(),
-                                exchangeDiscount = exchangeDiscountText.toDoubleOrNull(),
-                                capacity = capacity.trim().ifEmpty { null },
-                                productDescription = description.trim().ifEmpty { null }
-                            ),
-                            {
-                                isSaving = false
-                                Toast.makeText(context, "Product submitted for admin approval", Toast.LENGTH_SHORT).show()
-                                onDismiss()
-                            },
-                            { err ->
-                                isSaving = false
-                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                            }
-                        )
-                    },
-                    enabled = !isSaving,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
-                ) {
-                    Text(
-                        text = if (isSaving) "Submitting..." else "Submit Product Request",
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )

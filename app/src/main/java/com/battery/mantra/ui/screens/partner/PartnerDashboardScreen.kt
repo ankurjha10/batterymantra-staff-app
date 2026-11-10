@@ -55,7 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.battery.mantra.data.models.BrandResponse
-import com.battery.mantra.data.models.CategoryResponse
 import com.battery.mantra.data.models.CityPricingRequestDto
 import com.battery.mantra.data.models.CityPricingRequestResponse
 import com.battery.mantra.data.models.CityProductStockItem
@@ -87,7 +86,6 @@ fun PartnerDashboardScreen(
     inventoryState: PartnerDataState<List<PartnerInventoryItemResponse>>,
     pendingRequestsState: PartnerDataState<List<CityPricingRequestResponse>>,
     brands: List<BrandResponse>,
-    categories: List<CategoryResponse>,
     selectedTabIndex: Int,
     targetOrderFilter: String?,
     targetOrderSearch: String?,
@@ -115,7 +113,7 @@ fun PartnerDashboardScreen(
     onBulkUpdateStock: (String, List<CityProductStockItem>, (String) -> Unit, (String) -> Unit) -> Unit,
     onSubmitPricingRequest: (String, CityPricingRequestDto, () -> Unit, (String) -> Unit) -> Unit,
     onUpdateDirectPricing: (String, PartnerCityPricingUpdateDto, () -> Unit, (String) -> Unit) -> Unit,
-    onRequestNewProduct: (PartnerCreateProductRequest, () -> Unit, (String) -> Unit) -> Unit,
+    onNavigateToProposeProduct: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToChangePassword: () -> Unit,
     onLogout: () -> Unit
@@ -425,13 +423,12 @@ fun PartnerDashboardScreen(
                         inventoryState = inventoryState,
                         pendingRequestsState = pendingRequestsState,
                         brands = brands,
-                        categories = categories,
                         onSelectCity = onSelectCity,
                         onRetryInventory = onRetryInventory,
                         onRetryPendingRequests = onRetryPendingRequests,
                         onSubmitPricingRequest = onSubmitPricingRequest,
                         onUpdateDirectPricing = onUpdateDirectPricing,
-                        onRequestNewProduct = onRequestNewProduct
+                        onNavigateToProposeProduct = onNavigateToProposeProduct
                     )
                     4 -> PartnerInventoryTab(
                         profileState = profileState,

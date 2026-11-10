@@ -79,6 +79,8 @@ data class PartnerCreateProductRequest(
     @SerializedName("originalPrice") val originalPrice: Double? = null,
     @SerializedName("exchangeDiscount") val exchangeDiscount: Double? = null,
     @SerializedName("capacity") val capacity: String? = null,
-    @SerializedName("productDescription") val productDescription: String? = null
+    @SerializedName("productDescription") val productDescription: String? = null,
+    @SerializedName("additionalImages") val additionalImages: List<String>? = null,
+    @SerializedName("cityPrices") val cityPrices: List<CityPricingDto>? = null
 )
 

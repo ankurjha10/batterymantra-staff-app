@@ -34,6 +34,7 @@ import com.battery.mantra.ui.screens.partner.PartnerDashboardScreen
 import com.battery.mantra.ui.screens.partner.PartnerDataState
 import com.battery.mantra.ui.screens.partner.PartnerNotificationsScreen
 import com.battery.mantra.ui.screens.partner.PartnerViewModel
+import com.battery.mantra.ui.screens.partner.ProposeProductScreen
 import com.battery.mantra.ui.screens.settings.ChangePasswordScreen
 import com.battery.mantra.ui.screens.settings.SettingsViewModel
 
@@ -412,7 +413,6 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             val inventoryState by viewModel.inventoryState.collectAsState()
             val pendingRequestsState by viewModel.pendingPricingRequestsState.collectAsState()
             val brands by viewModel.brands.collectAsState()
-            val categories by viewModel.categories.collectAsState()
             val selectedTabIndex by viewModel.selectedTabIndex.collectAsState()
             val targetOrderFilter by viewModel.targetOrderFilter.collectAsState()
             val targetOrderSearch by viewModel.targetOrderSearch.collectAsState()
@@ -428,7 +428,6 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 inventoryState = inventoryState,
                 pendingRequestsState = pendingRequestsState,
                 brands = brands,
-                categories = categories,
                 selectedTabIndex = selectedTabIndex,
                 targetOrderFilter = targetOrderFilter,
                 targetOrderSearch = targetOrderSearch,
@@ -478,9 +477,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onUpdateDirectPricing = { productId, req, onSuccess, onError ->
                     viewModel.updateDirectCityPricing(productId, req, onSuccess, onError)
                 },
-                onRequestNewProduct = { req, onSuccess, onError ->
-                    viewModel.requestNewProduct(req, onSuccess, onError)
-                },
+                onNavigateToProposeProduct = { navController.navigate(Screen.PartnerProposeProduct.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.PartnerNotifications.route) },
                 onNavigateToChangePassword = { navController.navigate(Screen.ChangePassword.route) },
                 onLogout = {
@@ -505,6 +502,31 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             PartnerNotificationsScreen(
                 viewModel = viewModel,
                 onBackClick = { navController.navigateUp() }
+            )
+        }
+
+        composable(Screen.PartnerProposeProduct.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.PartnerDashboard.route)
+            }
+            val viewModel: PartnerViewModel = viewModel(
+                parentEntry,
+                factory = PartnerViewModel.provideFactory(appContainer.partnerRepository)
+            )
+            val profileState by viewModel.profileState.collectAsState()
+            val selectedCityId by viewModel.selectedCityId.collectAsState()
+            val brands by viewModel.brands.collectAsState()
+            val categories by viewModel.categories.collectAsState()
+
+            ProposeProductScreen(
+                profileState = profileState,
+                selectedCityId = selectedCityId,
+                brands = brands,
+                categories = categories,
+                onBackClick = { navController.navigateUp() },
+                onSubmit = { req, onSuccess, onError ->
+                    viewModel.requestNewProduct(req, onSuccess, onError)
+                }
             )
         }
 

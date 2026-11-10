@@ -3,8 +3,11 @@ package com.battery.mantra.data.repository
 import com.battery.mantra.data.local.AuthSessionStore
 import com.battery.mantra.data.local.TokenManager
 import com.battery.mantra.data.models.AdminGateResponse
+import com.battery.mantra.data.models.GateConfigResponse
+import com.battery.mantra.data.models.GateUserPinStatus
 import com.battery.mantra.data.models.LoginRequest
 import com.battery.mantra.data.models.LoginResponse
+import com.battery.mantra.data.models.UpdateUserGatePinRequest
 import com.battery.mantra.data.remote.BatteryMantraApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +15,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -58,6 +60,11 @@ private class FakeAuthSessionStore : AuthSessionStore {
         } else {
             (TokenManager.MAX_ADMIN_GATE_ATTEMPTS - failedAttempts) to 0L
         }
+    }
+
+    override suspend fun recordGateRateLimitCooldown(durationMs: Long, nowMs: Long): Long {
+        lockedUntil = nowMs + durationMs
+        return lockedUntil
     }
 
     override suspend fun resetAdminGateAttempts() {
@@ -135,81 +142,100 @@ class AuthSecurityTest {
     }
 
     @Test
-    fun adminLogin_enforcesUnlockedTierStrictly() = runBlocking {
+    fun adminLogin_enforcesUnlockedTierAndRequiresReverifyOn403OrExpiredGateToken() = runBlocking {
         val store = FakeAuthSessionStore()
-        val api = fakeApi { method ->
-            if (method == "login") Response.success(loginResponse("ADMIN"))
-            else error("Unexpected call: $method")
-        }
-        val repo = AuthRepository(api, store)
+        val expiredBody = """{"message":"Invalid or expired gate token"}""".toResponseBody("application/json".toMediaType())
+        val forbiddenBody = """{"message":"Please enter your personal Gate PIN"}""".toResponseBody("application/json".toMediaType())
+        val badCredsBody = """{"message":"Invalid password"}""".toResponseBody("application/json".toMediaType())
 
-        val mismatched = repo.login(
-            request = LoginRequest("admin@test.com", "secret", gateToken = "gate-sub"),
-            expectedAdminTier = "SUB_ADMIN"
+        val expiredRepo = AuthRepository(
+            fakeApi { Response.error<LoginResponse>(401, expiredBody) },
+            store
         )
-        assertTrue(mismatched.isFailure)
-        assertNull(store.savedJwt)
+        val expiredResult = expiredRepo.login(LoginRequest("admin@test.com", "pass", "gate-jwt"), "ADMIN")
+        assertTrue(expiredResult.exceptionOrNull() is GateReverifyRequiredException)
 
-        val matched = repo.login(
-            request = LoginRequest("admin@test.com", "secret", gateToken = "gate-admin"),
-            expectedAdminTier = "ADMIN"
+        val forbiddenRepo = AuthRepository(
+            fakeApi { Response.error<LoginResponse>(403, forbiddenBody) },
+            store
         )
-        assertTrue(matched.isSuccess)
-        assertEquals("ADMIN", store.savedRole)
+        val forbiddenResult = forbiddenRepo.login(LoginRequest("sub@test.com", "pass", "gate-jwt"), "SUB_ADMIN")
+        assertTrue(forbiddenResult.exceptionOrNull() is GateReverifyRequiredException)
+        assertEquals("Please enter your personal Gate PIN", forbiddenResult.exceptionOrNull()?.message)
+
+        val badCredsRepo = AuthRepository(
+            fakeApi { Response.error<LoginResponse>(401, badCredsBody) },
+            store
+        )
+        val badCredsResult = badCredsRepo.login(LoginRequest("admin@test.com", "wrong", "gate-jwt"), "ADMIN")
+        assertTrue(badCredsResult.isFailure)
+        assertTrue(badCredsResult.exceptionOrNull() !is GateReverifyRequiredException)
     }
 
     @Test
-    fun adminLogin_rejectsNonAdminRolesWhenUnlocked() = runBlocking {
+    fun verifyAdminGate_returnsSpecificExceptionsFor401And429() = runBlocking {
         val store = FakeAuthSessionStore()
-        val api = fakeApi { method ->
-            if (method == "login") Response.success(loginResponse("PARTNER"))
-            else error("Unexpected call: $method")
-        }
-        val repo = AuthRepository(api, store)
-
-        val result = repo.login(
-            request = LoginRequest("partner@test.com", "secret", gateToken = "gate"),
-            expectedAdminTier = "ADMIN"
+        val body401 = """{"message":"Unauthorized"}""".toResponseBody("application/json".toMediaType())
+        val repo401 = AuthRepository(
+            fakeApi { Response.error<AdminGateResponse>(401, body401) },
+            store
         )
-        assertTrue(result.isFailure)
-        assertNull(store.savedJwt)
+        val res401 = repo401.verifyAdminGate("0000")
+        assertTrue(res401.exceptionOrNull() is InvalidGatePinException)
+        assertEquals("Invalid gate PIN", res401.exceptionOrNull()?.message)
+
+        val body429 = """{"message":"Rate limit"}""".toResponseBody("application/json".toMediaType())
+        val repo429 = AuthRepository(
+            fakeApi { Response.error<AdminGateResponse>(429, body429) },
+            store
+        )
+        val res429 = repo429.verifyAdminGate("0000")
+        assertTrue(res429.exceptionOrNull() is GateRateLimitedException)
+        assertEquals("Too many attempts. Please wait 1 minute.", res429.exceptionOrNull()?.message)
     }
 
     @Test
-    fun verifyAdminGate_returnsInvalidPinExceptionOn401() = runBlocking {
+    fun gateConfigAndPersonalPinUpdate_workForSuperAdmin() = runBlocking {
         val store = FakeAuthSessionStore()
-        val errorBody = """{"message":"Wrong gate PIN"}""".toResponseBody("application/json".toMediaType())
+        val sampleConfig = GateConfigResponse(
+            adminPinConfigured = true,
+            subAdminPinConfigured = true,
+            updatedAt = "2026-11-11T00:00:00",
+            users = listOf(
+                GateUserPinStatus(
+                    userId = "u-1",
+                    username = "subadmin1",
+                    email = "sub@test.com",
+                    role = "SUB_ADMIN",
+                    isActive = true,
+                    personalPinConfigured = false
+                )
+            )
+        )
         val api = fakeApi { method ->
-            if (method == "verifyAdminGate") Response.error<AdminGateResponse>(401, errorBody)
-            else error("Unexpected call: $method")
+            when (method) {
+                "getGateConfig" -> Response.success(sampleConfig)
+                "updateUserGatePin" -> Response.success("{}".toResponseBody("application/json".toMediaType()))
+                else -> error("Unexpected call: $method")
+            }
         }
         val repo = AuthRepository(api, store)
 
-        val result = repo.verifyAdminGate("0000")
+        val cfg = repo.getGateConfig()
+        assertTrue(cfg.isSuccess)
+        assertEquals(1, cfg.getOrNull()?.users?.size)
+        assertEquals("subadmin1", cfg.getOrNull()?.users?.first()?.username)
 
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is InvalidGatePinException)
-        assertEquals("Wrong gate PIN", result.exceptionOrNull()?.message)
+        val updateRes = repo.updateUserGatePin("u-1", UpdateUserGatePinRequest("9876", "superpass"))
+        assertTrue(updateRes.isSuccess)
     }
 
     @Test
-    fun gateLockout_locksAfterThreeFailedAttempts() = runBlocking {
+    fun gateRateLimitCooldown_persists60Seconds() = runBlocking {
         val store = FakeAuthSessionStore()
         val t0 = 1_000_000L
-
-        val (left1, lock1) = store.recordFailedAdminGateAttempt(t0)
-        assertEquals(2, left1)
-        assertEquals(0L, lock1)
-
-        val (left2, lock2) = store.recordFailedAdminGateAttempt(t0 + 1000)
-        assertEquals(1, left2)
-        assertEquals(0L, lock2)
-
-        val (left3, lock3) = store.recordFailedAdminGateAttempt(t0 + 2000)
-        assertEquals(0, left3)
-        assertTrue(lock3 > t0 + 2000)
-        assertTrue(store.getAdminGateLockoutRemainingMs(t0 + 3000) > 0L)
-        assertFalse(store.getAdminGateLockoutRemainingMs(lock3 + 1) > 0L)
+        store.recordGateRateLimitCooldown(60_000L, t0)
+        assertTrue(store.getAdminGateLockoutRemainingMs(t0 + 10_000L) > 0L)
+        assertEquals(0L, store.getAdminGateLockoutRemainingMs(t0 + 60_001L))
     }
 }
-

@@ -3,10 +3,11 @@ package com.battery.mantra.ui.screens.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.battery.mantra.data.local.TokenManager
 import com.battery.mantra.data.models.LoginRequest
 import com.battery.mantra.data.models.LoginResponse
 import com.battery.mantra.data.repository.AuthRepository
+import com.battery.mantra.data.repository.GateRateLimitedException
+import com.battery.mantra.data.repository.GateReverifyRequiredException
 import com.battery.mantra.data.repository.InvalidGatePinException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,14 +30,20 @@ enum class LoginMode {
 
 sealed class AdminGateState {
     object Hidden : AdminGateState()
-    data class LockedOut(val remainingSeconds: Long) : AdminGateState()
+    data class LockedOut(
+        val remainingSeconds: Long,
+        val message: String = "Too many attempts. Please wait 1 minute."
+    ) : AdminGateState()
     data class PinChallenge(
-        val attemptsLeft: Int,
         val isVerifying: Boolean = false,
         val error: String? = null
     ) : AdminGateState()
     data class BiometricChallenge(val tier: String, val gateToken: String) : AdminGateState()
-    data class Unlocked(val tier: String, val gateToken: String) : AdminGateState()
+    data class Unlocked(
+        val tier: String,
+        val gateToken: String,
+        val loginError: String? = null
+    ) : AdminGateState()
 }
 
 data class LoginUiState(
@@ -181,47 +188,49 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             val remainingMs = authRepository.getAdminGateLockoutRemainingMs()
             if (remainingMs > 0L) {
-                startLockoutTicker((remainingMs + 999L) / 1000L)
+                startLockoutTicker(
+                    initialSeconds = (remainingMs + 999L) / 1000L,
+                    message = "Too many attempts. Please wait 1 minute."
+                )
             } else {
-                val failed = authRepository.getAdminGateFailedAttempts()
-                val left = (TokenManager.MAX_ADMIN_GATE_ATTEMPTS - failed).coerceAtLeast(1)
-                _adminGateState.value = AdminGateState.PinChallenge(attemptsLeft = left)
+                _adminGateState.value = AdminGateState.PinChallenge()
             }
         }
     }
 
-    private fun startLockoutTicker(initialSeconds: Long) {
+    private fun startLockoutTicker(initialSeconds: Long, message: String) {
         lockoutTickerJob?.cancel()
-        _adminGateState.value = AdminGateState.LockedOut(initialSeconds.coerceAtLeast(1L))
+        _adminGateState.value = AdminGateState.LockedOut(
+            remainingSeconds = initialSeconds.coerceAtLeast(1L),
+            message = message
+        )
         lockoutTickerJob = viewModelScope.launch {
             var remaining = initialSeconds
             while (remaining > 0L && _adminGateState.value is AdminGateState.LockedOut) {
-                _adminGateState.value = AdminGateState.LockedOut(remaining)
+                _adminGateState.value = AdminGateState.LockedOut(
+                    remainingSeconds = remaining,
+                    message = message
+                )
                 delay(1000)
                 remaining--
             }
             if (_adminGateState.value is AdminGateState.LockedOut) {
                 authRepository.resetAdminGateAttempts()
-                _adminGateState.value = AdminGateState.PinChallenge(attemptsLeft = TokenManager.MAX_ADMIN_GATE_ATTEMPTS)
+                _adminGateState.value = AdminGateState.PinChallenge()
             }
         }
     }
 
     fun submitGatePin(pin: String, canUseBiometricOnDevice: Boolean) {
         val trimmed = pin.trim()
-        if (trimmed.isEmpty()) {
-            val currentLeft = (_adminGateState.value as? AdminGateState.PinChallenge)?.attemptsLeft
-                ?: TokenManager.MAX_ADMIN_GATE_ATTEMPTS
+        if (trimmed.length < 4) {
             _adminGateState.value = AdminGateState.PinChallenge(
-                attemptsLeft = currentLeft,
-                error = "Enter access PIN"
+                error = "Gate PIN must be at least 4 characters"
             )
             return
         }
 
-        val currentLeft = (_adminGateState.value as? AdminGateState.PinChallenge)?.attemptsLeft
-            ?: TokenManager.MAX_ADMIN_GATE_ATTEMPTS
-        _adminGateState.value = AdminGateState.PinChallenge(attemptsLeft = currentLeft, isVerifying = true)
+        _adminGateState.value = AdminGateState.PinChallenge(isVerifying = true)
 
         viewModelScope.launch {
             val result = authRepository.verifyAdminGate(trimmed)
@@ -240,22 +249,25 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                     )
                 }
             }.onFailure { err ->
-                if (err is InvalidGatePinException) {
-                    val (attemptsLeft, lockedUntil) = authRepository.recordFailedAdminGateAttempt()
-                    if (lockedUntil > 0L || attemptsLeft <= 0) {
+                when (err) {
+                    is GateRateLimitedException -> {
+                        val lockedUntil = authRepository.recordGateRateLimitCooldown()
                         val lockSecs = ((lockedUntil - System.currentTimeMillis()) + 999L) / 1000L
-                        startLockoutTicker(lockSecs.coerceAtLeast(1L))
-                    } else {
-                        _adminGateState.value = AdminGateState.PinChallenge(
-                            attemptsLeft = attemptsLeft,
-                            error = "${err.message} ($attemptsLeft attempt${if (attemptsLeft == 1) "" else "s"} left)"
+                        startLockoutTicker(
+                            initialSeconds = lockSecs.coerceAtLeast(60L),
+                            message = err.message ?: "Too many attempts. Please wait 1 minute."
                         )
                     }
-                } else {
-                    _adminGateState.value = AdminGateState.PinChallenge(
-                        attemptsLeft = currentLeft,
-                        error = err.message ?: "Unable to verify gate PIN"
-                    )
+                    is InvalidGatePinException -> {
+                        _adminGateState.value = AdminGateState.PinChallenge(
+                            error = err.message ?: "Invalid gate PIN"
+                        )
+                    }
+                    else -> {
+                        _adminGateState.value = AdminGateState.PinChallenge(
+                            error = err.message ?: "Unable to verify gate PIN"
+                        )
+                    }
                 }
             }
         }
@@ -284,20 +296,32 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     fun loginAdmin(username: String, password: String) {
         val currentGate = _adminGateState.value as? AdminGateState.Unlocked ?: return
         if (username.isBlank() || password.isBlank()) {
-            _authState.value = AuthState.Error("Please enter username/email and password")
+            _adminGateState.value = currentGate.copy(loginError = "Please enter username/email and password")
             return
         }
+        _adminGateState.value = currentGate.copy(loginError = null)
         _authState.value = AuthState.Loading
         viewModelScope.launch {
             val result = authRepository.login(
                 request = LoginRequest(username.trim(), password, gateToken = currentGate.gateToken),
                 expectedAdminTier = currentGate.tier
             )
-            if (result.isSuccess) {
+            result.onSuccess { loginResponse ->
                 lockAdminGate()
-                _authState.value = AuthState.Success(result.getOrNull()!!)
-            } else {
-                _authState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Invalid credentials")
+                _authState.value = AuthState.Success(loginResponse)
+            }.onFailure { err ->
+                _authState.value = AuthState.Idle
+                if (err is GateReverifyRequiredException) {
+                    // Gate token expired or tier/personal PIN mismatch -> return to Gate PIN screen
+                    _loginUiState.value = _loginUiState.value.copy(password = "")
+                    _adminGateState.value = AdminGateState.PinChallenge(
+                        error = err.message ?: "Please re-verify your Gate PIN"
+                    )
+                } else {
+                    _adminGateState.value = currentGate.copy(
+                        loginError = err.message ?: "Invalid credentials"
+                    )
+                }
             }
         }
     }

@@ -45,7 +45,13 @@ interface BatteryMantraApi {
     suspend fun getGateConfig(): Response<com.battery.mantra.data.models.GateConfigResponse>
 
     @PUT("api/admin/security/gate-pin")
-    suspend fun updateGatePin(@Body request: com.battery.mantra.data.models.UpdateGatePinRequest): Response<com.battery.mantra.data.models.GateConfigResponse>
+    suspend fun updateGatePin(@Body request: com.battery.mantra.data.models.UpdateGatePinRequest): Response<okhttp3.ResponseBody>
+
+    @PUT("api/admin/security/users/{userId}/gate-pin")
+    suspend fun updateUserGatePin(
+        @Path("userId") userId: String,
+        @Body request: com.battery.mantra.data.models.UpdateUserGatePinRequest
+    ): Response<okhttp3.ResponseBody>
 
     @PUT("api/user/password")
     suspend fun changePassword(@Body request: com.battery.mantra.data.models.PasswordChangeRequest): Response<Unit>

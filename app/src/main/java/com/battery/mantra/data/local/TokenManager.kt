@@ -23,6 +23,7 @@ interface AuthSessionStore {
     suspend fun getAdminGateFailedAttempts(): Int
     suspend fun getAdminGateLockoutRemainingMs(nowMs: Long = System.currentTimeMillis()): Long
     suspend fun recordFailedAdminGateAttempt(nowMs: Long = System.currentTimeMillis()): Pair<Int, Long>
+    suspend fun recordGateRateLimitCooldown(durationMs: Long = TokenManager.GATE_RATE_LIMIT_COOLDOWN_MS, nowMs: Long = System.currentTimeMillis()): Long
     suspend fun resetAdminGateAttempts()
 }
 
@@ -42,6 +43,7 @@ class TokenManager(private val context: Context) : AuthSessionStore {
 
         const val MAX_ADMIN_GATE_ATTEMPTS = 3
         const val ADMIN_GATE_LOCKOUT_MS = 15 * 60 * 1000L
+        const val GATE_RATE_LIMIT_COOLDOWN_MS = 60 * 1000L
     }
 
     @Volatile private var cachedJwt: String? = null
@@ -201,6 +203,14 @@ class TokenManager(private val context: Context) : AuthSessionStore {
             }
         }
         return attemptsLeft to lockedUntil
+    }
+
+    override suspend fun recordGateRateLimitCooldown(durationMs: Long, nowMs: Long): Long {
+        val lockedUntil = nowMs + durationMs
+        context.dataStore.edit { preferences ->
+            preferences[ADMIN_GATE_LOCKED_UNTIL_KEY] = lockedUntil
+        }
+        return lockedUntil
     }
 
     override suspend fun resetAdminGateAttempts() {

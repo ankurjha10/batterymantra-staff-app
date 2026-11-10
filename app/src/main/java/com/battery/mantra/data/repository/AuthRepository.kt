@@ -9,15 +9,18 @@ import com.battery.mantra.data.models.LoginResponse
 import com.battery.mantra.data.models.PasswordChangeRequest
 import com.battery.mantra.data.models.SendOtpRequest
 import com.battery.mantra.data.models.UpdateGatePinRequest
+import com.battery.mantra.data.models.UpdateUserGatePinRequest
 import com.battery.mantra.data.models.VerifyOtpRequest
 import com.battery.mantra.data.remote.BatteryMantraApi
+import com.google.gson.JsonParser
 import kotlinx.coroutines.flow.Flow
 import okhttp3.ResponseBody
-import com.google.gson.JsonParser
 import retrofit2.Response
 import kotlin.coroutines.cancellation.CancellationException
 
 class InvalidGatePinException(message: String) : Exception(message)
+class GateRateLimitedException(message: String) : Exception(message)
+class GateReverifyRequiredException(message: String) : Exception(message)
 
 class AuthRepository(
     private val api: BatteryMantraApi,
@@ -62,16 +65,35 @@ class AuthRepository(
                 val normalizedRole = normalizeAdminRole(body.role)
                 if (expectedAdminTier != null) {
                     if (normalizedRole !in setOf("ADMIN", "SUB_ADMIN")) {
-                        return Result.failure(Exception("Only Admin or Sub-Admin accounts can sign in here."))
+                        return Result.failure(
+                            GateReverifyRequiredException("Only Admin or Sub-Admin accounts can sign in here.")
+                        )
                     }
                     if (normalizedRole != normalizeAdminRole(expectedAdminTier)) {
-                        return Result.failure(Exception("Account role does not match the unlocked access level."))
+                        return Result.failure(
+                            GateReverifyRequiredException("Account role does not match the unlocked gate tier.")
+                        )
                     }
                 }
                 sessionStore.saveTokens(body.token, body.refreshToken, body.role, body.permissions)
                 Result.success(body)
             } else {
-                Result.failure(Exception(extractErrorMessage(response, "Login failed (${response.code()})")))
+                val msg = extractErrorMessage(response, "Login failed (${response.code()})")
+                when (response.code()) {
+                    403 -> Result.failure(GateReverifyRequiredException(msg))
+                    401 -> {
+                        val isGateTokenIssue = request.gateToken != null && (
+                            msg.contains("gate", ignoreCase = true) ||
+                                msg.contains("expired", ignoreCase = true)
+                            )
+                        if (isGateTokenIssue) {
+                            Result.failure(GateReverifyRequiredException(msg))
+                        } else {
+                            Result.failure(Exception(msg))
+                        }
+                    }
+                    else -> Result.failure(Exception(msg))
+                }
             }
         } catch (e: CancellationException) {
             throw e
@@ -145,10 +167,10 @@ class AuthRepository(
             val body = response.body()
             if (response.isSuccessful && body != null) {
                 Result.success(body)
-            } else if (response.code() == 401 || response.code() == 403) {
-                Result.failure(InvalidGatePinException(extractErrorMessage(response, "Invalid access PIN")))
-            } else {
-                Result.failure(Exception(extractErrorMessage(response, "Gate verification unavailable (${response.code()})")))
+            } else when (response.code()) {
+                401 -> Result.failure(InvalidGatePinException("Invalid gate PIN"))
+                429 -> Result.failure(GateRateLimitedException("Too many attempts. Please wait 1 minute."))
+                else -> Result.failure(Exception(extractErrorMessage(response, "Gate verification unavailable (${response.code()})")))
             }
         } catch (e: CancellationException) {
             throw e
@@ -173,14 +195,28 @@ class AuthRepository(
         }
     }
 
-    suspend fun updateGatePin(request: UpdateGatePinRequest): Result<GateConfigResponse> {
+    suspend fun updateGatePin(request: UpdateGatePinRequest): Result<Unit> {
         return try {
             val response = api.updateGatePin(request)
-            val body = response.body()
-            if (response.isSuccessful && body != null) {
-                Result.success(body)
+            if (response.isSuccessful) {
+                Result.success(Unit)
             } else {
                 Result.failure(Exception(extractErrorMessage(response, "Failed to update gate PIN")))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateUserGatePin(userId: String, request: UpdateUserGatePinRequest): Result<Unit> {
+        return try {
+            val response = api.updateUserGatePin(userId, request)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(extractErrorMessage(response, "Failed to update personal gate PIN")))
             }
         } catch (e: CancellationException) {
             throw e
@@ -213,6 +249,8 @@ class AuthRepository(
     suspend fun getAdminGateLockoutRemainingMs(): Long = sessionStore.getAdminGateLockoutRemainingMs()
 
     suspend fun recordFailedAdminGateAttempt(): Pair<Int, Long> = sessionStore.recordFailedAdminGateAttempt()
+
+    suspend fun recordGateRateLimitCooldown(): Long = sessionStore.recordGateRateLimitCooldown()
 
     suspend fun resetAdminGateAttempts() = sessionStore.resetAdminGateAttempts()
 

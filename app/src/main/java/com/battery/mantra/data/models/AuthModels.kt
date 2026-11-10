@@ -40,14 +40,30 @@ data class AdminGateResponse(
     @SerializedName("gateToken") val gateToken: String
 )
 
+data class GateUserPinStatus(
+    @SerializedName("userId") val userId: String,
+    @SerializedName("username") val username: String? = null,
+    @SerializedName("email") val email: String? = null,
+    @SerializedName("role") val role: String? = null,
+    @SerializedName("isActive") val isActive: Boolean = true,
+    @SerializedName("personalPinConfigured") val personalPinConfigured: Boolean = false,
+    @SerializedName("gatePinUpdatedAt") val gatePinUpdatedAt: String? = null
+)
+
 data class GateConfigResponse(
     @SerializedName("adminPinConfigured") val adminPinConfigured: Boolean = false,
     @SerializedName("subAdminPinConfigured") val subAdminPinConfigured: Boolean = false,
-    @SerializedName("updatedAt") val updatedAt: String? = null
+    @SerializedName("updatedAt") val updatedAt: String? = null,
+    @SerializedName("users") val users: List<GateUserPinStatus> = emptyList()
 )
 
 data class UpdateGatePinRequest(
     @SerializedName("targetRole") val targetRole: String,
+    @SerializedName("newPin") val newPin: String,
+    @SerializedName("currentPassword") val currentPassword: String
+)
+
+data class UpdateUserGatePinRequest(
     @SerializedName("newPin") val newPin: String,
     @SerializedName("currentPassword") val currentPassword: String
 )

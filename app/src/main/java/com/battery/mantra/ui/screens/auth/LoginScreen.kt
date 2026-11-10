@@ -839,9 +839,9 @@ private fun AdminGateSheet(
                             is AdminGateState.BiometricChallenge -> "Biometric Verification"
                             is AdminGateState.Unlocked -> {
                                 if (gateState.tier.equals("SUB_ADMIN", ignoreCase = true)) {
-                                    "Sub-Admin Sign In"
+                                    "Sub-Admin Login"
                                 } else {
-                                    "Admin Sign In"
+                                    "Admin Login"
                                 }
                             }
                             else -> "Access Verification"
@@ -882,14 +882,15 @@ private fun AdminGateSheet(
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "Too many incorrect attempts",
+                                text = gateState.message,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF991B1B),
-                                fontSize = 15.sp
+                                fontSize = 15.sp,
+                                textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = String.format(Locale.US, "Try again in %02d:%02d", mins, secs),
+                                text = String.format(Locale.US, "Cooldown: %02d:%02d", mins, secs),
                                 fontWeight = FontWeight.ExtraBold,
                                 color = BrandRed,
                                 fontSize = 22.sp
@@ -900,25 +901,27 @@ private fun AdminGateSheet(
 
                 is AdminGateState.PinChallenge -> {
                     Text(
-                        text = "Enter your authorized mobile access PIN.",
+                        text = "Enter your Gate PIN (personal or tier PIN, min 4 chars).",
                         fontSize = 13.sp,
                         color = Color(0xFF6B7280)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = gatePin,
-                        onValueChange = { gatePin = it },
-                        label = { Text("Access PIN") },
+                        onValueChange = { if (it.length <= 32) gatePin = it },
+                        label = { Text("Gate PIN") },
                         leadingIcon = { Icon(Icons.Outlined.Pin, contentDescription = null, tint = BrandRed) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.NumberPassword,
+                            keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                if (!gateState.isVerifying) onSubmitPin(gatePin)
+                                if (gatePin.trim().length >= 4 && !gateState.isVerifying) {
+                                    onSubmitPin(gatePin)
+                                }
                             }
                         ),
                         modifier = Modifier.fillMaxWidth(),
@@ -938,20 +941,13 @@ private fun AdminGateSheet(
                             color = BrandRed,
                             fontWeight = FontWeight.Medium
                         )
-                    } else {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "${gateState.attemptsLeft} attempt${if (gateState.attemptsLeft == 1) "" else "s"} remaining before 15-min lockout.",
-                            fontSize = 12.sp,
-                            color = Color(0xFF6B7280)
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         onClick = { onSubmitPin(gatePin) },
-                        enabled = gatePin.isNotBlank() && !gateState.isVerifying,
+                        enabled = gatePin.trim().length >= 4 && !gateState.isVerifying,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -1020,7 +1016,11 @@ private fun AdminGateSheet(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Unlocked Tier: ${gateState.tier.replace("_", " ")}",
+                            text = if (gateState.tier.equals("SUB_ADMIN", ignoreCase = true)) {
+                                "Sub-Admin Login"
+                            } else {
+                                "Admin Login"
+                            },
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF047857),
@@ -1089,6 +1089,16 @@ private fun AdminGateSheet(
                             unfocusedTextColor = Color.Black
                         )
                     )
+
+                    if (!gateState.loginError.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = gateState.loginError,
+                            fontSize = 12.sp,
+                            color = BrandRed,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 

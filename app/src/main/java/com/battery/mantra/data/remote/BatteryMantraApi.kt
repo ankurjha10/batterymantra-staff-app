@@ -257,15 +257,81 @@ interface BatteryMantraApi {
     suspend fun checkQrPaymentStatus(@Path("orderId") orderId: String): Response<com.battery.mantra.data.models.PaymentStatusResponse>
 
     // --- Partner Dashboard Endpoints ---
+    @GET("api/partner/profile")
+    suspend fun getPartnerProfile(): Response<PartnerResponse>
+
     @GET("api/partner/orders")
     suspend fun getPartnerOrders(): Response<List<OrderResponse>>
 
+    @PUT("api/partner/orders/{orderId}/assign-engineer")
+    suspend fun assignPartnerEngineer(
+        @Path("orderId") orderId: String,
+        @Query("engineerId") engineerId: String
+    ): Response<OrderResponse>
+
+    @PUT("api/partner/orders/{orderId}/unassign-engineer")
+    suspend fun unassignPartnerEngineer(@Path("orderId") orderId: String): Response<OrderResponse>
+
+    @PUT("api/partner/orders/{orderId}/status")
+    suspend fun updatePartnerOrderStatus(
+        @Path("orderId") orderId: String,
+        @Query("newStatus") newStatus: String,
+        @Query("cancellationReason") cancellationReason: String? = null
+    ): Response<OrderResponse>
+
+    @POST("api/partner/orders/{orderId}/notes")
+    suspend fun addPartnerOrderNote(
+        @Path("orderId") orderId: String,
+        @Body request: com.battery.mantra.data.models.OrderNoteRequest
+    ): Response<OrderResponse>
+
     @GET("api/partner/engineers")
     suspend fun getPartnerEngineers(): Response<List<EngineerResponse>>
+
+    @GET("api/partner/engineers/available")
+    suspend fun getAvailablePartnerEngineers(): Response<List<EngineerResponse>>
 
     @POST("api/partner/engineers")
     suspend fun createPartnerEngineer(@Body request: com.battery.mantra.data.models.CreateEngineerRequest): Response<EngineerResponse>
 
     @PUT("api/partner/engineers/{id}")
     suspend fun updatePartnerEngineer(@Path("id") id: String, @Body request: com.battery.mantra.data.models.CreateEngineerRequest): Response<EngineerResponse>
+
+    @DELETE("api/partner/engineers/{id}")
+    suspend fun deletePartnerEngineer(@Path("id") id: String): Response<Unit>
+
+    @GET("api/partner/inventory")
+    suspend fun getPartnerInventory(@Query("cityId") cityId: String): Response<List<com.battery.mantra.data.models.PartnerInventoryItemResponse>>
+
+    @PATCH("api/partner/inventory/{productId}/stock")
+    suspend fun updatePartnerSingleStock(
+        @Path("productId") productId: String,
+        @Query("cityId") cityId: String,
+        @Query("stock") stock: Int
+    ): Response<com.battery.mantra.data.models.PartnerInventoryItemResponse>
+
+    @POST("api/partner/inventory/bulk-update")
+    suspend fun bulkUpdatePartnerInventory(
+        @Body request: com.battery.mantra.data.models.PartnerBulkInventoryUpdateRequest
+    ): Response<com.battery.mantra.data.models.CityInventoryBulkUpdateResponse>
+
+    @POST("api/partner/products/{productId}/city-pricing-request")
+    suspend fun submitPartnerCityPricingRequest(
+        @Path("productId") productId: String,
+        @Body request: com.battery.mantra.data.models.CityPricingRequestDto
+    ): Response<com.battery.mantra.data.models.CityPricingRequestResponse>
+
+    @GET("api/partner/products/pending-pricing-requests")
+    suspend fun getPartnerPendingPricingRequests(): Response<List<com.battery.mantra.data.models.CityPricingRequestResponse>>
+
+    @PUT("api/partner/products/{productId}/city-pricing")
+    suspend fun updatePartnerCityPricing(
+        @Path("productId") productId: String,
+        @Body request: com.battery.mantra.data.models.PartnerCityPricingUpdateDto
+    ): Response<ProductDetailResponse>
+
+    @POST("api/partner/products")
+    suspend fun createPartnerProduct(
+        @Body request: com.battery.mantra.data.models.PartnerCreateProductRequest
+    ): Response<ProductDetailResponse>
 }

@@ -33,7 +33,9 @@ data class EngineerResponse(
     @SerializedName("partnerId") val partnerId: String?,
     @SerializedName("partnerBusinessName") val partnerBusinessName: String? = null,
     @SerializedName("active") val active: Boolean?,
-    @SerializedName("isActive") val isActive: Boolean?
+    @SerializedName("isActive") val isActive: Boolean?,
+    @SerializedName("dutyStatus") val dutyStatus: String? = null,
+    @SerializedName("createdAt") val createdAt: String? = null
 )
 
 data class UserResponse(
@@ -57,7 +59,8 @@ data class UserResponse(
 
 data class CityResponse(
     @SerializedName("cityId") val cityId: String,
-    @SerializedName("cityName") val cityName: String
+    @SerializedName("cityName") val cityName: String,
+    @SerializedName("stateName") val stateName: String? = null
 )
 
 data class FcmTokenRequest(

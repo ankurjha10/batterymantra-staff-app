@@ -23,11 +23,11 @@ fun StatusBadge(
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, textColor) = when (status.uppercase()) {
-        "UNASSIGNED", "PENDING" -> Pair(Color(0xFFFDE8E8), Color(0xFFC81E1E))
-        "CONFIRMED" -> Pair(StatusConfirmed.copy(alpha = 0.15f), StatusConfirmed)
-        "DISPATCHED" -> Pair(Color(0xFFE1E8F0), Color(0xFF1E293B))
-        "COMPLETED" -> Pair(StatusCompleted.copy(alpha = 0.15f), StatusCompleted)
-        "CANCELLED", "FAILED" -> Pair(StatusCancelled.copy(alpha = 0.15f), StatusCancelled)
+        "UNASSIGNED", "PENDING" -> Pair(Color(0xFFFEF3C7), Color(0xFFB45309))
+        "CONFIRMED", "PROCESSING", "ASSIGNED", "ACCEPTED" -> Pair(Color(0xFFDBEAFE), Color(0xFF1D4ED8))
+        "SHIPPED", "OUT_FOR_DELIVERY", "DISPATCHED" -> Pair(Color(0xFFF3E8FF), Color(0xFF7E22CE))
+        "DELIVERED", "INSTALLED", "COMPLETED" -> Pair(Color(0xFFD1FAE5), Color(0xFF047857))
+        "CANCELLED", "FAILED", "RETURNED" -> Pair(Color(0xFFFEE2E2), Color(0xFFB91C1C))
         else -> Pair(Color.Gray.copy(alpha = 0.15f), Color.Gray)
     }
 

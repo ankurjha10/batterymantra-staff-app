@@ -70,7 +70,13 @@ class AuthRepository(
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Password change failed: ${response.code()} ${response.message()}"))
+                val rawError = response.errorBody()?.string().orEmpty()
+                val errorMsg = try {
+                    org.json.JSONObject(rawError).optString("message", rawError)
+                } catch (_: Exception) {
+                    rawError
+                }
+                Result.failure(Exception(errorMsg.ifBlank { "Password change failed: ${response.code()}" }))
             }
         } catch (e: Exception) {
             Result.failure(e)

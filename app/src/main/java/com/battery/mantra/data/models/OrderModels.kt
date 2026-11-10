@@ -29,7 +29,17 @@ data class OrderResponse(
     @SerializedName("city") val city: String? = null,
     @SerializedName("state") val state: String? = null,
     @SerializedName("postalCode") val postalCode: String? = null,
-    @SerializedName("paymentMode") val paymentMode: String? = null
+    @SerializedName("paymentMode") val paymentMode: String? = null,
+    @SerializedName("completedAt") val completedAt: String? = null,
+    @SerializedName("engineerNotes") val engineerNotes: String? = null,
+    @SerializedName("installedBatterySerialNumber") val installedBatterySerialNumber: String? = null,
+    @SerializedName("oldBatteryCollected") val oldBatteryCollected: Boolean = false,
+    @SerializedName("oldBatteryDetails") val oldBatteryDetails: String? = null,
+    @SerializedName("cancellationReason") val cancellationReason: String? = null,
+    @SerializedName("cancelledBy") val cancelledBy: String? = null,
+    @SerializedName("couponCode") val couponCode: String? = null,
+    @SerializedName("campaignName") val campaignName: String? = null,
+    @SerializedName("campaignDiscountAmount") val campaignDiscountAmount: Double? = null
 )
 
 

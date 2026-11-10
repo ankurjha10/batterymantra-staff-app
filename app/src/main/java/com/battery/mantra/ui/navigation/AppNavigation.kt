@@ -31,7 +31,11 @@ import com.battery.mantra.ui.screens.engineer.EngineerViewModel
 import com.battery.mantra.ui.screens.engineer.JobExecutionScreen
 import com.battery.mantra.ui.screens.engineer.JobExecutionViewModel
 import com.battery.mantra.ui.screens.partner.PartnerDashboardScreen
+import com.battery.mantra.ui.screens.partner.PartnerDataState
+import com.battery.mantra.ui.screens.partner.PartnerNotificationsScreen
 import com.battery.mantra.ui.screens.partner.PartnerViewModel
+import com.battery.mantra.ui.screens.settings.ChangePasswordScreen
+import com.battery.mantra.ui.screens.settings.SettingsViewModel
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -398,12 +402,119 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
         
         composable(Screen.PartnerDashboard.route) {
-            val viewModel: PartnerViewModel = viewModel()
+            val viewModel: PartnerViewModel = viewModel(
+                factory = PartnerViewModel.provideFactory(appContainer.partnerRepository)
+            )
+            val profileState by viewModel.profileState.collectAsState()
+            val ordersState by viewModel.ordersState.collectAsState()
+            val engineersState by viewModel.engineersState.collectAsState()
+            val selectedCityId by viewModel.selectedCityId.collectAsState()
+            val inventoryState by viewModel.inventoryState.collectAsState()
+            val pendingRequestsState by viewModel.pendingPricingRequestsState.collectAsState()
+            val brands by viewModel.brands.collectAsState()
+            val categories by viewModel.categories.collectAsState()
             val selectedTabIndex by viewModel.selectedTabIndex.collectAsState()
-            
+            val targetOrderFilter by viewModel.targetOrderFilter.collectAsState()
+            val targetOrderSearch by viewModel.targetOrderSearch.collectAsState()
+            val notificationsState by viewModel.notificationsState.collectAsState()
+            val unreadNotificationsCount = (notificationsState as? PartnerDataState.Success)?.data?.size ?: 0
+            val isRefreshing by viewModel.isRefreshing.collectAsState()
+
             PartnerDashboardScreen(
+                profileState = profileState,
+                ordersState = ordersState,
+                engineersState = engineersState,
+                selectedCityId = selectedCityId,
+                inventoryState = inventoryState,
+                pendingRequestsState = pendingRequestsState,
+                brands = brands,
+                categories = categories,
                 selectedTabIndex = selectedTabIndex,
-                onTabSelected = { viewModel.onTabSelected(it) }
+                targetOrderFilter = targetOrderFilter,
+                targetOrderSearch = targetOrderSearch,
+                unreadNotificationsCount = unreadNotificationsCount,
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refreshAll() },
+                onTabSelected = { viewModel.onTabSelected(it) },
+                onNavigateToOrdersFiltered = { filter -> viewModel.navigateToOrders(filter = filter) },
+                onNavigateToOrderDetails = { orderId -> viewModel.navigateToOrders(filter = "All", orderIdSearch = orderId) },
+                onConsumeOrderTarget = { viewModel.consumeOrderTarget() },
+                onSelectCity = { viewModel.selectCity(it) },
+                onRetryProfile = { viewModel.fetchProfile() },
+                onRetryOrders = { viewModel.fetchOrders() },
+                onRetryEngineers = { viewModel.fetchEngineers() },
+                onRetryInventory = { viewModel.fetchInventory() },
+                onRetryPendingRequests = { viewModel.fetchPendingPricingRequests() },
+                onAssignEngineer = { orderId, engineerId, onSuccess, onError ->
+                    viewModel.assignEngineer(orderId, engineerId, onSuccess, onError)
+                },
+                onUnassignEngineer = { orderId, onSuccess, onError ->
+                    viewModel.unassignEngineer(orderId, onSuccess, onError)
+                },
+                onUpdateOrderStatus = { orderId, status, reason, onSuccess, onError ->
+                    viewModel.updateOrderStatus(orderId, status, reason, onSuccess, onError)
+                },
+                onAddOrderNote = { orderId, note, onSuccess, onError ->
+                    viewModel.addOrderNote(orderId, note, onSuccess, onError)
+                },
+                onCreateEngineer = { req, onSuccess, onError ->
+                    viewModel.createEngineer(req, onSuccess, onError)
+                },
+                onUpdateEngineer = { id, req, onSuccess, onError ->
+                    viewModel.updateEngineer(id, req, onSuccess, onError)
+                },
+                onToggleEngineerStatus = { engineer, newIsActive, onSuccess, onError ->
+                    viewModel.toggleEngineerStatus(engineer, newIsActive, onSuccess, onError)
+                },
+                onUpdateSingleStock = { productId, cityId, stock, onSuccess, onError ->
+                    viewModel.updateSingleStock(productId, cityId, stock, onSuccess, onError)
+                },
+                onBulkUpdateStock = { cityId, updates, onSuccess, onError ->
+                    viewModel.bulkUpdateStock(cityId, updates, onSuccess, onError)
+                },
+                onSubmitPricingRequest = { productId, req, onSuccess, onError ->
+                    viewModel.submitCityPricingRequest(productId, req, onSuccess, onError)
+                },
+                onUpdateDirectPricing = { productId, req, onSuccess, onError ->
+                    viewModel.updateDirectCityPricing(productId, req, onSuccess, onError)
+                },
+                onRequestNewProduct = { req, onSuccess, onError ->
+                    viewModel.requestNewProduct(req, onSuccess, onError)
+                },
+                onNavigateToNotifications = { navController.navigate(Screen.PartnerNotifications.route) },
+                onNavigateToChangePassword = { navController.navigate(Screen.ChangePassword.route) },
+                onLogout = {
+                    scope.launch {
+                        appContainer.authRepository.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.PartnerNotifications.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screen.PartnerDashboard.route)
+            }
+            val viewModel: PartnerViewModel = viewModel(
+                parentEntry,
+                factory = PartnerViewModel.provideFactory(appContainer.partnerRepository)
+            )
+            PartnerNotificationsScreen(
+                viewModel = viewModel,
+                onBackClick = { navController.navigateUp() }
+            )
+        }
+
+        composable(Screen.ChangePassword.route) {
+            val settingsViewModel: SettingsViewModel = viewModel(
+                factory = SettingsViewModel.provideFactory(appContainer.authRepository)
+            )
+            ChangePasswordScreen(
+                viewModel = settingsViewModel,
+                onBack = { navController.navigateUp() }
             )
         }
         

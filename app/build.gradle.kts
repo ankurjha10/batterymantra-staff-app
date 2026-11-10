@@ -80,8 +80,9 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
 
-    // Fragment KTX
+    // Fragment KTX & Biometric
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.biometric)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -26,11 +26,26 @@ interface BatteryMantraApi {
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
+    @POST("api/auth/admin-gate")
+    suspend fun verifyAdminGate(@Body request: com.battery.mantra.data.models.AdminGateRequest): Response<com.battery.mantra.data.models.AdminGateResponse>
+
     @POST("api/auth/engineer/send-otp")
     suspend fun sendEngineerOtp(@Body request: com.battery.mantra.data.models.SendOtpRequest): Response<okhttp3.ResponseBody>
 
     @POST("api/auth/engineer/verify-otp")
     suspend fun verifyEngineerOtp(@Body request: com.battery.mantra.data.models.VerifyOtpRequest): Response<LoginResponse>
+
+    @POST("api/auth/partner/send-otp")
+    suspend fun sendPartnerOtp(@Body request: com.battery.mantra.data.models.SendOtpRequest): Response<okhttp3.ResponseBody>
+
+    @POST("api/auth/partner/verify-otp")
+    suspend fun verifyPartnerOtp(@Body request: com.battery.mantra.data.models.VerifyOtpRequest): Response<LoginResponse>
+
+    @GET("api/admin/security/gate-config")
+    suspend fun getGateConfig(): Response<com.battery.mantra.data.models.GateConfigResponse>
+
+    @PUT("api/admin/security/gate-pin")
+    suspend fun updateGatePin(@Body request: com.battery.mantra.data.models.UpdateGatePinRequest): Response<com.battery.mantra.data.models.GateConfigResponse>
 
     @PUT("api/user/password")
     suspend fun changePassword(@Body request: com.battery.mantra.data.models.PasswordChangeRequest): Response<Unit>

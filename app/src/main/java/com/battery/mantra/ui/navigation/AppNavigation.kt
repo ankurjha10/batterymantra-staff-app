@@ -83,7 +83,9 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         Screen.Login.route
     } else {
         when {
-            role.equals("ADMIN", ignoreCase = true) -> Screen.AdminDashboard.route
+            role.equals("ADMIN", ignoreCase = true) ||
+                role.equals("SUB_ADMIN", ignoreCase = true) ||
+                role.equals("SUBADMIN", ignoreCase = true) -> Screen.AdminDashboard.route
             role.equals("PARTNER", ignoreCase = true) -> Screen.PartnerDashboard.route
             role.equals("ENGINEER", ignoreCase = true) -> Screen.EngineerDashboard.route
             else -> Screen.AdminDashboard.route
@@ -104,23 +106,30 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
             val authState by authViewModel.authState.collectAsState()
             val loginUiState by authViewModel.loginUiState.collectAsState()
+            val adminGateState by authViewModel.adminGateState.collectAsState()
 
             LoginScreen(
                 authState = authState,
                 loginUiState = loginUiState,
+                adminGateState = adminGateState,
                 onIdentifierChange = { authViewModel.updateIdentifier(it) },
                 onPasswordChange = { authViewModel.updatePassword(it) },
                 onTogglePasswordVisibility = { authViewModel.togglePasswordVisibility() },
-                onLoginClick = { authViewModel.login(loginUiState.identifier, loginUiState.password) },
                 onPhoneNumberChange = { authViewModel.updatePhoneNumber(it) },
                 onOtpChange = { authViewModel.updateOtp(it) },
-                onSendOtpClick = { authViewModel.sendEngineerOtp() },
-                onResendOtpClick = { authViewModel.resendEngineerOtp() },
-                onVerifyOtpClick = { authViewModel.verifyEngineerOtp() },
+                onSendOtpClick = { authViewModel.sendOtp() },
+                onResendOtpClick = { authViewModel.resendOtp() },
+                onVerifyOtpClick = { authViewModel.verifyOtp() },
                 onResetOtpState = { authViewModel.resetOtpState() },
                 onLoginModeChange = { authViewModel.setLoginMode(it) },
-                onLoginSuccess = { role ->
-                    val route = when (role.uppercase()) {
+                onAdminTriggerActivated = { authViewModel.onAdminTriggerActivated() },
+                onSubmitGatePin = { pin, canUseBio -> authViewModel.submitGatePin(pin, canUseBio) },
+                onBiometricSuccess = { authViewModel.onBiometricSuccess() },
+                onBiometricFailed = { msg -> authViewModel.onBiometricFailed(msg) },
+                onLockAdminGate = { authViewModel.lockAdminGate() },
+                onAdminLoginClick = { authViewModel.loginAdmin(loginUiState.identifier, loginUiState.password) },
+                onLoginSuccess = { loggedInRole ->
+                    val route = when (loggedInRole.uppercase()) {
                         "ADMIN", "SUB_ADMIN", "SUBADMIN" -> Screen.AdminDashboard.route
                         "ENGINEER" -> Screen.EngineerDashboard.route
                         "PARTNER" -> Screen.PartnerDashboard.route
@@ -186,6 +195,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToNotifications = { navController.navigate("admin_notifications") },
                 onNavigateToLeaves = { navController.navigate(Screen.AdminLeaveRequests.route) },
                 onNavigateToSubAdmins = { navController.navigate(Screen.AdminSubAdmins.route) },
+                onNavigateToSecurity = { navController.navigate(Screen.AdminSecuritySettings.route) },
                 onAssignPartner = { orderId, partnerId, onSuccess, onError -> 
                     adminViewModel.assignPartner(orderId, partnerId, onSuccess, onError)
                 },
@@ -288,6 +298,22 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 },
                 onRefresh = { adminViewModel.fetchUsers() },
                 onNavigateBack = { navController.navigateUp() }
+            )
+        }
+
+        composable(Screen.AdminSecuritySettings.route) {
+            val currentRole = role ?: "ADMIN"
+            val isSuperAdmin = currentRole.equals("ADMIN", ignoreCase = true)
+            val securityViewModel: com.battery.mantra.ui.screens.admin.AdminSecurityViewModel = viewModel(
+                factory = com.battery.mantra.ui.screens.admin.AdminSecurityViewModel.provideFactory(
+                    authRepository = appContainer.authRepository,
+                    isSuperAdmin = isSuperAdmin
+                )
+            )
+            com.battery.mantra.ui.screens.admin.AdminSecuritySettingsScreen(
+                role = currentRole,
+                viewModel = securityViewModel,
+                onBackClick = { navController.navigateUp() }
             )
         }
         

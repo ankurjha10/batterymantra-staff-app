@@ -32,6 +32,7 @@ import androidx.compose.material.icons.automirrored.outlined.PhoneCallback
 import androidx.compose.material.icons.outlined.Inventory
 import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import kotlinx.coroutines.launch
 
@@ -64,6 +65,7 @@ fun AdminDashboardScreen(
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToLeaves: () -> Unit = {},
     onNavigateToSubAdmins: () -> Unit = {},
+    onNavigateToSecurity: () -> Unit = {},
     onAssignPartner: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onAssignEngineer: (String, String, () -> Unit, (String) -> Unit) -> Unit = { _, _, _, _ -> },
     onUpdateStatus: (String, String) -> Unit = { _, _ -> },
@@ -269,7 +271,22 @@ fun AdminDashboardScreen(
                 
                 Spacer(modifier = Modifier.weight(1f))
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                
+
+                NavigationDrawerItem(
+                    icon = { Icon(Icons.Outlined.Shield, contentDescription = null) },
+                    label = { Text("App Security") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onNavigateToSecurity()
+                    },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+                    colors = NavigationDrawerItemDefaults.colors(
+                        unselectedIconColor = Color(0xFF424242),
+                        unselectedTextColor = Color(0xFF212121)
+                    )
+                )
+
                 NavigationDrawerItem(
                     icon = { Icon(Icons.AutoMirrored.Outlined.ExitToApp, contentDescription = null) },
                     label = { Text("Logout") },

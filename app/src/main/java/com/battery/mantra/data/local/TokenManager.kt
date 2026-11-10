@@ -3,7 +3,10 @@ package com.battery.mantra.data.local
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -11,16 +14,34 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
+interface AuthSessionStore {
+    val adminBiometricEnabled: Flow<Boolean>
+    suspend fun saveTokens(jwt: String, refresh: String, role: String, permissions: List<String>?)
+    suspend fun clearTokens()
+    suspend fun isAdminBiometricEnabled(): Boolean
+    suspend fun setAdminBiometricEnabled(enabled: Boolean)
+    suspend fun getAdminGateFailedAttempts(): Int
+    suspend fun getAdminGateLockoutRemainingMs(nowMs: Long = System.currentTimeMillis()): Long
+    suspend fun recordFailedAdminGateAttempt(nowMs: Long = System.currentTimeMillis()): Pair<Int, Long>
+    suspend fun resetAdminGateAttempts()
+}
+
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class TokenManager(private val context: Context) {
+class TokenManager(private val context: Context) : AuthSessionStore {
     companion object {
         private val JWT_TOKEN_KEY = stringPreferencesKey("jwt_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
         private val ROLE_KEY = stringPreferencesKey("user_role")
         private val PERMISSIONS_KEY = androidx.datastore.preferences.core.stringSetPreferencesKey("user_permissions")
-        private val CLEARED_NOTIFS_KEY = androidx.datastore.preferences.core.longPreferencesKey("cleared_notifs_time")
+        private val CLEARED_NOTIFS_KEY = longPreferencesKey("cleared_notifs_time")
         private val LANGUAGE_KEY = stringPreferencesKey("app_language")
+        private val ADMIN_GATE_FAILED_ATTEMPTS_KEY = intPreferencesKey("admin_gate_failed_attempts")
+        private val ADMIN_GATE_LOCKED_UNTIL_KEY = longPreferencesKey("admin_gate_locked_until")
+        private val ADMIN_BIOMETRIC_ENABLED_KEY = booleanPreferencesKey("admin_biometric_enabled")
+
+        const val MAX_ADMIN_GATE_ATTEMPTS = 3
+        const val ADMIN_GATE_LOCKOUT_MS = 15 * 60 * 1000L
     }
 
     @Volatile private var cachedJwt: String? = null
@@ -76,7 +97,7 @@ class TokenManager(private val context: Context) {
         }
     }
 
-    suspend fun saveTokens(jwt: String, refresh: String, role: String, permissions: List<String>?) {
+    override suspend fun saveTokens(jwt: String, refresh: String, role: String, permissions: List<String>?) {
         cachedJwt = jwt
         cachedRefresh = refresh
         cachedRole = role
@@ -90,7 +111,7 @@ class TokenManager(private val context: Context) {
         }
     }
 
-    suspend fun clearTokens() {
+    override suspend fun clearTokens() {
         cachedJwt = null
         cachedRefresh = null
         cachedRole = null
@@ -124,6 +145,68 @@ class TokenManager(private val context: Context) {
     fun getLanguage(): String {
         return runBlocking {
             context.dataStore.data.first()[LANGUAGE_KEY] ?: "en"
+        }
+    }
+
+    override val adminBiometricEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[ADMIN_BIOMETRIC_ENABLED_KEY] ?: false
+    }
+
+    override suspend fun isAdminBiometricEnabled(): Boolean {
+        return context.dataStore.data.first()[ADMIN_BIOMETRIC_ENABLED_KEY] ?: false
+    }
+
+    override suspend fun setAdminBiometricEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[ADMIN_BIOMETRIC_ENABLED_KEY] = enabled
+        }
+    }
+
+    override suspend fun getAdminGateFailedAttempts(): Int {
+        val prefs = context.dataStore.data.first()
+        val lockedUntil = prefs[ADMIN_GATE_LOCKED_UNTIL_KEY] ?: 0L
+        if (lockedUntil > 0L && System.currentTimeMillis() >= lockedUntil) {
+            resetAdminGateAttempts()
+            return 0
+        }
+        return prefs[ADMIN_GATE_FAILED_ATTEMPTS_KEY] ?: 0
+    }
+
+    override suspend fun getAdminGateLockoutRemainingMs(nowMs: Long): Long {
+        val prefs = context.dataStore.data.first()
+        val lockedUntil = prefs[ADMIN_GATE_LOCKED_UNTIL_KEY] ?: 0L
+        if (lockedUntil <= 0L) return 0L
+        val remaining = lockedUntil - nowMs
+        if (remaining <= 0L) {
+            resetAdminGateAttempts()
+            return 0L
+        }
+        return remaining
+    }
+
+    override suspend fun recordFailedAdminGateAttempt(nowMs: Long): Pair<Int, Long> {
+        var attemptsLeft = MAX_ADMIN_GATE_ATTEMPTS
+        var lockedUntil = 0L
+        context.dataStore.edit { preferences ->
+            val currentFailed = (preferences[ADMIN_GATE_FAILED_ATTEMPTS_KEY] ?: 0) + 1
+            if (currentFailed >= MAX_ADMIN_GATE_ATTEMPTS) {
+                lockedUntil = nowMs + ADMIN_GATE_LOCKOUT_MS
+                attemptsLeft = 0
+                preferences[ADMIN_GATE_FAILED_ATTEMPTS_KEY] = 0
+                preferences[ADMIN_GATE_LOCKED_UNTIL_KEY] = lockedUntil
+            } else {
+                attemptsLeft = MAX_ADMIN_GATE_ATTEMPTS - currentFailed
+                preferences[ADMIN_GATE_FAILED_ATTEMPTS_KEY] = currentFailed
+                preferences[ADMIN_GATE_LOCKED_UNTIL_KEY] = 0L
+            }
+        }
+        return attemptsLeft to lockedUntil
+    }
+
+    override suspend fun resetAdminGateAttempts() {
+        context.dataStore.edit { preferences ->
+            preferences[ADMIN_GATE_FAILED_ATTEMPTS_KEY] = 0
+            preferences[ADMIN_GATE_LOCKED_UNTIL_KEY] = 0L
         }
     }
 }
